@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+httpx[brotli,socks,zstd]
+playwright>=1.49.1
+beautifulsoup4
+lxml
+pandas

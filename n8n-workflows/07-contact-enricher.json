@@ -1,0 +1,364 @@
+{
+  "name": "ECAS — 07 Contact Enricher",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "name"
+        },
+        "triggerField": "created_at",
+        "options": {
+          "downloadAttachments": false
+        }
+      },
+      "id": "airtable-trigger-projects",
+      "name": "New Project in Airtable",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [240, 400],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-owner",
+              "leftValue": "={{ $json.fields.owner_company }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-owner",
+      "name": "Has owner_company?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Derive likely domain from company name\n// e.g. \"Dominion Energy\" -> dominionenergy.com\nconst fields = $input.first().json.fields;\nconst projectRecordId = $input.first().json.id;\n\nfunction companyToDomain(name) {\n  if (!name) return null;\n  // Strip common suffixes\n  const cleaned = name\n    .toLowerCase()\n    .replace(/\\b(inc|llc|ltd|corp|corporation|company|co|group|holdings|international|partners|services|solutions|energy|power|electric|utilities|utility)\\b/g, '')\n    .replace(/[^a-z0-9]/g, '')\n    .trim();\n  return cleaned ? `${cleaned}.com` : null;\n}\n\nconst ownerCompany = fields.owner_company || '';\nconst epcCompany = fields.epc_company || '';\n\nconst companies = [];\nif (ownerCompany) {\n  companies.push({\n    name: ownerCompany,\n    domain: companyToDomain(ownerCompany),\n    role: 'owner',\n  });\n}\nif (epcCompany && epcCompany !== ownerCompany) {\n  companies.push({\n    name: epcCompany,\n    domain: companyToDomain(epcCompany),\n    role: 'epc',\n  });\n}\n\nreturn companies.map(c => ({\n  json: {\n    ...c,\n    project_record_id: projectRecordId,\n    project_name: fields.project_name || '',\n    project_state: fields.state || '',\n  }\n}));"
+      },
+      "id": "code-derive-domains",
+      "name": "Derive Company Domains",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/search",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "={{ $env.APOLLO_API_KEY }}"
+            },
+            {
+              "name": "titles",
+              "value": "=[\"Director of Preconstruction\", \"VP Operations\", \"Project Executive\", \"Estimating Manager\", \"Director of Business Development\", \"VP Business Development\"]"
+            },
+            {
+              "name": "organization_domains",
+              "value": "={{ [$json.domain].filter(Boolean) }}"
+            },
+            {
+              "name": "page",
+              "value": 1
+            },
+            {
+              "name": "per_page",
+              "value": 10
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-apollo",
+      "name": "Apollo: Search People",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten Apollo results and attach parent context\nconst apolloResp = $input.first().json;\nconst companyCtx = $('Derive Company Domains').first().json;\n\nconst people = apolloResp?.people || apolloResp?.contacts || [];\n\nconst withEmail = people.filter(p => p.email && p.email !== 'email_not_unlocked@domain.com');\n\nconsole.log(`Apollo returned ${people.length} people, ${withEmail.length} with email`);\n\nreturn withEmail.map(p => ({\n  json: {\n    // Apollo fields\n    first_name: p.first_name || '',\n    last_name: p.last_name || '',\n    email: p.email || '',\n    title: p.title || '',\n    company_name: p.organization_name || companyCtx.name,\n    linkedin_url: p.linkedin_url || '',\n    city: p.city || '',\n    state: p.state || '',\n    phone: p.phone_numbers?.[0]?.raw_number || '',\n    // Context from parent nodes\n    company_role: companyCtx.role,\n    company_domain: companyCtx.domain,\n    project_record_id: companyCtx.project_record_id,\n    project_name: companyCtx.project_name,\n    project_state: companyCtx.project_state,\n    apollo_id: p.id || '',\n  }\n}));"
+      },
+      "id": "code-flatten-apollo",
+      "name": "Flatten Apollo Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-linkedin",
+              "leftValue": "={{ $json.linkedin_url }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-has-linkedin",
+      "name": "Has LinkedIn URL?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://nubela.co/proxycurl/api/v2/linkedin?url={{ encodeURIComponent($json.linkedin_url) }}&use_cache=if-present",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.PROXYCURL_API_KEY }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "id": "http-proxycurl",
+      "name": "Proxycurl: Enrich LinkedIn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 280]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Proxycurl enrichment back onto the contact\nconst contact = $('Flatten Apollo Results').first().json;\nconst proxycurl = $input.first().json;\n\nreturn [{\n  json: {\n    ...contact,\n    // Overwrite/supplement with Proxycurl data where available\n    headline: proxycurl?.headline || '',\n    summary: proxycurl?.summary || '',\n    follower_count: proxycurl?.follower_count || null,\n    connections: proxycurl?.connections || null,\n    profile_pic_url: proxycurl?.profile_pic_url || '',\n  }\n}];"
+      },
+      "id": "code-merge-proxycurl",
+      "name": "Merge Proxycurl Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1780, 280]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.zerobounce.net/v2/validate?api_key={{ $env.ZEROBOUNCE_KEY }}&email={{ encodeURIComponent($json.email) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "http-zerobounce",
+      "name": "Zerobounce: Verify Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 520]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "email-valid",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "valid",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-email-valid",
+      "name": "Email Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 520]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "contacts",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "first_name": "={{ $json.first_name }}",
+            "last_name": "={{ $json.last_name }}",
+            "email": "={{ $json.email }}",
+            "title": "={{ $json.title }}",
+            "company_name": "={{ $json.company_name }}",
+            "company_role": "={{ $json.company_role }}",
+            "linkedin_url": "={{ $json.linkedin_url }}",
+            "phone": "={{ $json.phone }}",
+            "city": "={{ $json.city }}",
+            "state": "={{ $json.state }}",
+            "headline": "={{ $json.headline }}",
+            "summary": "={{ $json.summary }}",
+            "project_id": "={{ [$json.project_record_id] }}",
+            "outreach_status": "pending_review",
+            "email_verified": true,
+            "apollo_id": "={{ $json.apollo_id }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "airtable-create-contact",
+      "name": "Create Contact Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [2000, 400],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "New Project in Airtable": {
+      "main": [
+        [
+          { "node": "Has owner_company?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Has owner_company?": {
+      "main": [
+        [
+          { "node": "Derive Company Domains", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    },
+    "Derive Company Domains": {
+      "main": [
+        [
+          { "node": "Apollo: Search People", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Apollo: Search People": {
+      "main": [
+        [
+          { "node": "Flatten Apollo Results", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Flatten Apollo Results": {
+      "main": [
+        [
+          { "node": "Has LinkedIn URL?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Has LinkedIn URL?": {
+      "main": [
+        [
+          { "node": "Proxycurl: Enrich LinkedIn", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Zerobounce: Verify Email", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Proxycurl: Enrich LinkedIn": {
+      "main": [
+        [
+          { "node": "Merge Proxycurl Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Merge Proxycurl Data": {
+      "main": [
+        [
+          { "node": "Zerobounce: Verify Email", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Zerobounce: Verify Email": {
+      "main": [
+        [
+          { "node": "Email Valid?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Email Valid?": {
+      "main": [
+        [
+          { "node": "Create Contact Record", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["ecas", "contacts", "enrichment"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-03T00:00:00.000Z",
+  "versionId": "1"
+}

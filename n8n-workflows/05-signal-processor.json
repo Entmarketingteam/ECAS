@@ -1,0 +1,382 @@
+{
+  "name": "ECAS — 05 Signal Processor (Claude Extraction)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "cron-processor",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "filterByFormula": "AND({processed} = FALSE(), {raw_text} != '')",
+        "options": {
+          "maxRecords": 10,
+          "sort": [
+            {
+              "field": "captured_at",
+              "direction": "asc"
+            }
+          ]
+        }
+      },
+      "id": "airtable-fetch-unprocessed",
+      "name": "Fetch Unprocessed Signals",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [460, 400],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "claude-sonnet-4-6"
+            },
+            {
+              "name": "max_tokens",
+              "value": 1024
+            },
+            {
+              "name": "messages",
+              "value": "=[{\"role\": \"user\", \"content\": \"You are extracting power/grid infrastructure project data from a regulatory filing or news announcement. Extract ONLY if there is a concrete infrastructure project (transmission line, substation, generation facility, grid interconnection, data center power project) with identifiable scope.\\n\\nSource URL: \" + $json.fields.url + \"\\nSource type: \" + $json.fields.source + \"\\nRaw text:\\n\" + $json.fields.raw_text + \"\\n\\nReturn a JSON object with EXACTLY these fields (use null if unknown or not applicable):\\n{\\n  \\\"is_infrastructure_project\\\": boolean,\\n  \\\"confidence_score\\\": number between 0.0 and 1.0,\\n  \\\"project_name\\\": string or null,\\n  \\\"state\\\": \\\"VA\\\" or \\\"TX\\\" or null,\\n  \\\"county\\\": string or null,\\n  \\\"mw_capacity\\\": number or null,\\n  \\\"estimated_contract_value_band\\\": one of [\\\"<$1M\\\", \\\"$1M-$5M\\\", \\\"$5M-$25M\\\", \\\"$25M-$100M\\\", \\\">$100M\\\"] or null,\\n  \\\"project_type\\\": one of [\\\"transmission\\\", \\\"substation\\\", \\\"generation\\\", \\\"distribution\\\", \\\"interconnection\\\", \\\"data_center_power\\\", \\\"other\\\"],\\n  \\\"owner_company\\\": string or null,\\n  \\\"epc_company\\\": string or null,\\n  \\\"rfp_expected_date\\\": \\\"YYYY-MM\\\" format or null,\\n  \\\"positioning_window_open\\\": \\\"YYYY-MM\\\" format or null,\\n  \\\"positioning_window_close\\\": \\\"YYYY-MM\\\" format or null,\\n  \\\"scope_summary\\\": string max 200 characters or null,\\n  \\\"signal_type\\\": one of [\\\"ferc_filing\\\", \\\"interconnection_queue\\\", \\\"rate_case\\\", \\\"ppa\\\", \\\"job_posting\\\", \\\"press_release\\\", \\\"earnings_call\\\", \\\"permit\\\", \\\"other\\\"]\\n}\\n\\nReturn ONLY the JSON object. No explanation. No markdown.\"}]"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-claude",
+      "name": "Claude: Extract Project Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 400],
+      "credentials": {
+        "anthropicApi": {
+          "id": "MwxIqQP3l6cUcwcZ",
+          "name": "Anthropic"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude's JSON response and attach original signal record ID\nconst claudeResp = $input.first().json;\nconst signal = $('Fetch Unprocessed Signals').first().json;\n\nconst signalRecordId = signal.id;\nconst signalFields = signal.fields || {};\n\nlet extracted = {};\ntry {\n  const content = claudeResp?.content?.[0]?.text || '';\n  // Strip any accidental markdown fences\n  const cleaned = content.replace(/^```json\\s*/i, '').replace(/```\\s*$/i, '').trim();\n  extracted = JSON.parse(cleaned);\n} catch (e) {\n  console.error('Failed to parse Claude JSON:', e.message);\n  extracted = {\n    is_infrastructure_project: false,\n    confidence_score: 0,\n  };\n}\n\nreturn [{\n  json: {\n    signal_record_id: signalRecordId,\n    signal_url: signalFields.url || '',\n    signal_source: signalFields.source || '',\n    ...extracted,\n  }\n}];"
+      },
+      "id": "code-parse-claude",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "is-infra",
+              "leftValue": "={{ $json.is_infrastructure_project }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "confidence-threshold",
+              "leftValue": "={{ $json.confidence_score }}",
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-qualifies",
+      "name": "Qualifies as Project?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 400]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "projects",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "project_name": "={{ $json.project_name }}",
+            "state": "={{ $json.state }}",
+            "county": "={{ $json.county }}",
+            "mw_capacity": "={{ $json.mw_capacity }}",
+            "estimated_contract_value_band": "={{ $json.estimated_contract_value_band }}",
+            "project_type": "={{ $json.project_type }}",
+            "owner_company": "={{ $json.owner_company }}",
+            "epc_company": "={{ $json.epc_company }}",
+            "rfp_expected_date": "={{ $json.rfp_expected_date }}",
+            "positioning_window_open": "={{ $json.positioning_window_open }}",
+            "positioning_window_close": "={{ $json.positioning_window_close }}",
+            "scope_summary": "={{ $json.scope_summary }}",
+            "signal_type": "={{ $json.signal_type }}",
+            "confidence_score": "={{ $json.confidence_score }}",
+            "source_url": "={{ $json.signal_url }}",
+            "stage": "Identified"
+          }
+        },
+        "options": {}
+      },
+      "id": "airtable-create-project",
+      "name": "Create Project Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1340, 280],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "id": "={{ $('Parse Claude Response').first().json.signal_record_id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "processed": true,
+            "linked_project": "={{ [$json.id] }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "airtable-mark-processed-yes",
+      "name": "Mark Signal Processed (linked)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1560, 280],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "id": "={{ $json.signal_record_id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "processed": true
+          }
+        },
+        "options": {}
+      },
+      "id": "airtable-mark-processed-no",
+      "name": "Mark Signal Processed (no project)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1340, 520],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "low-confidence",
+              "leftValue": "={{ $json.confidence_score }}",
+              "rightValue": 0.5,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-low-confidence",
+      "name": "Low Confidence?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 680]
+    },
+    {
+      "parameters": {
+        "channel": "#ecas-review",
+        "text": "=:eyes: *Manual Triage Needed*\n\nA signal came in with low confidence ({{ $json.confidence_score }}) and was not auto-processed.\n\n*Source:* {{ $json.signal_source }}\n*URL:* {{ $json.signal_url }}\n*Airtable Signal ID:* {{ $json.signal_record_id }}\n\nReview and manually link if relevant.",
+        "otherOptions": {}
+      },
+      "id": "slack-review",
+      "name": "Slack: Manual Review",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1560, 680],
+      "credentials": {
+        "slackApi": {
+          "id": "EMdoV2Sq9neZV1Tn",
+          "name": "Slack"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          { "node": "Fetch Unprocessed Signals", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch Unprocessed Signals": {
+      "main": [
+        [
+          { "node": "Claude: Extract Project Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Claude: Extract Project Data": {
+      "main": [
+        [
+          { "node": "Parse Claude Response", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [
+          { "node": "Qualifies as Project?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Qualifies as Project?": {
+      "main": [
+        [
+          { "node": "Create Project Record", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Mark Signal Processed (no project)", "type": "main", "index": 0 },
+          { "node": "Low Confidence?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Project Record": {
+      "main": [
+        [
+          { "node": "Mark Signal Processed (linked)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Low Confidence?": {
+      "main": [
+        [
+          { "node": "Slack: Manual Review", "type": "main", "index": 0 }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["ecas", "processing", "claude"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-03T00:00:00.000Z",
+  "versionId": "1"
+}

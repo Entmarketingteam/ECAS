@@ -1,0 +1,120 @@
+{
+  "name": "ECAS — 02 PJM Queue Poller",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [1],
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "cron-pjm",
+      "name": "Every Monday 7am",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://dataminer2.pjm.com/feed/ivmsc_queue/export?startRow=1&numRows=500",
+        "options": {
+          "timeout": 45000
+        }
+      },
+      "id": "http-pjm",
+      "name": "Fetch PJM Queue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter PJM queue to Virginia target counties and active large projects\nconst response = $input.first().json;\n\nconst VA_COUNTIES = [\n  'loudoun', 'fauquier', 'stafford',\n  'prince william', 'clarke', 'warren'\n];\n\n// PJM Data Miner 2 returns { items: [...] } or raw array\nconst rows = Array.isArray(response)\n  ? response\n  : response?.items || response?.data || [];\n\nconsole.log(`Total PJM rows received: ${rows.length}`);\n\nconst filtered = rows.filter(row => {\n  const countyRaw = String(row.COUNTY || row.county || '').toLowerCase().trim();\n  const stateRaw = String(row.STATE || row.state || '').toUpperCase().trim();\n  const status = String(row.STATUS || row.queue_status || '').toLowerCase();\n  const mw = parseFloat(row.CAPACITY_MW || row.capacity_mw || row.MW || row.mw || 0);\n\n  const isVA = stateRaw === 'VA' || stateRaw === 'VIRGINIA';\n  const isTargetCounty = VA_COUNTIES.some(vc => countyRaw.includes(vc));\n  const isActive = status.includes('active') || status.includes('new service');\n  const isLarge = mw > 50;\n\n  return isVA && isTargetCounty && isActive && isLarge;\n});\n\nconsole.log(`Filtered to ${filtered.length} VA target-county active >50MW projects`);\n\nreturn filtered.map(row => ({\n  json: {\n    source: 'pjm_queue',\n    url: `https://dataminer2.pjm.com/feed/ivmsc_queue/export`,\n    raw_text: [\n      row.PROJECT_NAME || row.project_name || row.NAME || '',\n      `County: ${row.COUNTY || row.county || ''}`,\n      `State: VA`,\n      `MW: ${row.CAPACITY_MW || row.capacity_mw || row.MW || ''}`,\n      `Status: ${row.STATUS || row.queue_status || ''}`,\n      `Queue Date: ${row.QUEUE_DATE || row.queue_date || row.SUBMITTED_DATE || ''}`,\n      `Owner: ${row.OWNER || row.customer_name || ''}`,\n      `Type: ${row.FUEL_TYPE || row.resource_type || ''}`,\n    ].filter(s => s && !s.endsWith(': ')).join(' | '),\n    captured_at: new Date().toISOString(),\n    processed: false,\n  }\n}));"
+      },
+      "id": "code-filter-pjm",
+      "name": "Filter VA Projects",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "raw_text": "={{ $json.raw_text }}",
+            "captured_at": "={{ $json.captured_at }}",
+            "processed": "={{ $json.processed }}"
+          }
+        },
+        "options": {
+          "fieldsToMergeOn": ["url", "raw_text"]
+        }
+      },
+      "id": "airtable-upsert-pjm",
+      "name": "Upsert Airtable Signal",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [900, 300],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every Monday 7am": {
+      "main": [
+        [
+          { "node": "Fetch PJM Queue", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch PJM Queue": {
+      "main": [
+        [
+          { "node": "Filter VA Projects", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Filter VA Projects": {
+      "main": [
+        [
+          { "node": "Upsert Airtable Signal", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["ecas", "signals", "pjm"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-03T00:00:00.000Z",
+  "versionId": "1"
+}

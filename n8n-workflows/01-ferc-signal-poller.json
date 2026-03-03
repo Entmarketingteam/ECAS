@@ -1,0 +1,151 @@
+{
+  "name": "ECAS — 01 FERC Signal Poller",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "cron-ferc",
+      "name": "Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://efts.ferc.gov/EFTS-Java/search?q=substation+transmission&states=VA,TX&dateRange=custom&startDate={{$now.minus({days:1}).toFormat('yyyy-MM-dd')}}&endDate={{$now.toFormat('yyyy-MM-dd')}}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "http-ferc",
+      "name": "Fetch FERC EFTS Filings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse FERC EFTS response and extract filings\nconst response = $input.first().json;\n\n// EFTS returns { hits: { hits: [...], total: N } }\nconst hits = response?.hits?.hits || response?.results || [];\n\nif (!hits.length) {\n  console.log('No FERC filings found for date range');\n  return [];\n}\n\nconst filings = hits.map(hit => {\n  const src = hit._source || hit;\n  const docket = src.docket_number || src.docketNumber || src.docket || '';\n  const title = src.document_name || src.documentName || src.title || src.description || '';\n  const filer = src.filer_name || src.filerName || src.organization || '';\n  const date = src.filed_date || src.filedDate || src.date_received || '';\n  const url = src.download_url || src.downloadUrl ||\n    (docket ? `https://www.ferc.gov/docs-filing/elibrary.asp?act=load&query=${docket}` : '');\n\n  const rawText = [\n    title,\n    filer ? `Filer: ${filer}` : '',\n    docket ? `Docket: ${docket}` : '',\n    date ? `Filed: ${date}` : '',\n  ].filter(Boolean).join(' | ');\n\n  return {\n    source: 'ferc_efts',\n    url: url,\n    raw_text: rawText,\n    captured_at: new Date().toISOString(),\n    processed: false,\n  };\n});\n\nconsole.log(`Parsed ${filings.length} FERC filings`);\nreturn filings.map(f => ({ json: f }));"
+      },
+      "id": "code-parse-ferc",
+      "name": "Parse FERC Filings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "raw_text": "={{ $json.raw_text }}",
+            "captured_at": "={{ $json.captured_at }}",
+            "processed": "={{ $json.processed }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "airtable-create-ferc",
+      "name": "Create Airtable Signal",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [900, 300],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channel": "#ecas-ops",
+        "text": "=:rotating_light: *FERC Signal Poller Error*\n\nThe FERC EFTS poller failed at {{ $now.toISO() }}.\n\n*Error:* {{ $json.message || $json.error || 'Unknown error' }}\n\nCheck the n8n execution log for details.",
+        "otherOptions": {}
+      },
+      "id": "slack-error-ferc",
+      "name": "Slack Error Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [900, 500],
+      "credentials": {
+        "slackApi": {
+          "id": "EMdoV2Sq9neZV1Tn",
+          "name": "Slack"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 6 Hours": {
+      "main": [
+        [
+          { "node": "Fetch FERC EFTS Filings", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch FERC EFTS Filings": {
+      "main": [
+        [
+          { "node": "Parse FERC Filings", "type": "main", "index": 0 }
+        ]
+      ],
+      "error": [
+        [
+          { "node": "Slack Error Alert", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Parse FERC Filings": {
+      "main": [
+        [
+          { "node": "Create Airtable Signal", "type": "main", "index": 0 }
+        ]
+      ],
+      "error": [
+        [
+          { "node": "Slack Error Alert", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Create Airtable Signal": {
+      "error": [
+        [
+          { "node": "Slack Error Alert", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": ["ecas", "signals"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-03T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,222 @@
+{
+  "name": "ECAS — 03 RSS Aggregator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "id": "cron-rss",
+      "name": "Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 500]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=Dominion+Energy+substation+transmission&hl=en-US&gl=US&ceid=US:en"
+      },
+      "id": "rss-dominion",
+      "name": "RSS: Dominion Substation",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=data+center+power+Virginia+substation&hl=en-US&gl=US&ceid=US:en"
+      },
+      "id": "rss-datacenter-va",
+      "name": "RSS: Data Center Power VA",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=ERCOT+transmission+expansion+Texas&hl=en-US&gl=US&ceid=US:en"
+      },
+      "id": "rss-ercot",
+      "name": "RSS: ERCOT Transmission TX",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 420]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=power+purchase+agreement+data+center+grid&hl=en-US&gl=US&ceid=US:en"
+      },
+      "id": "rss-ppa",
+      "name": "RSS: PPA Data Center Grid",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 580]
+    },
+    {
+      "parameters": {
+        "url": "https://www.prnewswire.com/rss/news-releases-list.rss?category=ENI"
+      },
+      "id": "rss-prnewswire",
+      "name": "RSS: PR Newswire Energy",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 740]
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=EPC+contract+substation+transmission+awarded&hl=en-US&gl=US&ceid=US:en"
+      },
+      "id": "rss-epc",
+      "name": "RSS: EPC Contract Awards",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1,
+      "position": [460, 900]
+    },
+    {
+      "parameters": {
+        "mode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge-feeds",
+      "name": "Merge All Feeds",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [700, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deduplicate by URL and filter out items older than 24 hours\nconst allItems = $input.all();\nconst cutoff = Date.now() - 24 * 60 * 60 * 1000;\n\nconst seen = new Set();\nconst deduped = [];\n\nfor (const item of allItems) {\n  const data = item.json;\n  const url = data.link || data.url || data.guid || '';\n  const pubDate = data.pubDate || data.isoDate || data.published || null;\n\n  if (!url) continue;\n\n  // Deduplicate\n  if (seen.has(url)) continue;\n  seen.add(url);\n\n  // Age filter: skip if older than 24h\n  if (pubDate) {\n    const ts = new Date(pubDate).getTime();\n    if (!isNaN(ts) && ts < cutoff) continue;\n  }\n\n  const title = data.title || '';\n  const description = data.contentSnippet || data.content || data.description || data.summary || '';\n  const rawText = [title, description].filter(Boolean).join(' — ').slice(0, 2000);\n\n  deduped.push({\n    json: {\n      source: 'rss_feed',\n      url: url,\n      raw_text: rawText,\n      captured_at: pubDate ? new Date(pubDate).toISOString() : new Date().toISOString(),\n      processed: false,\n    }\n  });\n}\n\nconsole.log(`RSS: ${allItems.length} total items → ${deduped.length} after dedup+age filter`);\nreturn deduped;"
+      },
+      "id": "code-dedup-rss",
+      "name": "Dedup & Age Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 500]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "baseId": {
+          "__rl": true,
+          "value": "ECAS_BASE_ID",
+          "mode": "id"
+        },
+        "tableId": {
+          "__rl": true,
+          "value": "signals_raw",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "url": "={{ $json.url }}",
+            "raw_text": "={{ $json.raw_text }}",
+            "captured_at": "={{ $json.captured_at }}",
+            "processed": "={{ $json.processed }}"
+          }
+        },
+        "options": {
+          "fieldsToMergeOn": ["url"]
+        }
+      },
+      "id": "airtable-upsert-rss",
+      "name": "Upsert Airtable Signal",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1140, 500],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "dAoeOLbTnBUK1gTy",
+          "name": "Airtable"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Every 15 Minutes": {
+      "main": [
+        [
+          { "node": "RSS: Dominion Substation", "type": "main", "index": 0 },
+          { "node": "RSS: Data Center Power VA", "type": "main", "index": 0 },
+          { "node": "RSS: ERCOT Transmission TX", "type": "main", "index": 0 },
+          { "node": "RSS: PPA Data Center Grid", "type": "main", "index": 0 },
+          { "node": "RSS: PR Newswire Energy", "type": "main", "index": 0 },
+          { "node": "RSS: EPC Contract Awards", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS: Dominion Substation": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS: Data Center Power VA": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 1 }
+        ]
+      ]
+    },
+    "RSS: ERCOT Transmission TX": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 2 }
+        ]
+      ]
+    },
+    "RSS: PPA Data Center Grid": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 3 }
+        ]
+      ]
+    },
+    "RSS: PR Newswire Energy": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 4 }
+        ]
+      ]
+    },
+    "RSS: EPC Contract Awards": {
+      "main": [
+        [
+          { "node": "Merge All Feeds", "type": "main", "index": 5 }
+        ]
+      ]
+    },
+    "Merge All Feeds": {
+      "main": [
+        [
+          { "node": "Dedup & Age Filter", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Dedup & Age Filter": {
+      "main": [
+        [
+          { "node": "Upsert Airtable Signal", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": ["ecas", "signals", "rss"],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-03T00:00:00.000Z",
+  "versionId": "1"
+}
