@@ -1,7 +1,25 @@
+# Web framework
 fastapi
 uvicorn[standard]
+
+# HTTP clients
 httpx[brotli,socks,zstd]
+requests
+
+# Browser automation
 playwright>=1.49.1
 beautifulsoup4
 lxml
+
+# Data
 pandas
+feedparser
+
+# Scheduling
+apscheduler>=3.10.0
+
+# AI
+anthropic>=0.40.0
+
+# Utilities
+python-dotenv
