@@ -1,0 +1,18 @@
+{
+  "inputPath": "data/input/accounts.sample.json",
+  "outputDir": "data/output",
+  "eventsDir": "data/events",
+  "keywords": [
+    "data center",
+    "data centre",
+    "hyperscale",
+    "hyperscaler",
+    "SMR",
+    "small modular reactor",
+    "nuclear",
+    "substation",
+    "critical power",
+    "grid upgrade"
+  ],
+  "rateLimitMs": 500
+}

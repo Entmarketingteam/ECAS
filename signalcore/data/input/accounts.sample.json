@@ -1,0 +1,66 @@
+[
+  {
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "title": "VP Business Development",
+    "linkedin_profile_url": "https://linkedin.com/in/janedoe",
+    "company_name": "Example Data Center Corp",
+    "company_domain": "exampledatacenter.com",
+    "company_size": "500-1000",
+    "industry": "Data Center Infrastructure",
+    "country": "US",
+    "email": "jane.doe@exampledatacenter.com",
+    "job_change_date": "2026-01-10"
+  },
+  {
+    "first_name": "Marcus",
+    "last_name": "Rivera",
+    "title": "CEO",
+    "linkedin_profile_url": "https://linkedin.com/in/marcusrivera",
+    "company_name": "NuScale Power",
+    "company_domain": "nuscalepower.com",
+    "company_size": "1000-5000",
+    "industry": "Nuclear Energy / SMR",
+    "country": "US",
+    "email": "marcus@nuscalepower.com",
+    "job_change_date": "2025-06-15"
+  },
+  {
+    "first_name": "Sarah",
+    "last_name": "Chen",
+    "title": "Director of Partnerships",
+    "linkedin_profile_url": "https://linkedin.com/in/sarahchen",
+    "company_name": "Equinix",
+    "company_domain": "equinix.com",
+    "company_size": "10000+",
+    "industry": "Data Center / Colocation",
+    "country": "US",
+    "email": "sarah.chen@equinix.com",
+    "job_change_date": "2026-02-01"
+  },
+  {
+    "first_name": "David",
+    "last_name": "Okafor",
+    "title": "VP Sales",
+    "linkedin_profile_url": "https://linkedin.com/in/davidokafor",
+    "company_name": "QTS Realty Trust",
+    "company_domain": "qtsdatacenters.com",
+    "company_size": "1000-5000",
+    "industry": "Data Center REIT",
+    "country": "US",
+    "email": "david.okafor@qtsdatacenters.com"
+  },
+  {
+    "first_name": "Emily",
+    "last_name": "Nakamura",
+    "title": "CRO",
+    "linkedin_profile_url": "https://linkedin.com/in/emilynakamura",
+    "company_name": "Vantage Data Centers",
+    "company_domain": "vantagedatacenters.com",
+    "company_size": "500-1000",
+    "industry": "Hyperscale Data Centers",
+    "country": "US",
+    "email": "emily.nakamura@vantagedatacenters.com",
+    "job_change_date": "2026-01-20"
+  }
+]
