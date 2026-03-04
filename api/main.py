@@ -179,7 +179,7 @@ def admin_signals(limit: int = 20, sector: str = None):
         else:
             records = at._get("signals_raw", {
                 "maxRecords": limit,
-                "sort[0][field]": "signal_date",
+                "sort[0][field]": "captured_at",
                 "sort[0][direction]": "desc",
             })
         return {
@@ -190,8 +190,8 @@ def admin_signals(limit: int = 20, sector: str = None):
                     "type": r.get("fields", {}).get("signal_type"),
                     "company": r.get("fields", {}).get("company_name"),
                     "sector": r.get("fields", {}).get("sector"),
-                    "heat_score": r.get("fields", {}).get("heat_score"),
-                    "signal_date": r.get("fields", {}).get("signal_date"),
+                    "heat_score": r.get("fields", {}).get("confidence_score"),
+                    "signal_date": r.get("fields", {}).get("captured_at"),
                     "processed": r.get("fields", {}).get("processed", False),
                 }
                 for r in records
