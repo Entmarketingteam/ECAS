@@ -24,6 +24,9 @@ function makeSignals(overrides: Partial<CompanySignals> = {}): CompanySignals {
     posts_last_30_days: 0,
     growth_posts_last_30_days: 0,
     is_event_exhibitor: 0,
+    reddit_mentions_last_30_days: 0,
+    reddit_keyword_mentions: 0,
+    top_reddit_urls: [],
     ...overrides,
   };
 }
@@ -50,6 +53,9 @@ describe('Coordinator', () => {
       posts_last_30_days: 3,
       is_event_exhibitor: 1,
       event_name: 'Data Center World 2026',
+      reddit_mentions_last_30_days: 7,
+      reddit_keyword_mentions: 4,
+      top_reddit_urls: ['https://reddit.com/r/dc/1'],
     });
 
     const result = coordinator.enrich({
@@ -57,7 +63,8 @@ describe('Coordinator', () => {
       signalsByCompany: { 'exampledatacenter.com': signals },
     });
 
-    expect(result[0].signal_score).toBe(15);
+    // 3+3+2+2+2+1+2 (original) + 2 (reddit keywords >=3) + 1 (reddit mentions >=5) = 18
+    expect(result[0].signal_score).toBe(18);
     expect(result[0].signal_tier).toBe('Hot');
     expect(result[0].top_signals).toContain('4 BD roles open');
     expect(result[0].top_signals).toContain('Recent contract/award PR');
@@ -65,6 +72,8 @@ describe('Coordinator', () => {
     expect(result[0].top_signals).toContain('Exec posting about growth/contracts');
     expect(result[0].top_signals).toContain('Exec active on LinkedIn');
     expect(result[0].top_signals).toContain('Exhibiting at Data Center World 2026');
+    expect(result[0].top_signals).toContain('4 Reddit keyword mentions (DC/SMR)');
+    expect(result[0].top_signals).toContain('7 Reddit mentions in 30 days');
   });
 
   it('tier boundaries: Hot at 7', () => {
@@ -164,5 +173,38 @@ describe('Coordinator', () => {
   it('returns undefined for missing job_change_date', () => {
     const result = coordinator.computeDaysInRole(undefined);
     expect(result).toBeUndefined();
+  });
+
+  it('scores +2 for 3+ Reddit keyword mentions', () => {
+    const contact = makeContact({ title: 'Analyst', job_change_date: undefined });
+    const signals = makeSignals({ reddit_keyword_mentions: 3, reddit_mentions_last_30_days: 3 });
+    const result = coordinator.enrich({
+      contacts: [contact],
+      signalsByCompany: { 'exampledatacenter.com': signals },
+    });
+    expect(result[0].signal_score).toBe(2);
+    expect(result[0].top_signals).toContain('3 Reddit keyword mentions (DC/SMR)');
+  });
+
+  it('scores +1 for 1-2 Reddit keyword mentions', () => {
+    const contact = makeContact({ title: 'Analyst', job_change_date: undefined });
+    const signals = makeSignals({ reddit_keyword_mentions: 1 });
+    const result = coordinator.enrich({
+      contacts: [contact],
+      signalsByCompany: { 'exampledatacenter.com': signals },
+    });
+    expect(result[0].signal_score).toBe(1);
+    expect(result[0].top_signals).toContain('1 Reddit keyword mention(s)');
+  });
+
+  it('scores +1 for 5+ Reddit mentions in 30 days', () => {
+    const contact = makeContact({ title: 'Analyst', job_change_date: undefined });
+    const signals = makeSignals({ reddit_mentions_last_30_days: 6 });
+    const result = coordinator.enrich({
+      contacts: [contact],
+      signalsByCompany: { 'exampledatacenter.com': signals },
+    });
+    expect(result[0].signal_score).toBe(1);
+    expect(result[0].top_signals).toContain('6 Reddit mentions in 30 days');
   });
 });

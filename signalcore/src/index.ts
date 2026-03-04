@@ -9,6 +9,7 @@ import { HiringAgent, HiringFetcher } from './agents/hiringAgent.js';
 import { SocialAgent, SocialFetcher } from './agents/socialAgent.js';
 import { EventAgent } from './agents/eventAgent.js';
 import { RFPAgent, RFPFetcher } from './agents/rfpAgent.js';
+import { RedditAgent, RedditFetcher, HttpRedditFetcher } from './agents/redditAgent.js';
 import { Coordinator } from './coordinator.js';
 
 export interface RunOptions {
@@ -19,6 +20,7 @@ export interface RunOptions {
   hiringFetcher?: HiringFetcher;
   socialFetcher?: SocialFetcher;
   rfpFetcher?: RFPFetcher;
+  redditFetcher?: RedditFetcher;
 }
 
 export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
@@ -61,12 +63,19 @@ export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
   const eventAgent = new EventAgent(eventRecords);
   const rfpAgent = new RFPAgent(cfg.keywords, opts.rfpFetcher);
 
-  const [newsSignals, hiringSignals, socialSignals, eventSignals, rfps] = await Promise.all([
+  // Reddit/F5Bot: use injected fetcher, or build from config, or skip
+  const redditFetcher = opts.redditFetcher ??
+    (cfg.f5botFeedUrl ? new HttpRedditFetcher(cfg.f5botFeedUrl) : undefined);
+  const companyKeywords = RedditAgent.buildCompanyKeywords(contacts);
+  const redditAgent = new RedditAgent(companyKeywords, cfg.keywords, redditFetcher);
+
+  const [newsSignals, hiringSignals, socialSignals, eventSignals, rfps, redditSignals] = await Promise.all([
     newsAgent.fetchForCompanies(companyDomains),
     hiringAgent.fetchForCompanies(companyDomains),
     socialAgent.fetchForProfiles(profileUrls),
     eventAgent.fetchForCompanies(companyDomains),
     rfpAgent.fetch(),
+    redditAgent.fetchForCompanies(companyDomains),
   ]);
 
   // Build per-company signal map
@@ -82,6 +91,9 @@ export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
       posts_last_30_days: 0,
       growth_posts_last_30_days: 0,
       is_event_exhibitor: 0,
+      reddit_mentions_last_30_days: 0,
+      reddit_keyword_mentions: 0,
+      top_reddit_urls: [],
     };
   }
 
@@ -122,6 +134,14 @@ export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
     if (!s) continue;
     s.is_event_exhibitor = e.is_event_exhibitor;
     if (e.event_name) s.event_name = e.event_name;
+  }
+
+  for (const r of redditSignals) {
+    const s = signalsByCompany[r.company_domain];
+    if (!s) continue;
+    s.reddit_mentions_last_30_days = r.reddit_mentions_last_30_days;
+    s.reddit_keyword_mentions = r.reddit_keyword_mentions;
+    s.top_reddit_urls = r.top_reddit_urls;
   }
 
   const coordinator = new Coordinator();

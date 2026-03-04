@@ -5,6 +5,7 @@ import { run } from '../src/index';
 import { NewsFetcher } from '../src/agents/newsAgent';
 import { HiringFetcher, JobRecord } from '../src/agents/hiringAgent';
 import { SocialFetcher, PostRecord } from '../src/agents/socialAgent';
+import { RedditFetcher, F5BotAlert } from '../src/agents/redditAgent';
 
 const TMP_DIR = path.resolve('tests/.tmp');
 const INPUT_PATH = path.join(TMP_DIR, 'accounts.json');
@@ -99,6 +100,27 @@ const mockHiringFetcher: HiringFetcher = {
   },
 };
 
+const mockRedditFetcher: RedditFetcher = {
+  fetchAlerts: async () => [
+    {
+      title: 'Hot Corp just got a massive data center contract on Reddit',
+      body: 'Details about the hyperscale campus',
+      url: 'https://reddit.com/r/datacenter/1',
+      subreddit: 'datacenter',
+      date: new Date(Date.now() - 3 * 86400000).toISOString(),
+      keyword: 'data center',
+    },
+    {
+      title: 'Warm LLC SMR project discussion',
+      body: 'Nuclear energy for Warm LLC',
+      url: 'https://reddit.com/r/energy/2',
+      subreddit: 'energy',
+      date: new Date(Date.now() - 7 * 86400000).toISOString(),
+      keyword: 'SMR',
+    },
+  ],
+};
+
 const mockSocialFetcher: SocialFetcher = {
   fetchPosts: async (url) => {
     if (url === 'https://linkedin.com/in/janedoe') {
@@ -144,6 +166,7 @@ describe('Integration: run()', () => {
       newsFetcher: mockNewsFetcher,
       hiringFetcher: mockHiringFetcher,
       socialFetcher: mockSocialFetcher,
+      redditFetcher: mockRedditFetcher,
     });
 
     expect(results).toHaveLength(5);
@@ -162,6 +185,7 @@ describe('Integration: run()', () => {
       newsFetcher: mockNewsFetcher,
       hiringFetcher: mockHiringFetcher,
       socialFetcher: mockSocialFetcher,
+      redditFetcher: mockRedditFetcher,
     });
 
     const hot = results.filter(r => r.signal_tier === 'Hot');
@@ -176,6 +200,7 @@ describe('Integration: run()', () => {
       newsFetcher: mockNewsFetcher,
       hiringFetcher: mockHiringFetcher,
       socialFetcher: mockSocialFetcher,
+      redditFetcher: mockRedditFetcher,
     });
 
     const hotCsv = fs.readFileSync(path.join(OUTPUT_DIR, 'smartlead_hot.csv'), 'utf-8');

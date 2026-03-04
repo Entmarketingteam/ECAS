@@ -8,6 +8,7 @@ export interface Config {
   keywords: string[];
   eventsDir: string;
   rateLimitMs: number;
+  f5botFeedUrl?: string; // F5Bot Power User JSON feed URL
 }
 
 const defaults: Config = {

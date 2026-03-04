@@ -23,6 +23,9 @@ export interface CompanySignals {
   growth_posts_last_30_days: number;
   is_event_exhibitor: 0 | 1;
   event_name?: string;
+  reddit_mentions_last_30_days: number;
+  reddit_keyword_mentions: number;
+  top_reddit_urls: string[];
 }
 
 export type SignalTier = 'Hot' | 'Warm' | 'Cold';

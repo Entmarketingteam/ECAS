@@ -38,6 +38,9 @@ export class Coordinator {
       posts_last_30_days: 0,
       growth_posts_last_30_days: 0,
       is_event_exhibitor: 0,
+      reddit_mentions_last_30_days: 0,
+      reddit_keyword_mentions: 0,
+      top_reddit_urls: [],
     };
   }
 
@@ -101,6 +104,20 @@ export class Coordinator {
     if (signals.is_event_exhibitor === 1) {
       score += 2;
       top_signals.push(`Exhibiting at ${signals.event_name ?? 'industry event'}`);
+    }
+
+    // Reddit / F5Bot signals
+    if (signals.reddit_keyword_mentions >= 3) {
+      score += 2;
+      top_signals.push(`${signals.reddit_keyword_mentions} Reddit keyword mentions (DC/SMR)`);
+    } else if (signals.reddit_keyword_mentions >= 1) {
+      score += 1;
+      top_signals.push(`${signals.reddit_keyword_mentions} Reddit keyword mention(s)`);
+    }
+
+    if (signals.reddit_mentions_last_30_days >= 5) {
+      score += 1;
+      top_signals.push(`${signals.reddit_mentions_last_30_days} Reddit mentions in 30 days`);
     }
 
     const tier: SignalTier =
