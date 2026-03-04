@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store
+jones-road-beauty-brand-intel.md
