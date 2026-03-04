@@ -104,7 +104,7 @@ def job_government_contracts():
         logger.info(f"Contracts scraped: {result}")
         # Push top contracts per sector to Airtable signals_raw
         for sector in result.get("sector_breakdown", {}):
-            pushed = push_top_contracts_to_airtable(sector, limit=20, min_value_m=5.0)
+            pushed = push_top_contracts_to_airtable(sector, limit=20, min_value_m=1.0)
             logger.info(f"  Pushed {pushed} contracts to Airtable for {sector}")
     except Exception as e:
         logger.error(f"Contracts job failed: {e}", exc_info=True)

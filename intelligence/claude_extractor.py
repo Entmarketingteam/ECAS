@@ -60,8 +60,8 @@ def extract_signal_intel(record: dict) -> dict | None:
         source=fields.get("source", "unknown"),
         company_name=fields.get("company_name", "unknown"),
         sector=fields.get("sector", "unknown"),
-        signal_date=fields.get("signal_date", "unknown"),
-        raw_content=fields.get("raw_content", "")[:3000],
+        signal_date=fields.get("captured_at", "unknown"),
+        raw_content=fields.get("raw_text", "")[:3000],
     )
 
     try:
@@ -139,7 +139,7 @@ def process_unprocessed_signals(batch_size: int = 20) -> dict:
         fields = record.get("fields", {})
 
         # Skip if no content
-        if not fields.get("raw_content"):
+        if not fields.get("raw_text"):
             at.mark_signal_processed(record_id, "Skipped: no content")
             skipped += 1
             continue
@@ -153,15 +153,14 @@ def process_unprocessed_signals(batch_size: int = 20) -> dict:
             urgency_boost = {"high": 20, "medium": 10, "low": 0}.get(
                 intel.get("urgency", "low"), 0
             )
-            current_score = fields.get("heat_score", 0)
+            current_score = fields.get("confidence_score", 0)
             new_score = min(current_score + urgency_boost, 100)
 
             # Update signal with extracted intel + boosted score
             at._patch("signals_raw", record_id, {
                 "processed": True,
-                "extracted_at": datetime.utcnow().isoformat(),
                 "notes": notes,
-                "heat_score": new_score,
+                "confidence_score": new_score,
             })
 
             # If high urgency + capex signal → auto-create project record

@@ -220,7 +220,7 @@ def push_top_contracts_to_airtable(sector: str, limit: int = 20, min_value_m: fl
     conn = sqlite3.connect(str(DB_PATH))
     c = conn.cursor()
 
-    cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+    cutoff = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
     c.execute("""
         SELECT recipient_name, description, award_amount, start_date, awarding_agency
         FROM government_contracts
