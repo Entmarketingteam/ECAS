@@ -54,6 +54,13 @@ def fetch_house_trades() -> list[dict]:
         data = resp.json()
         logger.info(f"[House] {len(data)} total transactions")
         return data
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 403:
+            logger.warning("[House] Stock Watcher S3 bucket returned 403 (access denied). "
+                           "The free endpoint has changed. Skipping politician trade signal.")
+        else:
+            logger.error(f"[House] fetch error: {e}")
+        return []
     except Exception as e:
         logger.error(f"[House] fetch error: {e}")
         return []
@@ -67,6 +74,13 @@ def fetch_senate_trades() -> list[dict]:
         data = resp.json()
         logger.info(f"[Senate] {len(data)} total transactions")
         return data
+    except requests.HTTPError as e:
+        if e.response is not None and e.response.status_code == 403:
+            logger.warning("[Senate] Stock Watcher S3 bucket returned 403 (access denied). "
+                           "The free endpoint has changed. Skipping politician trade signal.")
+        else:
+            logger.error(f"[Senate] fetch error: {e}")
+        return []
     except Exception as e:
         logger.error(f"[Senate] fetch error: {e}")
         return []
