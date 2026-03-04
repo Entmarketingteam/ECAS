@@ -22,20 +22,54 @@ def _normalize(value: float, min_val: float, max_val: float) -> float:
     return max(0.0, min(1.0, (value - min_val) / (max_val - min_val)))
 
 
+def _score_from_airtable_by_type(sector: str, signal_type: str, days: int = 90) -> float:
+    """Fallback: score signals from Airtable when SQLite source is empty."""
+    try:
+        from storage.airtable import get_client
+        at = get_client()
+        cutoff = (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%dT00:00:00.000Z")
+        records = at._get("signals_raw", {
+            "filterByFormula": (
+                f"AND({{sector}}='{sector}', {{signal_type}}='{signal_type}', "
+                f"{{captured_at}} >= '{cutoff}')"
+            ),
+            "sort[0][field]": "confidence_score",
+            "sort[0][direction]": "desc",
+            "maxRecords": 100,
+        })
+        if not records:
+            return 0.0
+        scores = [r.get("fields", {}).get("confidence_score", 0) for r in records]
+        count = len(scores)
+        avg = sum(scores) / count if scores else 0.0
+        recency_bonus = min(count * 1.5, 20)
+        result = min(avg + recency_bonus, 100.0)
+        logger.info(f"[Scoring] {sector} {signal_type} (Airtable): {result:.1f} ({count} signals, avg={avg:.1f})")
+        return result
+    except Exception as e:
+        logger.warning(f"[Scoring] Airtable fallback failed for {sector}/{signal_type}: {e}")
+        return 0.0
+
+
 def score_politician_signal(sector: str) -> float:
     """
     Score politician trading activity for a sector (0-100).
     Based on trade count and unique politician count.
+    Falls back to Airtable signals if SQLite is empty (e.g. S3 source blocked).
     """
     try:
         from signals.political.house_senate_trades import get_sector_stats
         stats = get_sector_stats(sector, ALERT_THRESHOLDS["politician_lookback_days"])
     except Exception as e:
         logger.warning(f"[Scoring] Could not get politician stats for {sector}: {e}")
-        return 0.0
+        return _score_from_airtable_by_type(sector, "politician_trade")
 
     trade_count = stats.get("trade_count", 0)
     unique_pols = stats.get("unique_politicians", 0)
+
+    if trade_count == 0 and unique_pols == 0:
+        logger.info(f"[Scoring] {sector} politician: SQLite empty, falling back to Airtable")
+        return _score_from_airtable_by_type(sector, "politician_trade")
 
     # Normalize
     trade_score = _normalize(trade_count, 0, 50) * 60  # Up to 60 pts
@@ -47,16 +81,23 @@ def score_politician_signal(sector: str) -> float:
 
 
 def score_hedge_fund_signal(sector: str) -> float:
-    """Score institutional investor (13F) activity for a sector (0-100)."""
+    """
+    Score institutional investor (13F) activity for a sector (0-100).
+    Falls back to Airtable signals if SQLite is empty.
+    """
     try:
         from signals.political.sec_13f import get_sector_stats
         stats = get_sector_stats(sector, ALERT_THRESHOLDS["hedge_fund_lookback_days"])
     except Exception as e:
         logger.warning(f"[Scoring] Could not get 13F stats for {sector}: {e}")
-        return 0.0
+        return _score_from_airtable_by_type(sector, "hedge_fund")
 
     position_count = stats.get("position_count", 0)
     unique_funds = stats.get("unique_funds", 0)
+
+    if position_count == 0 and unique_funds == 0:
+        logger.info(f"[Scoring] {sector} hedge_fund: SQLite empty, falling back to Airtable")
+        return _score_from_airtable_by_type(sector, "hedge_fund")
 
     pos_score = _normalize(position_count, 0, 150) * 60
     fund_score = _normalize(unique_funds, 0, 10) * 40
@@ -100,7 +141,7 @@ def score_airtable_signals(sector: str) -> float:
         return 0.0
 
     # Average the heat scores from recent signals, capped at 100
-    scores = [s.get("fields", {}).get("heat_score", 0) for s in signals]
+    scores = [s.get("fields", {}).get("confidence_score", 0) for s in signals]
     avg = sum(scores) / len(scores) if scores else 0
     recency_bonus = min(len(signals) * 2, 20)  # More signals = slight bonus
     return min(avg + recency_bonus, 100.0)
