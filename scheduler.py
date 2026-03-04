@@ -45,9 +45,45 @@ def job_politician_trades():
     try:
         from signals.political.house_senate_trades import run_scraper
         result = run_scraper()
-        logger.info(f"Politician trades done: {result}")
+        logger.info(f"Politician trades scraped: {result}")
+        # Push sector-level signals to Airtable if thresholds met
+        _push_politician_signals_to_airtable(result)
     except Exception as e:
         logger.error(f"Politician trades job failed: {e}", exc_info=True)
+
+
+def _push_politician_signals_to_airtable(trade_result: dict) -> None:
+    """Push politician trade summary signals to Airtable for qualifying sectors."""
+    from storage.airtable import get_client
+    from config import ALERT_THRESHOLDS
+    at = get_client()
+
+    breakdown = trade_result.get("sector_breakdown", {})
+    politicians = trade_result.get("sector_politicians", {})
+
+    for sector, count in breakdown.items():
+        if count < ALERT_THRESHOLDS.get("min_politician_trades", 5):
+            continue
+        pols = politicians.get(sector, [])
+        unique_pols = len(pols)
+        if unique_pols < ALERT_THRESHOLDS.get("min_unique_politicians", 3):
+            continue
+
+        pol_list = ", ".join(pols[:5]) + ("..." if len(pols) > 5 else "")
+        at.insert_signal(
+            signal_type="politician_trade",
+            source="House/Senate Stock Watcher",
+            company_name=f"{sector} Sector",
+            sector=sector,
+            signal_date=__import__("datetime").datetime.utcnow().strftime("%Y-%m-%d"),
+            raw_content=(
+                f"{count} politician trades in {sector} in the last 90 days.\n"
+                f"{unique_pols} unique politicians trading.\n"
+                f"Politicians: {pol_list}"
+            ),
+            heat_score=min(20.0 + count * 0.5 + unique_pols * 2, 60.0),
+        )
+        logger.info(f"  Pushed politician signal: {sector} ({count} trades, {unique_pols} pols)")
 
 
 def job_sec_13f():
@@ -63,9 +99,13 @@ def job_sec_13f():
 def job_government_contracts():
     logger.info("=== JOB: Government Contracts ===")
     try:
-        from signals.political.government_contracts import run_scraper
+        from signals.political.government_contracts import run_scraper, push_top_contracts_to_airtable
         result = run_scraper()
-        logger.info(f"Contracts done: {result}")
+        logger.info(f"Contracts scraped: {result}")
+        # Push top contracts per sector to Airtable signals_raw
+        for sector in result.get("sector_breakdown", {}):
+            pushed = push_top_contracts_to_airtable(sector, limit=20, min_value_m=5.0)
+            logger.info(f"  Pushed {pushed} contracts to Airtable for {sector}")
     except Exception as e:
         logger.error(f"Contracts job failed: {e}", exc_info=True)
 

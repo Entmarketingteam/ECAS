@@ -179,7 +179,7 @@ def admin_signals(limit: int = 20, sector: str = None):
         else:
             records = at._get("signals_raw", {
                 "maxRecords": limit,
-                "sort[0][field]": "scraped_at",
+                "sort[0][field]": "signal_date",
                 "sort[0][direction]": "desc",
             })
         return {

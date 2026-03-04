@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 # FERC docket types relevant to grid infrastructure
 GRID_DOCKET_TYPES = ["ER", "EL", "EC", "RT", "QF"]
-FERC_SEARCH_URL = "https://efts.ferc.gov/LATEST/search-index"
+# FERC eLibrary public search endpoint (accessible from Railway)
+FERC_ELIBRARY_URL = "https://elibrary.ferc.gov/eLibrary/search-text"
 
 # Keywords that indicate large grid capex
 GRID_CAPEX_KEYWORDS = [
@@ -36,38 +37,45 @@ def search_ferc_filings(days_back: int = 7) -> list[dict]:
     Query FERC eLibrary for recent filings matching grid infrastructure keywords.
     Returns list of filing metadata dicts.
     """
-    start_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
-    end_date = datetime.now().strftime("%Y-%m-%d")
+    start_date = (datetime.now() - timedelta(days=days_back)).strftime("%m/%d/%Y")
+    end_date = datetime.now().strftime("%m/%d/%Y")
 
     results = []
     for keyword in GRID_CAPEX_KEYWORDS[:6]:  # Limit to avoid rate limits
         try:
             resp = requests.get(
-                FERC_SEARCH_URL,
+                FERC_ELIBRARY_URL,
                 params={
-                    "q": keyword,
-                    "dateRange": "custom",
-                    "startdt": start_date,
-                    "enddt": end_date,
-                    "sort": "filed_date",
-                    "perpage": "20",
+                    "SearchType": "FULLTEXT",
+                    "QueryString": keyword,
+                    "DateRange": "Custom",
+                    "StartDate": start_date,
+                    "EndDate": end_date,
+                    "ResultType": "JSON",
+                    "PageSize": "20",
                 },
-                headers={"Accept": "application/json"},
+                headers={"Accept": "application/json, text/html, */*"},
                 timeout=30,
             )
             if resp.status_code != 200:
+                logger.warning(f"[FERC] HTTP {resp.status_code} for '{keyword}'")
                 continue
 
-            data = resp.json()
-            hits = data.get("hits", {}).get("hits", [])
-            for hit in hits:
-                src = hit.get("_source", {})
+            # Response may be JSON or HTML — try JSON first
+            try:
+                data = resp.json()
+                items = data.get("results", data.get("Items", []))
+            except Exception:
+                # HTML response — skip for now
+                continue
+
+            for item in items:
                 filing = {
-                    "docket_number": src.get("docket_number", ""),
-                    "filer_name": src.get("filer_name", ""),
-                    "filing_description": src.get("description", ""),
-                    "filed_date": src.get("filed_date", ""),
-                    "docket_type": src.get("docket_type", ""),
+                    "docket_number": item.get("AccessionNumber", item.get("docket_number", "")),
+                    "filer_name": item.get("FilerName", item.get("filer_name", "Unknown")),
+                    "filing_description": item.get("Description", item.get("description", ""))[:500],
+                    "filed_date": item.get("DateFiled", item.get("filed_date", ""))[:10],
+                    "docket_type": item.get("DocketType", ""),
                     "matched_keyword": keyword,
                 }
                 if filing["docket_number"] and filing not in results:

@@ -210,6 +210,53 @@ def get_sector_stats(sector: str, lookback_days: int = 90) -> dict:
     }
 
 
+def push_top_contracts_to_airtable(sector: str, limit: int = 20, min_value_m: float = 5.0) -> int:
+    """
+    Push the top contracts (by value) for a sector from SQLite to Airtable signals_raw.
+    Only pushes contracts above min_value_m million.
+    Returns number of signals pushed.
+    """
+    _ensure_db(DB_PATH)
+    conn = sqlite3.connect(str(DB_PATH))
+    c = conn.cursor()
+
+    cutoff = (datetime.now() - timedelta(days=90)).strftime("%Y-%m-%d")
+    c.execute("""
+        SELECT recipient_name, description, award_amount, start_date, awarding_agency
+        FROM government_contracts
+        WHERE matched_sector=? AND start_date >= ? AND award_amount >= ?
+        ORDER BY award_amount DESC LIMIT ?
+    """, (sector, cutoff, min_value_m * 1_000_000, limit))
+    rows = c.fetchall()
+    conn.close()
+
+    if not rows:
+        return 0
+
+    from storage.airtable import get_client
+    at = get_client()
+    pushed = 0
+
+    for recipient, description, amount, start_date, agency in rows:
+        at.insert_signal(
+            signal_type="gov_contract",
+            source=f"USASpending.gov / {agency or 'Federal'}",
+            company_name=recipient or "Unknown Recipient",
+            sector=sector,
+            signal_date=(start_date or "")[:10],
+            raw_content=(
+                f"Contract award: ${amount / 1_000_000:.1f}M\n"
+                f"Agency: {agency}\n"
+                f"Description: {description[:500] if description else 'N/A'}"
+            ),
+            heat_score=min(20.0 + (amount / 1_000_000) * 0.005, 60.0),
+        )
+        pushed += 1
+
+    logger.info(f"[Contracts] Pushed {pushed} top contracts to Airtable for {sector}")
+    return pushed
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     result = run_scraper()

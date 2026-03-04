@@ -106,16 +106,18 @@ class AirtableClient:
         Insert a new signal into signals_raw. Returns Airtable record ID or None.
         Does not deduplicate — caller should check before calling.
         """
+        # Ensure signal_date is YYYY-MM-DD only (Airtable date field)
+        clean_date = signal_date[:10] if signal_date else datetime.utcnow().strftime("%Y-%m-%d")
+
         fields = {
             "signal_type": signal_type,
             "source": source,
             "company_name": company_name,
             "sector": sector,
-            "signal_date": signal_date,
+            "signal_date": clean_date,
             "raw_content": raw_content[:10000],  # Airtable text field limit
             "heat_score": round(heat_score, 1),
             "processed": False,
-            "scraped_at": datetime.utcnow().isoformat(),
         }
         if ticker:
             fields["ticker"] = ticker
@@ -133,7 +135,7 @@ class AirtableClient:
         """Mark a signal as processed after Claude extraction."""
         self._patch("signals_raw", record_id, {
             "processed": True,
-            "extracted_at": datetime.utcnow().isoformat(),
+            "extracted_at": datetime.utcnow().strftime("%Y-%m-%d"),
             "notes": extracted_notes[:10000],
         })
 
