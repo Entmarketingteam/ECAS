@@ -34,7 +34,7 @@ def get_campaign_leads(campaign_id: str = None) -> list[dict]:
     try:
         resp = requests.get(
             f"{SMARTLEAD_BASE_URL}/campaigns/{cid}/leads",
-            params={"api_key": SMARTLEAD_API_KEY, "limit": 1000, "offset": 0},
+            params={"api_key": SMARTLEAD_API_KEY},
             timeout=30,
         )
         resp.raise_for_status()
