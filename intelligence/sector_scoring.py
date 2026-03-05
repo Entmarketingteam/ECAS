@@ -147,6 +147,40 @@ def score_airtable_signals(sector: str) -> float:
     return min(avg + recency_bonus, 100.0)
 
 
+def score_earnings_signal(sector: str) -> float:
+    """
+    Score earnings call transcript signals for a sector (0-100).
+    Based on confidence-weighted signal count from FMP transcripts.
+    Captures the Gemini-quantified triggers: capex hikes, SMR language,
+    grid expansion language, data center power demand, etc.
+    """
+    try:
+        from signals.earnings_transcripts import get_sector_stats
+        stats = get_sector_stats(sector, lookback_days=90)
+    except Exception as e:
+        logger.warning(f"[Scoring] Could not get earnings stats for {sector}: {e}")
+        return 0.0
+
+    count = stats.get("signal_count", 0)
+    avg_conf = stats.get("avg_confidence", 0.0)
+    unique_tickers = stats.get("unique_tickers", 0)
+
+    if count == 0:
+        return 0.0
+
+    # Weight: avg confidence * signal volume * ticker breadth
+    volume_score = min(count / 10, 1.0) * 40       # Up to 40 pts for volume
+    conf_score = (avg_conf / 100) * 40              # Up to 40 pts for confidence
+    breadth_score = min(unique_tickers / 5, 1.0) * 20  # Up to 20 pts for coverage
+
+    raw = volume_score + conf_score + breadth_score
+    logger.debug(
+        f"[Scoring] {sector} earnings: {raw:.1f} "
+        f"({count} signals, avg_conf={avg_conf:.1f}, {unique_tickers} tickers)"
+    )
+    return min(raw, 100.0)
+
+
 def calculate_sector_heat(sector: str) -> dict:
     """
     Calculate composite heat score for a sector.
@@ -156,12 +190,15 @@ def calculate_sector_heat(sector: str) -> dict:
 
     politician = score_politician_signal(sector) * weights.get("politician_signal", 0.25)
     hedge_fund = score_hedge_fund_signal(sector) * weights.get("hedge_fund_signal", 0.25)
-    contract = score_contract_signal(sector) * weights.get("contract_signal", 0.30)
+    contract = score_contract_signal(sector) * weights.get("contract_signal", 0.25)
     airtable = score_airtable_signals(sector) * (
-        weights.get("ferc_signal", 0.10) + weights.get("news_signal", 0.10)
+        weights.get("ferc_signal", 0.10) + weights.get("news_signal", 0.05)
     )
+    # Earnings transcript signal: captures capex hikes, SMR/nuclear language,
+    # grid expansion, data center power demand — the Gemini-quantified triggers
+    earnings = score_earnings_signal(sector) * weights.get("earnings_signal", 0.10)
 
-    composite = politician + hedge_fund + contract + airtable
+    composite = politician + hedge_fund + contract + airtable + earnings
 
     # Determine phase
     phase = "early_signal"

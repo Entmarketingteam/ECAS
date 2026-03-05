@@ -7,6 +7,7 @@ Job schedule:
   - Every 4h:        Government contract scan (real-time signal detection)
   - Every 4h:        FERC poller (real-time signal detection)
   - Weekly Mon 7am:  SEC 13F hedge fund scan
+  - Weekly Tue 6am:  Earnings call transcript scan (FMP API — capex, SMR, grid language)
   - Every 6h:        RSS feed aggregation
   - Every 2h:        Claude signal extraction (keeps pace with frequent polls)
   - Every 3h:        Sector scoring + hot signal threshold check
@@ -96,6 +97,36 @@ def job_sec_13f():
         logger.info(f"13F scan done: {result}")
     except Exception as e:
         logger.error(f"13F job failed: {e}", exc_info=True)
+
+
+def job_earnings_transcripts():
+    """
+    Weekly scan of earnings call transcripts via FMP API.
+    Detects Gemini-quantified triggers: capex hikes ≥20%, SMR/nuclear language,
+    grid expansion, data center power demand, contract backlog growth, BD hiring.
+    Pushes signals to Airtable → feeds into sector_scoring composite.
+    Requires FMP_API_KEY in Doppler (paid plan for transcript access).
+    """
+    logger.info("=== JOB: Earnings Transcript Signal Scan ===")
+    try:
+        from signals.earnings_transcripts import run_scraper
+        result = run_scraper(lookback_days=90, push_to_airtable=True)
+        logger.info(f"Earnings transcripts done: {result}")
+
+        if result.get("new_inserts", 0) > 0 and SLACK_ACCESS_TOKEN:
+            breakdown = result.get("sector_breakdown", {})
+            lines = [
+                f":loudspeaker: *ECAS Earnings Signal Scan Complete*",
+                f"*{result['new_inserts']} new signals* from {result['tickers_scanned']} tickers",
+                "",
+            ]
+            for sector, count in breakdown.items():
+                lines.append(f"• {sector}: {count} signals")
+            lines.append("\nSignals ingested into sector scoring — check Airtable for hooks.")
+            _send_slack("\n".join(lines))
+
+    except Exception as e:
+        logger.error(f"Earnings transcripts job failed: {e}", exc_info=True)
 
 
 def job_government_contracts():
@@ -726,6 +757,8 @@ def create_scheduler() -> BackgroundScheduler:
     # ── Weekly heavy scan (Mondays) ──────────────────────────────────────────
     scheduler.add_job(job_sec_13f, CronTrigger(day_of_week="mon", hour=7, minute=0), id="sec_13f")
     scheduler.add_job(job_weekly_digest, CronTrigger(day_of_week="mon", hour=8, minute=0), id="weekly_digest")
+    # Earnings transcripts — Tuesdays 6am UTC (earnings cycle is quarterly; weekly scan is sufficient)
+    scheduler.add_job(job_earnings_transcripts, CronTrigger(day_of_week="tue", hour=6, minute=0), id="earnings_transcripts")
 
     # ── Processing pipeline (every 2-3h to keep pace with frequent polls) ───
     scheduler.add_job(job_claude_extraction, IntervalTrigger(hours=2), id="claude_extraction")
@@ -777,6 +810,7 @@ def run_job_now(job_id: str) -> dict:
         "enrichment": job_enrichment,
         "smartlead": job_smartlead_enrollment,
         "weekly_digest": job_weekly_digest,
+        "earnings_transcripts": job_earnings_transcripts,
         "hot_signal_check": job_hot_signal_check,
         "budget_window_monitor": job_budget_window_monitor,
         "populate_projects": job_populate_projects,

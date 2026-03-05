@@ -149,9 +149,10 @@ ALERT_THRESHOLDS = {
 SCORING_WEIGHTS = {
     "politician_signal": 0.25,
     "hedge_fund_signal": 0.25,
-    "contract_signal": 0.30,     # Contracts = direct budget signal for EPCs
+    "contract_signal": 0.25,     # Contracts = direct budget signal for EPCs
     "ferc_signal": 0.10,         # FERC filings = early indicator
-    "news_signal": 0.10,         # Capex announcements
+    "news_signal": 0.05,         # RSS news signals
+    "earnings_signal": 0.10,     # Earnings call transcripts — capex hike, SMR/nuclear, grid language
 }
 
 # ─── Cascade Timeline ─────────────────────────────────────────────────────────
