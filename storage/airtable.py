@@ -1,15 +1,26 @@
 """
 storage/airtable.py — Airtable client for ECAS.
 
-Field mappings match the actual Airtable schema (verified 2026-03-04):
-  signals_raw: signal_id, source(singleSelect), url, raw_text, captured_at(dateTime),
-               processed, confidence_score, notes, signal_type, company_name, sector
-  projects:    project_name, owner_company, stage, priority, icp_fit, confidence_score,
-               analyst_notes, scope_summary, stage_entered_at, positioning_notes
-  contacts:    first_name, last_name, email, title, company_name, linkedin_url,
-               phone, outreach_status, analyst_notes
-  deals:       deal_name, company_name, stage, contract_value, guaranteed_revenue,
-               close_notes, next_step, next_step_due
+Field mappings (verified against live schema 2026-03-05):
+  signals_raw:  signal_id, source(singleSelect), url, raw_text, captured_at(dateTime),
+                processed, confidence_score, notes, signal_type, company_name, sector
+  projects:     project_name, owner_company, stage(singleSelect), priority(singleSelect),
+                icp_fit(singleSelect), confidence_score, analyst_notes(multilineText),
+                scope_summary(multilineText), positioning_notes(multilineText),
+                positioning_window_open, positioning_window_close,
+                rfp_expected_date, source_url, state(singleSelect), assigned_to,
+                stage_entered_at(dateTime)
+
+  stage choices:   Identified | Researching | Outreach | Meeting Set | Proposal Sent |
+                   Negotiating | Won | Lost | Dormant
+  priority choices: High | Medium | Low  (case-sensitive)
+  icp_fit choices:  Strong | Moderate | Weak | Unknown  (case-sensitive)
+  state choices:    VA | TX  (expand in Airtable UI to add more states)
+
+  contacts:     first_name, last_name, email, title, company_name, linkedin_url,
+                phone, outreach_status, analyst_notes
+  deals:        deal_name, company_name, stage, contract_value, guaranteed_revenue,
+                close_notes, next_step, next_step_due
 """
 
 import logging
@@ -229,11 +240,11 @@ class AirtableClient:
         })
 
         analyst_notes = notes or (
-            f"Sector: {sector} | Signals: {signal_count} | "
-            f"Employees: {employee_count} | State: {state}"
+            f"Sector: {sector} | Phase: {phase} | Signals: {signal_count} | "
+            f"Employees: {employee_count}"
         ).strip(" |")
 
-        # Store rich metadata as JSON in positioning_notes
+        # Store rich metadata as JSON in positioning_notes (parsed by hot signal + budget monitors)
         meta = {
             "sector": sector,
             "phase": phase,
@@ -247,6 +258,28 @@ class AirtableClient:
         }
         positioning_notes = _json.dumps({k: v for k, v in meta.items() if v})
 
+        # Map our internal values to Airtable singleSelect choices (case-sensitive)
+        _STAGE_MAP = {
+            "prospect": "Identified",
+            "researching": "Researching",
+            "outreach": "Outreach",
+            "active": "Outreach",
+            "meeting": "Meeting Set",
+            "proposal": "Proposal Sent",
+            "negotiating": "Negotiating",
+            "won": "Won",
+            "closed_won": "Won",
+            "lost": "Lost",
+            "closed_lost": "Lost",
+            "dormant": "Dormant",
+        }
+        _PRIORITY_MAP = {"high": "High", "medium": "Medium", "low": "Low"}
+        _ICP_MAP = {
+            "high": "Strong", "strong": "Strong",
+            "medium": "Moderate", "moderate": "Moderate",
+            "low": "Weak", "weak": "Weak",
+            "unknown": "Unknown",
+        }
         fields = {
             "project_name": company_name,
             "owner_company": company_name,
@@ -255,21 +288,43 @@ class AirtableClient:
             "scope_summary": sector,
             "positioning_notes": positioning_notes,
         }
-        if stage and stage in ("prospect", "active", "proposal", "closed_won", "closed_lost"):
-            fields["stage"] = stage
-        if priority and priority in ("high", "medium", "low"):
-            fields["priority"] = priority
-        if icp_fit and icp_fit in ("high", "medium", "low"):
-            fields["icp_fit"] = icp_fit
+
+        mapped_stage = _STAGE_MAP.get(str(stage).lower(), "Identified")
+        fields["stage"] = mapped_stage
+
+        mapped_priority = _PRIORITY_MAP.get(str(priority).lower())
+        if mapped_priority:
+            fields["priority"] = mapped_priority
+
+        mapped_icp = _ICP_MAP.get(str(icp_fit).lower())
+        if mapped_icp:
+            fields["icp_fit"] = mapped_icp
+
+        # Note: state singleSelect field has limited choices in Airtable (VA, TX only).
+        # State is stored in positioning_notes JSON instead to avoid 422 errors.
+        # Expand choices in Airtable UI if you want to filter by state there.
+
+        # Use dedicated positioning window fields for budget dates
+        if est_budget_unlock_start:
+            fields["positioning_window_open"] = est_budget_unlock_start
+        if est_budget_unlock_end:
+            fields["positioning_window_close"] = est_budget_unlock_end
+        if website:
+            fields["source_url"] = website[:255]
 
         if existing:
             record_id = existing[0]["id"]
-            self._patch("projects", record_id, {
+            update = {
                 "confidence_score": round(heat_score, 1),
                 "analyst_notes": analyst_notes,
                 "scope_summary": sector,
                 "positioning_notes": positioning_notes,
-            })
+            }
+            if est_budget_unlock_start:
+                update["positioning_window_open"] = est_budget_unlock_start
+            if est_budget_unlock_end:
+                update["positioning_window_close"] = est_budget_unlock_end
+            self._patch("projects", record_id, update)
             return record_id
         else:
             result = self._post("projects", fields)

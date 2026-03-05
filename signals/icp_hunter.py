@@ -107,7 +107,7 @@ def _icp_fit_score(org: dict) -> str:
     icp_keywords = ICP["keywords"]
     keyword_matches = sum(1 for kw in icp_keywords if kw.lower() in keywords)
 
-    in_target_state = org.get("state", "").upper() in ICP.get("states", [])
+    in_target_state = org.get("state", "").upper() in {s.upper() for s in ICP.get("states", [])}
 
     score = 0
     if 100 <= employees <= 1500:

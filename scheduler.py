@@ -359,7 +359,10 @@ def _record_hot_alert(company_name: str, heat_score: float) -> None:
 
 
 def _parse_project_meta(fields: dict) -> dict:
-    """Parse positioning_notes JSON and merge with top-level fields."""
+    """
+    Extract project metadata. Primary source: dedicated Airtable fields.
+    Fallback: positioning_notes JSON blob.
+    """
     import json as _json
     meta = {}
     raw = fields.get("positioning_notes", "")
@@ -368,6 +371,15 @@ def _parse_project_meta(fields: dict) -> dict:
             meta = _json.loads(raw)
         except Exception:
             pass
+
+    # Prefer dedicated fields over JSON blob
+    if fields.get("positioning_window_open"):
+        meta["est_budget_unlock_start"] = fields["positioning_window_open"]
+    if fields.get("positioning_window_close"):
+        meta["est_budget_unlock_end"] = fields["positioning_window_close"]
+    if fields.get("scope_summary"):
+        meta["sector"] = fields["scope_summary"]
+
     return meta
 
 
