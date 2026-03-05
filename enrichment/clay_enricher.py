@@ -1,10 +1,11 @@
 """
 enrichment/clay_enricher.py
-Uses Clay.com API to find decision-maker contacts at target EPC companies.
-Falls back to Apollo if Clay is unavailable.
+Apollo two-step people enrichment for target EPC companies.
 
-Clay replaces: Apollo + FindyMail + Proxycurl waterfall.
-One API call → email + LinkedIn + phone + verified.
+Step 1: Resolve company → Apollo org ID via /organizations/search
+Step 2: Search people by organization_ids + title filters
+
+Clay v1 API is deprecated. Apollo is primary.
 """
 
 import logging
@@ -15,71 +16,59 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import CLAY_API_KEY, APOLLO_API_KEY, ICP
+from config import APOLLO_API_KEY, ICP
 
 logger = logging.getLogger(__name__)
 
-CLAY_BASE_URL = "https://api.clay.com/v1"
-APOLLO_SEARCH_URL = "https://api.apollo.io/v1/mixed_people/search"
+APOLLO_BASE = "https://api.apollo.io/v1"
 
 
-def find_contacts_clay(company_name: str, titles: list[str] = None) -> list[dict]:
+def _apollo_headers() -> dict:
+    return {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache",
+        "X-Api-Key": APOLLO_API_KEY,
+    }
+
+
+def _resolve_org_id(company_name: str) -> str | None:
     """
-    Use Clay API to find contacts at a company.
-    Returns list of enriched contact dicts.
+    Look up Apollo organization ID by company name.
+    Uses /organizations/search which is reliable for name-based lookup.
     """
-    if not CLAY_API_KEY:
-        logger.warning("[Clay] CLAY_API_KEY not set — skipping Clay enrichment")
-        return []
-
-    target_titles = titles or ICP["titles"]
-
     try:
         resp = requests.post(
-            f"{CLAY_BASE_URL}/people/search",
-            headers={
-                "Authorization": f"Bearer {CLAY_API_KEY}",
-                "Content-Type": "application/json",
-            },
+            f"{APOLLO_BASE}/organizations/search",
+            headers=_apollo_headers(),
             json={
-                "company_name": company_name,
-                "job_titles": target_titles,
-                "email_status": "verified",
-                "limit": 10,
+                "q_organization_name": company_name,
+                "page": 1,
+                "per_page": 1,
             },
             timeout=30,
         )
-        if resp.status_code == 401:
-            logger.error("[Clay] Unauthorized — check CLAY_API_KEY")
-            return []
+        if resp.status_code in (401, 403):
+            logger.error("[Apollo] Unauthorized on org search — check APOLLO_API_KEY")
+            return None
         resp.raise_for_status()
         data = resp.json()
-
-        contacts = []
-        for person in data.get("people", data.get("results", [])):
-            contacts.append({
-                "first_name": person.get("first_name", ""),
-                "last_name": person.get("last_name", ""),
-                "email": person.get("email", ""),
-                "title": person.get("title", person.get("job_title", "")),
-                "company": company_name,
-                "linkedin_url": person.get("linkedin_url", ""),
-                "phone": person.get("phone", ""),
-                "email_verified": person.get("email_status") == "verified",
-                "source": "Clay",
-            })
-
-        logger.info(f"[Clay] Found {len(contacts)} contacts at {company_name}")
-        return contacts
-
+        orgs = data.get("organizations", [])
+        if orgs:
+            org_id = orgs[0].get("id")
+            logger.debug(f"[Apollo] Resolved '{company_name}' → org_id={org_id}")
+            return org_id
+        logger.debug(f"[Apollo] No org found for '{company_name}'")
+        return None
     except requests.RequestException as e:
-        logger.error(f"[Clay] API error for {company_name}: {e}")
-        return []
+        logger.error(f"[Apollo] Org search error for '{company_name}': {e}")
+        return None
 
 
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
     """
-    Fallback: Apollo people search for a company.
+    Apollo two-step people search:
+      1. Resolve company name → org ID
+      2. Search people by organization_ids + title filters
     """
     if not APOLLO_API_KEY:
         logger.warning("[Apollo] APOLLO_API_KEY not set")
@@ -87,22 +76,29 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
 
     target_titles = titles or ICP["titles"]
 
+    # Step 1: get org ID
+    org_id = _resolve_org_id(company_name)
+    if not org_id:
+        logger.warning(f"[Apollo] Could not resolve org ID for '{company_name}' — skipping")
+        return []
+
+    # Step 2: people search by org ID
     try:
         resp = requests.post(
-            APOLLO_SEARCH_URL,
-            headers={
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                "X-Api-Key": APOLLO_API_KEY,
-            },
+            f"{APOLLO_BASE}/people/search",
+            headers=_apollo_headers(),
             json={
-                "q_organization_name": company_name,
+                "organization_ids": [org_id],
                 "person_titles": target_titles,
+                "email_status": ["verified", "likely_to_engage"],
                 "page": 1,
                 "per_page": 10,
             },
             timeout=30,
         )
+        if resp.status_code in (401, 403):
+            logger.error("[Apollo] Unauthorized on people search")
+            return []
         resp.raise_for_status()
         data = resp.json()
 
@@ -127,18 +123,16 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
         return contacts
 
     except requests.RequestException as e:
-        logger.error(f"[Apollo] API error for {company_name}: {e}")
+        logger.error(f"[Apollo] People search error for '{company_name}': {e}")
         return []
 
 
 def enrich_company(company_name: str, titles: list[str] = None) -> list[dict]:
     """
-    Waterfall enrichment: Clay → Apollo fallback.
+    Enrich a company with decision-maker contacts via Apollo.
     Returns deduplicated list of contacts.
     """
-    contacts = find_contacts_clay(company_name, titles)
-    if not contacts:
-        contacts = find_contacts_apollo(company_name, titles)
+    contacts = find_contacts_apollo(company_name, titles)
 
     # Deduplicate by email
     seen_emails: set[str] = set()
