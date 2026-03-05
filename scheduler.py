@@ -202,6 +202,59 @@ def job_smartlead_enrollment():
         logger.error(f"Smartlead enrollment job failed: {e}", exc_info=True)
 
 
+def job_populate_projects():
+    """
+    The missing link: sector scores → specific companies to call.
+
+    1. Pull current sector heat scores
+    2. For each sector above threshold (40/100), search Apollo for ICP companies
+    3. Upsert into Airtable projects with sector, phase, budget window
+    4. Fire immediate enrichment for high-priority companies (heat > 55)
+
+    Runs daily at 5am UTC, before enrichment (10am) and Smartlead (10:30am).
+    Also runs on demand via /admin/run/populate_projects.
+    """
+    logger.info("=== JOB: Populate Projects (ICP Hunter) ===")
+    try:
+        from signals.icp_hunter import run_icp_hunt
+        from intelligence.sector_scoring import run_analysis
+
+        sector_scores = run_analysis()
+        result = run_icp_hunt(sector_scores=sector_scores)
+
+        logger.info(
+            f"ICP Hunt done: {result['total_upserted']} companies → Airtable "
+            f"across {len(result['sectors_hunted'])} sectors"
+        )
+
+        # Immediately enrich any high-priority new companies (score > 55)
+        hot_sectors = [s for s in result["sectors_hunted"] if s["heat_score"] >= 55]
+        if hot_sectors:
+            logger.info(f"Hot sectors found — triggering immediate enrichment for {len(hot_sectors)} sectors")
+            try:
+                from enrichment.clay_enricher import run_enricher
+                enrich_result = run_enricher(min_heat_score=55.0)
+                logger.info(f"Immediate enrichment: {enrich_result}")
+            except Exception as e:
+                logger.warning(f"Immediate enrichment after hunt failed: {e}")
+
+        if SLACK_ACCESS_TOKEN and result["total_upserted"] > 0:
+            lines = [
+                f":dart: *ECAS ICP Hunt Complete*",
+                f"*{result['total_upserted']} companies* added/updated in pipeline",
+                "",
+            ]
+            for s in result["sectors_hunted"]:
+                lines.append(
+                    f"• {s['sector']}: {s['companies_upserted']} companies "
+                    f"({s['heat_score']:.0f}/100)"
+                )
+            _send_slack("\n".join(lines))
+
+    except Exception as e:
+        logger.error(f"Populate projects job failed: {e}", exc_info=True)
+
+
 def job_weekly_digest():
     logger.info("=== JOB: Weekly Digest ===")
     try:
@@ -305,6 +358,19 @@ def _record_hot_alert(company_name: str, heat_score: float) -> None:
     conn.close()
 
 
+def _parse_project_meta(fields: dict) -> dict:
+    """Parse positioning_notes JSON and merge with top-level fields."""
+    import json as _json
+    meta = {}
+    raw = fields.get("positioning_notes", "")
+    if raw:
+        try:
+            meta = _json.loads(raw)
+        except Exception:
+            pass
+    return meta
+
+
 def _check_hot_signal_threshold(projects: list[dict]) -> None:
     """
     Fire immediately when a company's heat score crosses 55/100.
@@ -316,8 +382,8 @@ def _check_hot_signal_threshold(projects: list[dict]) -> None:
     now = datetime.utcnow()
     for project in projects:
         fields = project.get("fields", {})
-        company = fields.get("company_name", "Unknown")
-        score = float(fields.get("heat_score", 0) or 0)
+        company = fields.get("owner_company") or fields.get("project_name", "Unknown")
+        score = float(fields.get("confidence_score", 0) or 0)
 
         if score < _HOT_SIGNAL_THRESHOLD:
             continue
@@ -331,11 +397,12 @@ def _check_hot_signal_threshold(projects: list[dict]) -> None:
                 logger.debug(f"[HOT] {company} already alerted recently, skipping")
                 continue
 
-        sector = fields.get("sector", "Unknown")
-        phase = fields.get("phase", "unknown").replace("_", " ").title()
-        budget_start = fields.get("est_budget_unlock_start", "TBD")
-        budget_end = fields.get("est_budget_unlock_end", "TBD")
-        ticker = fields.get("ticker", "")
+        meta = _parse_project_meta(fields)
+        sector = meta.get("sector") or fields.get("scope_summary", "Unknown")
+        phase = (meta.get("phase") or "unknown").replace("_", " ").title()
+        budget_start = meta.get("est_budget_unlock_start", "TBD")
+        budget_end = meta.get("est_budget_unlock_end", "TBD")
+        ticker = meta.get("ticker", "")
 
         emoji = ":rocket:" if score >= 70 else ":zap:"
         msg = (
@@ -449,9 +516,11 @@ def job_budget_window_monitor():
         triggered = 0
         for project in projects:
             fields = project.get("fields", {})
-            company = fields.get("company_name", "Unknown")
-            window_start = fields.get("est_budget_unlock_start", "")
-            heat_score = float(fields.get("heat_score", 0) or 0)
+            company = fields.get("owner_company") or fields.get("project_name", "Unknown")
+            heat_score = float(fields.get("confidence_score", 0) or 0)
+
+            meta = _parse_project_meta(fields)
+            window_start = meta.get("est_budget_unlock_start", "")
 
             if not window_start:
                 continue
@@ -465,10 +534,10 @@ def job_budget_window_monitor():
                 logger.debug(f"[BUDGET] {company} window alert already sent for {window_date}")
                 continue
 
-            sector = fields.get("sector", "Unknown")
-            window_end = fields.get("est_budget_unlock_end", "TBD")
-            ticker = fields.get("ticker", "")
-            phase = fields.get("phase", "unknown").replace("_", " ").title()
+            sector = meta.get("sector") or fields.get("scope_summary", "Unknown")
+            window_end = meta.get("est_budget_unlock_end", "TBD")
+            ticker = meta.get("ticker", "")
+            phase = (meta.get("phase") or "unknown").replace("_", " ").title()
 
             msg = (
                 f":calendar: *BUDGET WINDOW OPENS TODAY — {company}* :calendar:\n\n"
@@ -654,6 +723,9 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(job_enrichment, CronTrigger(hour=10, minute=0), id="enrichment")
     scheduler.add_job(job_smartlead_enrollment, CronTrigger(hour=10, minute=30), id="smartlead")
 
+    # ── ICP company population (daily 5am — before enrichment at 10am) ──────
+    scheduler.add_job(job_populate_projects, CronTrigger(hour=5, minute=0), id="populate_projects")
+
     # ── Real-time alert jobs ─────────────────────────────────────────────────
     # Hot signal check runs inline inside job_sector_scoring, but also
     # available as a standalone manual trigger (not scheduled separately).
@@ -695,6 +767,7 @@ def run_job_now(job_id: str) -> dict:
         "weekly_digest": job_weekly_digest,
         "hot_signal_check": job_hot_signal_check,
         "budget_window_monitor": job_budget_window_monitor,
+        "populate_projects": job_populate_projects,
     }
 
     fn = job_map.get(job_id)

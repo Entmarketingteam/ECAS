@@ -203,28 +203,57 @@ class AirtableClient:
         priority: str = "medium",
         icp_fit: str = "medium",
         notes: str = "",
+        phase: str = "",
+        est_budget_unlock_start: str = "",
+        est_budget_unlock_end: str = "",
+        website: str = "",
+        state: str = "",
+        employee_count: int = 0,
+        description: str = "",
     ) -> str | None:
         """
         Create or update a project record. Returns record ID.
 
         Field mapping:
-          company_name → owner_company (and project_name for primary field)
+          company_name → owner_company + project_name
           heat_score   → confidence_score
+          sector       → scope_summary
           notes        → analyst_notes
-          signal_count → stored in analyst_notes as context
+          phase + budget window + metadata → positioning_notes (JSON blob)
         """
+        import json as _json
+
         existing = self._get("projects", {
             "filterByFormula": f"{{owner_company}}='{company_name}'",
             "maxRecords": 1,
         })
 
-        analyst_notes = notes or f"Signals: {signal_count} | Sector: {sector}"
+        analyst_notes = notes or (
+            f"Sector: {sector} | Signals: {signal_count} | "
+            f"Employees: {employee_count} | State: {state}"
+        ).strip(" |")
+
+        # Store rich metadata as JSON in positioning_notes
+        meta = {
+            "sector": sector,
+            "phase": phase,
+            "est_budget_unlock_start": est_budget_unlock_start,
+            "est_budget_unlock_end": est_budget_unlock_end,
+            "website": website,
+            "state": state,
+            "employee_count": employee_count,
+            "description": description,
+            "updated_at": datetime.utcnow().isoformat(),
+        }
+        positioning_notes = _json.dumps({k: v for k, v in meta.items() if v})
 
         fields = {
             "project_name": company_name,
             "owner_company": company_name,
             "confidence_score": round(heat_score, 1),
             "analyst_notes": analyst_notes,
+            "scope_summary": sector,
+            "positioning_notes": positioning_notes,
         }
         if stage and stage in ("prospect", "active", "proposal", "closed_won", "closed_lost"):
             fields["stage"] = stage
@@ -238,6 +267,8 @@ class AirtableClient:
             self._patch("projects", record_id, {
                 "confidence_score": round(heat_score, 1),
                 "analyst_notes": analyst_notes,
+                "scope_summary": sector,
+                "positioning_notes": positioning_notes,
             })
             return record_id
         else:
