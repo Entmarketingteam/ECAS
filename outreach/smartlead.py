@@ -123,17 +123,23 @@ def enroll_airtable_contacts(
     min_heat_score: float = 50.0,
     outreach_status: str = "not_contacted",
     campaign_id: str = None,
+    company_filter: str = None,
 ) -> dict:
     """
     Pull contacts from Airtable and enroll qualified ones in Smartlead.
     Only enrolls contacts whose company has heat_score >= min_heat_score.
+    Pass company_filter to target a single company (used by hot signal / budget window triggers).
     """
     from storage.airtable import get_client
     at = get_client()
 
-    # Get contacts not yet in outreach
+    # Build filter formula — optionally scope to a single company
+    formula = f"{{outreach_status}}='{outreach_status}'"
+    if company_filter:
+        formula = f"AND({formula}, {{company}}='{company_filter}')"
+
     all_contacts = at._get("contacts", {
-        "filterByFormula": f"{{outreach_status}}='{outreach_status}'",
+        "filterByFormula": formula,
         "maxRecords": 100,
     })
 

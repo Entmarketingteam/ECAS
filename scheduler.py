@@ -3,14 +3,16 @@ scheduler.py — APScheduler orchestrator for ECAS engine.
 Replaces all 5 n8n workflows with in-process Python jobs.
 
 Job schedule:
-  - Daily 6am UTC:   Politician trade scan
+  - Every 4h:        Politician trade scan (real-time signal detection)
+  - Every 4h:        Government contract scan (real-time signal detection)
+  - Every 4h:        FERC poller (real-time signal detection)
   - Weekly Mon 7am:  SEC 13F hedge fund scan
-  - Daily 7am UTC:   Government contract scan
   - Every 6h:        RSS feed aggregation
-  - Daily 8am UTC:   Claude signal extraction (batch)
-  - Daily 9am UTC:   Sector scoring + timeline
+  - Every 2h:        Claude signal extraction (keeps pace with frequent polls)
+  - Every 3h:        Sector scoring + hot signal threshold check
   - Daily 10am UTC:  Contact enrichment (high-score projects)
   - Daily 10:30am:   Smartlead enrollment
+  - Every 1h:        Budget window entry monitor (Day 1 outreach trigger)
   - Weekly Mon 8am:  Slack weekly digest
 """
 
@@ -152,7 +154,16 @@ def job_sector_scoring():
         # Check for phase transitions — fires immediate Slack alert if any sector upgraded
         _check_phase_transitions(sector_scores)
 
-        # Daily heartbeat (only when no phase change happened — avoid double-ping)
+        # Check individual company scores against hot signal threshold
+        try:
+            from storage.airtable import get_client
+            at = get_client()
+            projects = at._get("projects", {})
+            _check_hot_signal_threshold(projects)
+        except Exception as e:
+            logger.warning(f"Hot signal check within sector scoring failed: {e}")
+
+        # Heartbeat (only when no phase change happened — avoid double-ping)
         if sector_scores and SLACK_ACCESS_TOKEN:
             top = sector_scores[0]
             _send_slack(
@@ -240,6 +251,258 @@ def job_weekly_digest():
 
     except Exception as e:
         logger.error(f"Weekly digest job failed: {e}", exc_info=True)
+
+
+# ── Hot signal threshold ───────────────────────────────────────────────────────
+
+_HOT_SIGNAL_THRESHOLD = 55.0
+_HOT_SIGNAL_DB_TABLE = "hot_signal_history"
+
+
+def _ensure_hot_signal_table() -> None:
+    import sqlite3
+    from config import DB_PATH
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {_HOT_SIGNAL_DB_TABLE} (
+            company_name TEXT PRIMARY KEY,
+            heat_score REAL NOT NULL,
+            alerted_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def _get_last_hot_alert(company_name: str) -> str | None:
+    import sqlite3
+    from config import DB_PATH
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        row = conn.execute(
+            f"SELECT alerted_at FROM {_HOT_SIGNAL_DB_TABLE} WHERE company_name = ?",
+            (company_name,)
+        ).fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
+def _record_hot_alert(company_name: str, heat_score: float) -> None:
+    import sqlite3
+    from config import DB_PATH
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute(f"""
+        INSERT INTO {_HOT_SIGNAL_DB_TABLE} (company_name, heat_score, alerted_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(company_name) DO UPDATE SET
+            heat_score = excluded.heat_score,
+            alerted_at = excluded.alerted_at
+    """, (company_name, heat_score, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+
+
+def _check_hot_signal_threshold(projects: list[dict]) -> None:
+    """
+    Fire immediately when a company's heat score crosses 55/100.
+    Skips companies already alerted within the last 24 hours to avoid spam.
+    Triggers Slack alert + Smartlead enrollment without waiting for daily batch.
+    """
+    _ensure_hot_signal_table()
+
+    now = datetime.utcnow()
+    for project in projects:
+        fields = project.get("fields", {})
+        company = fields.get("company_name", "Unknown")
+        score = float(fields.get("heat_score", 0) or 0)
+
+        if score < _HOT_SIGNAL_THRESHOLD:
+            continue
+
+        # Cooldown: skip if alerted in the last 24h
+        last_alert = _get_last_hot_alert(company)
+        if last_alert:
+            from datetime import timedelta
+            last_dt = datetime.fromisoformat(last_alert)
+            if (now - last_dt).total_seconds() < 86400:
+                logger.debug(f"[HOT] {company} already alerted recently, skipping")
+                continue
+
+        sector = fields.get("sector", "Unknown")
+        phase = fields.get("phase", "unknown").replace("_", " ").title()
+        budget_start = fields.get("est_budget_unlock_start", "TBD")
+        budget_end = fields.get("est_budget_unlock_end", "TBD")
+        ticker = fields.get("ticker", "")
+
+        emoji = ":rocket:" if score >= 70 else ":zap:"
+        msg = (
+            f"{emoji} *HOT SIGNAL — {company}* {emoji}\n\n"
+            f"*Score:* {score}/100 (threshold: {_HOT_SIGNAL_THRESHOLD})\n"
+            f"*Sector:* {sector} | *Phase:* {phase}\n"
+            f"*Budget Window:* {budget_start} → {budget_end}\n"
+            f"*Ticker:* {ticker or 'N/A'}\n\n"
+            f"*Action:* Enroll in Smartlead NOW — do not wait for daily batch.\n"
+            f"_Score just crossed {_HOT_SIGNAL_THRESHOLD}/100 threshold._"
+        )
+        logger.info(f"[HOT SIGNAL] {company}: {score}/100 — firing immediate alert")
+        if SLACK_ACCESS_TOKEN:
+            _send_slack(msg)
+
+        # Immediate Smartlead enrollment
+        try:
+            from outreach.smartlead import enroll_airtable_contacts
+            result = enroll_airtable_contacts(
+                min_heat_score=_HOT_SIGNAL_THRESHOLD,
+                company_filter=company,
+            )
+            logger.info(f"[HOT SIGNAL] Smartlead enrollment for {company}: {result}")
+        except Exception as e:
+            logger.warning(f"[HOT SIGNAL] Smartlead enrollment failed for {company}: {e}")
+
+        _record_hot_alert(company, score)
+
+
+def job_hot_signal_check():
+    """
+    Runs every time sector_scoring completes (called inline) and also
+    available as a standalone manual trigger via /admin/run/hot_signal_check.
+    """
+    logger.info("=== JOB: Hot Signal Threshold Check ===")
+    try:
+        from storage.airtable import get_client
+        at = get_client()
+        projects = at._get("projects", {})
+        _check_hot_signal_threshold(projects)
+        logger.info(f"Hot signal check done: {len(projects)} projects scanned")
+    except Exception as e:
+        logger.error(f"Hot signal check failed: {e}", exc_info=True)
+
+
+# ── Budget window monitor ──────────────────────────────────────────────────────
+
+_BUDGET_WINDOW_DB_TABLE = "budget_window_alerts"
+
+
+def _ensure_budget_window_table() -> None:
+    import sqlite3
+    from config import DB_PATH
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute(f"""
+        CREATE TABLE IF NOT EXISTS {_BUDGET_WINDOW_DB_TABLE} (
+            company_name TEXT PRIMARY KEY,
+            window_start TEXT NOT NULL,
+            alerted_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def _already_sent_window_alert(company_name: str, window_start: str) -> bool:
+    import sqlite3
+    from config import DB_PATH
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        row = conn.execute(
+            f"SELECT window_start FROM {_BUDGET_WINDOW_DB_TABLE} WHERE company_name = ?",
+            (company_name,)
+        ).fetchone()
+        conn.close()
+        return row is not None and row[0] == window_start
+    except Exception:
+        return False
+
+
+def _record_window_alert(company_name: str, window_start: str) -> None:
+    import sqlite3
+    from config import DB_PATH
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute(f"""
+        INSERT INTO {_BUDGET_WINDOW_DB_TABLE} (company_name, window_start, alerted_at)
+        VALUES (?, ?, ?)
+        ON CONFLICT(company_name) DO UPDATE SET
+            window_start = excluded.window_start,
+            alerted_at = excluded.alerted_at
+    """, (company_name, window_start, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+
+
+def job_budget_window_monitor():
+    """
+    Runs every hour. Checks Airtable projects for companies whose
+    est_budget_unlock_start == today. Fires Day 1 outreach Slack alert
+    + immediate Smartlead enrollment for any new window entries.
+    """
+    logger.info("=== JOB: Budget Window Monitor ===")
+    try:
+        _ensure_budget_window_table()
+        from storage.airtable import get_client
+        at = get_client()
+        projects = at._get("projects", {})
+        today = datetime.utcnow().strftime("%Y-%m-%d")
+
+        triggered = 0
+        for project in projects:
+            fields = project.get("fields", {})
+            company = fields.get("company_name", "Unknown")
+            window_start = fields.get("est_budget_unlock_start", "")
+            heat_score = float(fields.get("heat_score", 0) or 0)
+
+            if not window_start:
+                continue
+
+            # Normalize to YYYY-MM-DD
+            window_date = str(window_start)[:10]
+            if window_date != today:
+                continue
+
+            if _already_sent_window_alert(company, window_date):
+                logger.debug(f"[BUDGET] {company} window alert already sent for {window_date}")
+                continue
+
+            sector = fields.get("sector", "Unknown")
+            window_end = fields.get("est_budget_unlock_end", "TBD")
+            ticker = fields.get("ticker", "")
+            phase = fields.get("phase", "unknown").replace("_", " ").title()
+
+            msg = (
+                f":calendar: *BUDGET WINDOW OPENS TODAY — {company}* :calendar:\n\n"
+                f"*DAY 1 OF BUDGET UNLOCK WINDOW*\n"
+                f"*Company:* {company} ({ticker or 'private'})\n"
+                f"*Sector:* {sector} | *Phase:* {phase}\n"
+                f"*Heat Score:* {heat_score}/100\n"
+                f"*Window:* {window_date} → {window_end}\n\n"
+                f"*Action:* Contact NOW — Day 1 is highest conversion probability.\n"
+                f"Bypass RFP process. Direct outreach beats competitive bidding.\n"
+                f"_Budget window entry alert — fired automatically on Day 1._"
+            )
+
+            logger.info(f"[BUDGET WINDOW] DAY 1 alert for {company} (window: {window_date})")
+            if SLACK_ACCESS_TOKEN:
+                _send_slack(msg)
+
+            # Enroll in Smartlead immediately regardless of score (budget window = max urgency)
+            try:
+                from outreach.smartlead import enroll_airtable_contacts
+                result = enroll_airtable_contacts(
+                    min_heat_score=0.0,
+                    company_filter=company,
+                )
+                logger.info(f"[BUDGET WINDOW] Smartlead enrollment for {company}: {result}")
+            except Exception as e:
+                logger.warning(f"[BUDGET WINDOW] Smartlead enrollment failed for {company}: {e}")
+
+            _record_window_alert(company, window_date)
+            triggered += 1
+
+        logger.info(f"Budget window monitor done: {triggered} Day 1 alerts fired")
+    except Exception as e:
+        logger.error(f"Budget window monitor failed: {e}", exc_info=True)
 
 
 # ── Phase transition tracking ─────────────────────────────────────────────────
@@ -369,23 +632,33 @@ def _send_slack(text: str) -> None:
 def create_scheduler() -> BackgroundScheduler:
     scheduler = BackgroundScheduler(timezone="UTC")
 
-    # Daily signal collection
-    scheduler.add_job(job_politician_trades, CronTrigger(hour=6, minute=0), id="politician_trades")
-    scheduler.add_job(job_government_contracts, CronTrigger(hour=7, minute=0), id="gov_contracts")
-    scheduler.add_job(job_ferc_poller, CronTrigger(hour=7, minute=30), id="ferc_poller")
+    # ── High-frequency signal collection (every 4h) ──────────────────────────
+    # These are the highest-value sources — real-time detection is the edge.
+    # Staggered start offsets prevent API thundering herd on the same minute.
+    scheduler.add_job(job_politician_trades, IntervalTrigger(hours=4, start_date="2000-01-01 00:00:00"), id="politician_trades")
+    scheduler.add_job(job_government_contracts, IntervalTrigger(hours=4, start_date="2000-01-01 01:20:00"), id="gov_contracts")
+    scheduler.add_job(job_ferc_poller, IntervalTrigger(hours=4, start_date="2000-01-01 02:40:00"), id="ferc_poller")
 
-    # Weekly heavy scan (Mondays)
+    # ── RSS every 6 hours ────────────────────────────────────────────────────
+    scheduler.add_job(job_rss_feeds, IntervalTrigger(hours=6), id="rss_feeds")
+
+    # ── Weekly heavy scan (Mondays) ──────────────────────────────────────────
     scheduler.add_job(job_sec_13f, CronTrigger(day_of_week="mon", hour=7, minute=0), id="sec_13f")
     scheduler.add_job(job_weekly_digest, CronTrigger(day_of_week="mon", hour=8, minute=0), id="weekly_digest")
 
-    # RSS every 6 hours
-    scheduler.add_job(job_rss_feeds, IntervalTrigger(hours=6), id="rss_feeds")
+    # ── Processing pipeline (every 2-3h to keep pace with frequent polls) ───
+    scheduler.add_job(job_claude_extraction, IntervalTrigger(hours=2), id="claude_extraction")
+    scheduler.add_job(job_sector_scoring, IntervalTrigger(hours=3), id="sector_scoring")
 
-    # Processing pipeline (runs after collection)
-    scheduler.add_job(job_claude_extraction, CronTrigger(hour=8, minute=0), id="claude_extraction")
-    scheduler.add_job(job_sector_scoring, CronTrigger(hour=9, minute=0), id="sector_scoring")
+    # ── Outreach (daily batch — still fine, hot signals bypass this) ─────────
     scheduler.add_job(job_enrichment, CronTrigger(hour=10, minute=0), id="enrichment")
     scheduler.add_job(job_smartlead_enrollment, CronTrigger(hour=10, minute=30), id="smartlead")
+
+    # ── Real-time alert jobs ─────────────────────────────────────────────────
+    # Hot signal check runs inline inside job_sector_scoring, but also
+    # available as a standalone manual trigger (not scheduled separately).
+    # Budget window monitor: every hour so Day 1 alert fires within 60 min.
+    scheduler.add_job(job_budget_window_monitor, IntervalTrigger(hours=1), id="budget_window_monitor")
 
     return scheduler
 
@@ -420,6 +693,8 @@ def run_job_now(job_id: str) -> dict:
         "enrichment": job_enrichment,
         "smartlead": job_smartlead_enrollment,
         "weekly_digest": job_weekly_digest,
+        "hot_signal_check": job_hot_signal_check,
+        "budget_window_monitor": job_budget_window_monitor,
     }
 
     fn = job_map.get(job_id)
