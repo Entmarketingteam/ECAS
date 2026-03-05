@@ -64,11 +64,43 @@ def _resolve_org_id(company_name: str) -> str | None:
         return None
 
 
+def _reveal_contacts(person_ids: list[str]) -> list[dict]:
+    """
+    Reveal emails for a batch of Apollo person IDs via bulk_match.
+    Returns list of enriched person dicts with email populated.
+    Apollo bulk_match accepts up to 10 IDs per request.
+    """
+    results = []
+    for i in range(0, len(person_ids), 10):
+        batch = person_ids[i:i + 10]
+        try:
+            resp = requests.post(
+                f"{APOLLO_BASE}/people/bulk_match",
+                headers=_apollo_headers(),
+                json={
+                    "details": [{"id": pid} for pid in batch],
+                    "reveal_personal_emails": True,
+                    "reveal_phone_number": False,
+                },
+                timeout=30,
+            )
+            if resp.status_code in (401, 403):
+                logger.error("[Apollo] Unauthorized on bulk_match")
+                break
+            resp.raise_for_status()
+            data = resp.json()
+            results.extend(data.get("matches", []))
+        except requests.RequestException as e:
+            logger.error(f"[Apollo] bulk_match error: {e}")
+    return results
+
+
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
     """
-    Apollo two-step people search:
-      1. Resolve company name → org ID
-      2. Search people by organization_ids + title filters
+    Apollo three-step people search:
+      1. Resolve company name → org ID via /organizations/search
+      2. Search people by organization_ids + title filters via /mixed_people/api_search
+      3. Reveal emails via /people/bulk_match for people with has_email=true
     """
     if not APOLLO_API_KEY:
         logger.warning("[Apollo] APOLLO_API_KEY not set")
@@ -76,21 +108,20 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
 
     target_titles = titles or ICP["titles"]
 
-    # Step 1: get org ID
+    # Step 1: resolve org ID
     org_id = _resolve_org_id(company_name)
     if not org_id:
         logger.warning(f"[Apollo] Could not resolve org ID for '{company_name}' — skipping")
         return []
 
-    # Step 2: people search by org ID
+    # Step 2: search people by org ID (returns IDs + basic info, no emails)
     try:
         resp = requests.post(
-            f"{APOLLO_BASE}/people/search",
+            f"{APOLLO_BASE}/mixed_people/api_search",
             headers=_apollo_headers(),
             json={
                 "organization_ids": [org_id],
                 "person_titles": target_titles,
-                "email_status": ["verified", "likely_to_engage"],
                 "page": 1,
                 "per_page": 10,
             },
@@ -101,30 +132,39 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
             return []
         resp.raise_for_status()
         data = resp.json()
-
-        contacts = []
-        for person in data.get("people", []):
-            email = person.get("email", "")
-            if not email or person.get("email_status") == "invalid":
-                continue
-            contacts.append({
-                "first_name": person.get("first_name", ""),
-                "last_name": person.get("last_name", ""),
-                "email": email,
-                "title": person.get("title", ""),
-                "company": company_name,
-                "linkedin_url": person.get("linkedin_url", ""),
-                "phone": person.get("sanitized_phone", ""),
-                "email_verified": person.get("email_status") == "verified",
-                "source": "Apollo",
-            })
-
-        logger.info(f"[Apollo] Found {len(contacts)} contacts at {company_name}")
-        return contacts
-
     except requests.RequestException as e:
         logger.error(f"[Apollo] People search error for '{company_name}': {e}")
         return []
+
+    # Filter to people who have an email in Apollo's database
+    candidates = [p for p in data.get("people", []) if p.get("has_email")]
+    if not candidates:
+        logger.info(f"[Apollo] No people with emails found at '{company_name}'")
+        return []
+
+    # Step 3: reveal emails via bulk_match
+    person_ids = [p["id"] for p in candidates]
+    revealed = _reveal_contacts(person_ids)
+
+    contacts = []
+    for person in revealed:
+        email = person.get("email", "")
+        if not email or person.get("email_status") == "invalid":
+            continue
+        contacts.append({
+            "first_name": person.get("first_name", ""),
+            "last_name": person.get("last_name", ""),
+            "email": email,
+            "title": person.get("title", ""),
+            "company": company_name,
+            "linkedin_url": person.get("linkedin_url", ""),
+            "phone": person.get("sanitized_phone", ""),
+            "email_verified": person.get("email_status") == "verified",
+            "source": "Apollo",
+        })
+
+    logger.info(f"[Apollo] Found {len(contacts)} contacts with emails at '{company_name}'")
+    return contacts
 
 
 def enrich_company(company_name: str, titles: list[str] = None) -> list[dict]:
