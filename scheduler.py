@@ -149,12 +149,16 @@ def job_sector_scoring():
         plans = run_timeline(sector_scores)
         logger.info(f"Scoring done: {len(sector_scores)} sectors")
 
-        # Push top sector insight to Slack
+        # Check for phase transitions — fires immediate Slack alert if any sector upgraded
+        _check_phase_transitions(sector_scores)
+
+        # Daily heartbeat (only when no phase change happened — avoid double-ping)
         if sector_scores and SLACK_ACCESS_TOKEN:
             top = sector_scores[0]
             _send_slack(
-                f"*ECAS Sector Heat Update* | {datetime.utcnow().strftime('%Y-%m-%d')}\n"
-                f":fire: *{top['sector']}*: {top['heat_score']}/100 → "
+                f"*ECAS Daily Heat* | {datetime.utcnow().strftime('%Y-%m-%d')}\n"
+                f"{_PHASE_EMOJI.get(top['phase'], ':bar_chart:')} "
+                f"*{top['sector']}*: {top['heat_score']}/100 → "
                 f"{top['phase'].replace('_', ' ').title()}\n"
                 f"Action: {top.get('phase_config', {}).get('action', '')}"
             )
@@ -236,6 +240,108 @@ def job_weekly_digest():
 
     except Exception as e:
         logger.error(f"Weekly digest job failed: {e}", exc_info=True)
+
+
+# ── Phase transition tracking ─────────────────────────────────────────────────
+
+_PHASE_ORDER = {
+    "early_signal": 1,
+    "confirmed_signal": 2,
+    "imminent_unlock": 3,
+    "active_spend": 4,
+}
+
+_PHASE_EMOJI = {
+    "early_signal": ":seedling:",
+    "confirmed_signal": ":zap:",
+    "imminent_unlock": ":rotating_light:",
+    "active_spend": ":fire:",
+}
+
+
+def _ensure_phase_history_table() -> None:
+    import sqlite3
+    from config import DB_PATH
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS sector_phase_history (
+            sector TEXT PRIMARY KEY,
+            phase TEXT NOT NULL,
+            heat_score REAL,
+            updated_at TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def _get_stored_phase(sector: str) -> str | None:
+    import sqlite3
+    from config import DB_PATH
+    try:
+        conn = sqlite3.connect(str(DB_PATH))
+        row = conn.execute(
+            "SELECT phase FROM sector_phase_history WHERE sector = ?", (sector,)
+        ).fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
+def _update_stored_phase(sector: str, phase: str, heat_score: float) -> None:
+    import sqlite3
+    from config import DB_PATH
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute("""
+        INSERT INTO sector_phase_history (sector, phase, heat_score, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(sector) DO UPDATE SET
+            phase = excluded.phase,
+            heat_score = excluded.heat_score,
+            updated_at = excluded.updated_at
+    """, (sector, phase, heat_score, datetime.utcnow().isoformat()))
+    conn.commit()
+    conn.close()
+
+
+def _check_phase_transitions(sector_scores: list[dict]) -> None:
+    """Compare new scores to stored phases. Fire immediate Slack alert on upgrade."""
+    _ensure_phase_history_table()
+    from config import TIMELINE_PHASES
+
+    for s in sector_scores:
+        sector = s["sector"]
+        new_phase = s["phase"]
+        new_score = s["heat_score"]
+        old_phase = _get_stored_phase(sector)
+
+        old_rank = _PHASE_ORDER.get(old_phase, 0)
+        new_rank = _PHASE_ORDER.get(new_phase, 0)
+
+        if new_rank > old_rank:
+            # Phase upgraded — fire immediate alert
+            phase_cfg = TIMELINE_PHASES.get(new_phase, {})
+            action = phase_cfg.get("action", "Review and act.")
+            months = phase_cfg.get("months_to_unlock", "?")
+            emoji = _PHASE_EMOJI.get(new_phase, ":bell:")
+
+            arrow = f"{old_phase.replace('_', ' ').title()} → {new_phase.replace('_', ' ').title()}"
+            msg = (
+                f"{emoji} *ECAS PHASE TRANSITION — ACT NOW* {emoji}\n\n"
+                f"*Sector:* {sector}\n"
+                f"*Heat Score:* {new_score}/100\n"
+                f"*Phase:* {arrow}\n"
+                f"*Budget Timeline:* {months} months to deployment\n\n"
+                f"*Recommended Action:*\n{action}\n\n"
+                f"_This alert fired automatically — sector just crossed the threshold._"
+            )
+            logger.info(f"[PHASE TRANSITION] {sector}: {old_phase} → {new_phase} ({new_score}/100)")
+            if SLACK_ACCESS_TOKEN:
+                _send_slack(msg)
+
+        _update_stored_phase(sector, new_phase, new_score)
 
 
 # ── Slack helper ───────────────────────────────────────────────────────────────
