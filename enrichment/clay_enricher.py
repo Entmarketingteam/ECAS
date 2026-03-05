@@ -205,8 +205,9 @@ def run_enricher(min_heat_score: float = 50.0) -> dict:
 
     for project in projects:
         fields = project.get("fields", {})
-        company = fields.get("company_name", "")
-        heat_score = fields.get("heat_score", 0)
+        # Airtable field is owner_company (not company_name); score is confidence_score
+        company = fields.get("owner_company") or fields.get("company_name", "")
+        heat_score = float(fields.get("confidence_score") or fields.get("heat_score") or 0)
         record_id = project.get("id")
 
         if not company or heat_score < min_heat_score:
