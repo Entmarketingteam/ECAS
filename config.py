@@ -47,27 +47,65 @@ TARGET_SECTORS = {
             "aps", "salt river project", "xcel energy",
             "pacificorp", "entergy", "evergy", "dte energy",
             "sempra energy", "pge", "consolidated edison",
+            # AI data center power layer — upstream demand driver for EPCs
+            "vertiv", "generate capital", "on-site power", "modular power",
+            "data center cooling", "grid-constrained", "hyperscaler power",
         ],
         "tickers": [
             "PWR", "MTZ", "ETN", "GEV", "NEE", "DUK",
             "SO", "D", "AEP", "VST", "CEG", "FSLR", "ENPH", "RUN",
             "NOVA", "STEM", "FLNC", "XEL", "ETR", "DTE", "SRE", "PCG", "ED",
+            # Vertiv: modular power+cooling for AI DCs — grid-constrained markets
+            "VRT",
+            # Hyperscalers: capex hikes here = downstream EPC demand signal
+            "MSFT", "AMZN", "GOOGL", "META",
         ],
         "naics_codes": ["221111", "221112", "221118", "237130", "335311", "238210"],
-        "description": "Power generation, grid modernization, transmission, and clean energy",
+        "description": "Power generation, grid modernization, transmission, clean energy, and AI data-center power infrastructure",
     },
     "Defense": {
         "keywords": [
             "lockheed martin", "raytheon", "rtx", "northrop grumman",
             "general dynamics", "l3harris", "booz allen", "palantir",
             "leidos", "saic", "mantech", "parsons", "caci",
+            # UAV/Counter-UAS layer — active DoD award signals
+            "kratos defense", "aerovironment", "counter-uas", "c-uas",
+            "unmanned aerial", "drone defense", "loitering munition",
+            # Public safety / enterprise surveillance
+            "axon enterprise", "body camera", "public safety tech",
         ],
         "tickers": [
             "LMT", "RTX", "NOC", "GD", "LHX", "LDOS", "BAH",
             "PLTR", "SAIC", "MANT", "PSN", "CACI",
+            # UAV/Counter-UAS — active DoD production awards as of March 2026
+            "KTOS", "AVAV", "RCAT",
+            # Public safety tech with capex expansion signal
+            "AXON",
         ],
         "naics_codes": ["336411", "336414", "336992", "334511", "541715"],
-        "description": "Defense contractors and national security",
+        "description": "Defense contractors, national security, UAV/Counter-UAS, and public safety technology",
+    },
+    "Nuclear & Critical Minerals": {
+        "keywords": [
+            "small modular reactor", "smr", "nuclear power plant", "advanced nuclear",
+            "uranium enrichment", "rare earth", "critical minerals",
+            "oklo", "last energy", "x-energy", "nuscale", "kairos power",
+            "uranium mining", "nuclear fuel", "nuclear ppa",
+            "cameco", "energy fuels", "uranium energy", "mp materials",
+            "hyperscaler nuclear", "data center nuclear", "oracle nuclear",
+        ],
+        "tickers": [
+            # Uranium/fuel supply chain — $2.7B federal grants, hyperscaler PPAs
+            "UEC", "CCJ", "UUUU",
+            # Rare earths — defense and EV supply chain
+            "MP",
+            # AI networking/custom silicon — proxy for hyperscaler capex cycle
+            "AVGO", "MRVL",
+            # Enterprise AI workflow — large $1M+ ACV deals signal macro spend
+            "NOW",
+        ],
+        "naics_codes": ["212291", "212299", "221113", "325180", "331410"],
+        "description": "Nuclear power infrastructure, SMR development, uranium supply chain, and critical minerals for AI/defense buildout",
     },
 }
 
