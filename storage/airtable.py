@@ -19,6 +19,8 @@ Field mappings (verified against live schema 2026-03-05):
 
   contacts:     first_name, last_name, email, title, company_name, linkedin_url,
                 phone, outreach_status, analyst_notes
+  outreach_status choices: pending_review | approved | do_not_contact | in_sequence |
+                            replied | meeting_booked | not_interested | unsubscribed
   deals:        deal_name, company_name, stage, contract_value, guaranteed_revenue,
                 close_notes, next_step, next_step_due
 """
@@ -348,7 +350,7 @@ class AirtableClient:
         company: str,
         linkedin_url: str = "",
         phone: str = "",
-        outreach_status: str = "not_contacted",
+        outreach_status: str = "pending_review",
         notes: str = "",
     ) -> str | None:
         """

@@ -210,7 +210,7 @@ def enrich_and_store(company_name: str, project_record_id: str = None) -> dict:
             company=company_name,
             linkedin_url=contact.get("linkedin_url", ""),
             phone=contact.get("phone", ""),
-            outreach_status="not_contacted",
+            outreach_status="pending_review",
             notes=f"Source: {contact.get('source', 'unknown')} | {datetime.utcnow().date()}",
         )
         if record_id:

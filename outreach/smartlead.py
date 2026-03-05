@@ -121,7 +121,7 @@ def enroll_lead(
 
 def enroll_airtable_contacts(
     min_heat_score: float = 50.0,
-    outreach_status: str = "not_contacted",
+    outreach_status: str = "pending_review",
     campaign_id: str = None,
     company_filter: str = None,
 ) -> dict:
@@ -136,7 +136,7 @@ def enroll_airtable_contacts(
     # Build filter formula — optionally scope to a single company
     formula = f"{{outreach_status}}='{outreach_status}'"
     if company_filter:
-        formula = f"AND({formula}, {{company}}='{company_filter}')"
+        formula = f"AND({formula}, {{company_name}}='{company_filter}')"
 
     all_contacts = at._get("contacts", {
         "filterByFormula": formula,
@@ -154,13 +154,13 @@ def enroll_airtable_contacts(
             continue
 
         # Get parent company heat score
-        company = fields.get("company", "")
+        company = fields.get("company_name", "")
         projects = at._get("projects", {
-            "filterByFormula": f"{{company_name}}='{company}'",
+            "filterByFormula": f"{{owner_company}}='{company}'",
             "maxRecords": 1,
         })
         if projects:
-            heat = projects[0].get("fields", {}).get("heat_score", 0)
+            heat = float(projects[0].get("fields", {}).get("confidence_score") or 0)
             if heat < min_heat_score:
                 logger.debug(f"[Smartlead] {company} heat={heat} < {min_heat_score} — skipping")
                 skipped += 1
@@ -181,7 +181,7 @@ def enroll_airtable_contacts(
             # Update Airtable contact status
             at.update_contact_status(
                 contact["id"],
-                "enrolled",
+                "in_sequence",
                 notes=f"Enrolled in Smartlead {datetime.utcnow().date()}",
             )
         elif result["status"] == "skipped":
