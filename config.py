@@ -59,6 +59,10 @@ TARGET_SECTORS = {
             "VRT",
             # Hyperscalers: capex hikes here = downstream EPC demand signal
             "MSFT", "AMZN", "GOOGL", "META",
+            # Energy infrastructure — pipelines/midstream signal capital flowing into grid-adjacent sectors
+            "WMB", "KMI", "LNG", "CVX", "DTM", "AM",
+            # AI data center power demand — Bitcoin miners + HPC = grid load signal
+            "WULF", "CORZ", "APLD",
         ],
         "naics_codes": ["221111", "221112", "221118", "237130", "335311", "238210"],
         "description": "Power generation, grid modernization, transmission, clean energy, and AI data-center power infrastructure",
@@ -81,6 +85,8 @@ TARGET_SECTORS = {
             "KTOS", "AVAV", "RCAT",
             # Public safety tech with capex expansion signal
             "AXON",
+            # Electronic warfare + maritime defense — SHIELD IDIQ signal companies
+            "HII", "LDOS", "BWXT", "VEC",
         ],
         "naics_codes": ["336411", "336414", "336992", "334511", "541715"],
         "description": "Defense contractors, national security, UAV/Counter-UAS, and public safety technology",
@@ -232,7 +238,27 @@ RSS_FEEDS = [
         "url": "https://www.defensenews.com/arc/outboundfeeds/rss/",
         "sector": "Defense",
     },
+    # Texas RRC drilling permits — 614 new permits in Feb 2026 alone.
+    # High permit volume = upstream O&G activity = power infrastructure demand signal.
+    # TODO: wire direct API/scrape of https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/
+    # {
+    #     "name": "Texas RRC",
+    #     "url": "https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/",
+    #     "sector": "Power & Grid Infrastructure",
+    # },
 ]
 
 # ─── Claude Model ─────────────────────────────────────────────────────────────
 CLAUDE_MODEL = "claude-sonnet-4-6"
+
+# ─── External Watchlists (reference only — not polled directly) ───────────────
+# Simply Wall Street export (March 2026, 1132 companies) — ~/Downloads/Simply Wall Street...
+# Key energy tickers not in TARGET_SECTORS above: WMB, KMI, LNG, CVX, DTM, AM, WULF, CORZ, APLD
+# Use for LinkedIn outreach to energy/defense sector capital allocators.
+#
+# MDA SHIELD IDIQ awardees (Dec 2025, 1079 companies) — use seed_shield_awardees.py
+# 399 EPC-adjacent companies with confirmed DoD contracts. Run seeder to populate Airtable projects.
+#
+# EnCap Investments team data — ~/Downloads/Private Equity/encapinvestments*.csv
+# PE fund focused on O&G. Portfolio companies = upstream capital signal for grid EPC demand.
+# Texas RRC Feb 2026: 614 new drill permits = active upstream O&G → downstream power EPC demand.
