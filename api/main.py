@@ -379,3 +379,86 @@ async def parse_pjm_queue(req: PjmQueueRequest):
         })
 
     return output_rows
+
+
+# ── Sequence Generator ─────────────────────────────────────────────────────────
+
+class GenerateSequenceRequest(BaseModel):
+    sector: str
+    push_to_smartlead: bool = False
+    from_name: Optional[str] = None
+    from_email: Optional[str] = None
+    campaign_name: Optional[str] = None
+
+
+@app.post("/admin/generate-sequence")
+async def generate_sequence(req: GenerateSequenceRequest):
+    """
+    Generate a sector-specific cold email sequence using live signal data + Claude.
+
+    If push_to_smartlead=true, also creates the Smartlead campaign and uploads all emails.
+    Requires from_name and from_email when push_to_smartlead=true.
+
+    Example:
+        POST /admin/generate-sequence
+        {"sector": "Defense", "push_to_smartlead": false}
+
+        POST /admin/generate-sequence
+        {"sector": "Defense", "push_to_smartlead": true,
+         "from_name": "Ethan", "from_email": "ethan@contractmotion.com"}
+    """
+    from outreach.sequence_generator import generate_sequence as gen_seq, generate_and_push
+
+    valid_sectors = list(__import__("config", fromlist=["TARGET_SECTORS"]).TARGET_SECTORS.keys())
+    if req.sector not in valid_sectors:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown sector '{req.sector}'. Valid: {valid_sectors}"
+        )
+
+    try:
+        if req.push_to_smartlead:
+            if not req.from_name or not req.from_email:
+                raise HTTPException(
+                    status_code=422,
+                    detail="from_name and from_email are required when push_to_smartlead=true"
+                )
+            result = generate_and_push(
+                sector=req.sector,
+                from_name=req.from_name,
+                from_email=req.from_email,
+                campaign_name=req.campaign_name,
+            )
+            return {
+                "status": "created",
+                "sector": req.sector,
+                "campaign_id": result["campaign_id"],
+                "campaign_name": result["campaign_name"],
+                "emails_uploaded": result["emails_uploaded"],
+                "smartlead_url": result["smartlead_url"],
+                "heat_score": result["sequence"]["heat_score"],
+                "phase": result["sequence"]["phase"],
+                "preview": {
+                    "email_1_subject": result["sequence"]["emails"][0]["subject"],
+                    "email_2_subject": result["sequence"]["emails"][1]["subject"],
+                    "email_3_subject": result["sequence"]["emails"][2]["subject"],
+                    "email_4_subject": result["sequence"]["emails"][3]["subject"],
+                },
+            }
+        else:
+            sequence = gen_seq(req.sector)
+            return {
+                "status": "generated",
+                "sector": req.sector,
+                "heat_score": sequence["heat_score"],
+                "phase": sequence["phase"],
+                "signal_context": sequence["signal_context"],
+                "generated_at": sequence["generated_at"],
+                "emails": sequence["emails"],
+            }
+
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error(f"[API] generate-sequence failed for {req.sector}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -225,3 +225,72 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     stats = get_campaign_stats()
     print(json.dumps(stats, indent=2))
+
+
+def create_campaign(name: str, from_name: str, from_email: str) -> str:
+    """
+    Create a new Smartlead campaign.
+    Returns the campaign ID as a string.
+    """
+    if not SMARTLEAD_API_KEY:
+        raise ValueError("SMARTLEAD_API_KEY not set")
+
+    payload = {
+        "name": name,
+        "from_name": from_name,
+        "from_email": from_email,
+    }
+
+    resp = requests.post(
+        f"{SMARTLEAD_BASE_URL}/campaigns",
+        params={"api_key": SMARTLEAD_API_KEY},
+        headers=_headers(),
+        json=payload,
+        timeout=30,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+
+    campaign_id = data.get("id") or data.get("campaign_id")
+    if not campaign_id:
+        raise ValueError(f"Smartlead did not return a campaign ID: {data}")
+
+    logger.info(f"[Smartlead] Created campaign '{name}' → ID {campaign_id}")
+    return str(campaign_id)
+
+
+def upload_sequence(campaign_id: str, emails: list[dict]) -> int:
+    """
+    Upload a list of email dicts to a Smartlead campaign sequence.
+
+    Each email dict must have: day (int), subject (str), body (str)
+    Returns the number of emails successfully uploaded.
+    """
+    if not SMARTLEAD_API_KEY:
+        raise ValueError("SMARTLEAD_API_KEY not set")
+
+    sequences = [
+        {
+            "seq_number": i + 1,
+            "subject": email["subject"],
+            "email_body": email["body"],
+            "seq_delay_details": {
+                "delay_in_days": email["day"],
+                "delay_in_hours": 0,
+                "delay_in_minutes": 0,
+            },
+        }
+        for i, email in enumerate(emails)
+    ]
+
+    resp = requests.post(
+        f"{SMARTLEAD_BASE_URL}/campaigns/{campaign_id}/sequences",
+        params={"api_key": SMARTLEAD_API_KEY},
+        headers=_headers(),
+        json={"sequences": sequences},
+        timeout=30,
+    )
+    resp.raise_for_status()
+
+    logger.info(f"[Smartlead] Uploaded {len(sequences)} emails to campaign {campaign_id}")
+    return len(sequences)
