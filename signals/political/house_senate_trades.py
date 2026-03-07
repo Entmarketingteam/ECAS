@@ -1,7 +1,12 @@
 """
 signals/political/house_senate_trades.py
-Scrapes politician stock trades from House & Senate Stock Watcher APIs.
+Scrapes politician stock trades from Quiver Quantitative API.
+Replaces the defunct House/Senate Stock Watcher S3 endpoints (403 as of 2026-03).
 Stores raw matches in SQLite (for dedup), pushes scored signals to Airtable.
+
+Quiver Quant free tier: https://api.quiverquant.com/beta/live/congresstrading
+Returns 1000 most recent trades across both chambers in one call.
+No API key required for the free endpoint.
 """
 
 import json
@@ -46,75 +51,57 @@ def _ensure_db(db_path: Path) -> None:
     conn.close()
 
 
-def fetch_house_trades() -> list[dict]:
-    url = API_CONFIG["house_stock_watcher_url"]
+def fetch_all_trades() -> list[dict]:
+    """
+    Fetch recent congressional trades from Quiver Quantitative.
+    Returns up to 1000 most recent trades across both House and Senate.
+    No API key required for the free endpoint.
+    """
+    url = API_CONFIG["quiver_congress_url"]
     try:
-        resp = requests.get(url, timeout=60)
+        resp = requests.get(url, headers={"Accept": "application/json"}, timeout=60)
         resp.raise_for_status()
         data = resp.json()
-        logger.info(f"[House] {len(data)} total transactions")
-        return data
-    except requests.HTTPError as e:
-        if e.response is not None and e.response.status_code == 403:
-            logger.warning("[House] Stock Watcher S3 bucket returned 403 (access denied). "
-                           "The free endpoint has changed. Skipping politician trade signal.")
-        else:
-            logger.error(f"[House] fetch error: {e}")
-        return []
+        logger.info(f"[QuiverQuant] {len(data)} total transactions fetched")
+        return data if isinstance(data, list) else []
     except Exception as e:
-        logger.error(f"[House] fetch error: {e}")
+        logger.error(f"[QuiverQuant] fetch error: {e}")
         return []
+
+
+# Keep old names as shims so scheduler.py doesn't break
+def fetch_house_trades() -> list[dict]:
+    return []  # Replaced by fetch_all_trades()
 
 
 def fetch_senate_trades() -> list[dict]:
-    url = API_CONFIG["senate_stock_watcher_url"]
-    try:
-        resp = requests.get(url, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        logger.info(f"[Senate] {len(data)} total transactions")
-        return data
-    except requests.HTTPError as e:
-        if e.response is not None and e.response.status_code == 403:
-            logger.warning("[Senate] Stock Watcher S3 bucket returned 403 (access denied). "
-                           "The free endpoint has changed. Skipping politician trade signal.")
-        else:
-            logger.error(f"[Senate] fetch error: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"[Senate] fetch error: {e}")
-        return []
+    return []  # Replaced by fetch_all_trades()
 
 
-def normalize_house(t: dict) -> dict:
+def normalize_quiver(t: dict) -> dict:
+    """Normalize a Quiver Quant record to the internal trade format."""
+    chamber = t.get("House", "Unknown")  # "House" or "Senate" (their field name)
     return {
-        "chamber": "House",
-        "politician": t.get("representative", "Unknown"),
-        "ticker": (t.get("ticker") or "").upper().strip(),
-        "asset_description": t.get("asset_description", ""),
-        "transaction_type": t.get("type", ""),
-        "transaction_date": t.get("transaction_date", ""),
-        "disclosure_date": t.get("disclosure_date", ""),
-        "amount": t.get("amount", ""),
-        "district": t.get("district", ""),
-        "party": t.get("party", ""),
+        "chamber": chamber,
+        "politician": t.get("Representative", "Unknown"),
+        "ticker": (t.get("Ticker") or "").upper().strip(),
+        "asset_description": t.get("Description") or t.get("Ticker", ""),
+        "transaction_type": t.get("Transaction", ""),
+        "transaction_date": t.get("TransactionDate", ""),
+        "disclosure_date": t.get("ReportDate", ""),
+        "amount": t.get("Range", t.get("Amount", "")),
+        "district": t.get("BioGuideID", ""),
+        "party": t.get("Party", ""),
     }
+
+
+# Legacy normalizers kept for any external callers
+def normalize_house(t: dict) -> dict:
+    return normalize_quiver(t)
 
 
 def normalize_senate(t: dict) -> dict:
-    ticker_raw = t.get("ticker")
-    return {
-        "chamber": "Senate",
-        "politician": t.get("senator", t.get("full_name", "Unknown")),
-        "ticker": (ticker_raw or "").upper().strip(),
-        "asset_description": t.get("asset_description", t.get("asset_type", "")),
-        "transaction_type": t.get("type", t.get("transaction_type", "")),
-        "transaction_date": t.get("transaction_date", ""),
-        "disclosure_date": t.get("disclosure_date", ""),
-        "amount": t.get("amount", ""),
-        "district": t.get("state", ""),
-        "party": t.get("party", ""),
-    }
+    return normalize_quiver(t)
 
 
 def _parse_date(s: str) -> datetime | None:
@@ -158,9 +145,8 @@ def run_scraper() -> dict:
 
     _ensure_db(DB_PATH)
 
-    house_raw = fetch_house_trades()
-    senate_raw = fetch_senate_trades()
-    all_trades = [normalize_house(t) for t in house_raw] + [normalize_senate(t) for t in senate_raw]
+    all_raw = fetch_all_trades()
+    all_trades = [normalize_quiver(t) for t in all_raw]
 
     # Filter to lookback window
     recent = [t for t in all_trades if (d := _parse_date(t["transaction_date"])) and d >= cutoff]

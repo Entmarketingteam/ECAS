@@ -185,6 +185,10 @@ TIMELINE_PHASES = {
 
 # ─── API Config (free public APIs — no keys needed) ──────────────────────────
 API_CONFIG = {
+    # Quiver Quantitative — replaced defunct S3 Stock Watcher endpoints (403 as of 2026-03)
+    # Free tier, no API key, returns 1000 most recent trades across both chambers
+    "quiver_congress_url": "https://api.quiverquant.com/beta/live/congresstrading",
+    # Legacy (kept for reference, both return 403)
     "house_stock_watcher_url": (
         "https://house-stock-watcher-data.s3-us-west-2.amazonaws.com"
         "/data/all_transactions.json"
