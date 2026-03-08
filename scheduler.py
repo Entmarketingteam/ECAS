@@ -233,6 +233,35 @@ def job_smartlead_enrollment():
         logger.error(f"Smartlead enrollment job failed: {e}", exc_info=True)
 
 
+def job_directory_hunt():
+    """
+    Weekly hunt: SAM.gov Entity API + MapYourShow conference exhibitors + ENR rankings.
+    Finds ICP companies that signal-based scraping misses — companies actively
+    registered for government contracts, paying to exhibit at grid conferences,
+    or ranked in ENR specialty contractor lists.
+    Runs Sundays 6am UTC so fresh leads are ready for Monday enrichment.
+    """
+    logger.info("=== JOB: Directory Hunt (SAM.gov + Conferences + ENR) ===")
+    try:
+        from signals.directory_hunter import run_directory_hunt
+        result = run_directory_hunt(dry_run=False, limit=500)
+        logger.info(f"Directory hunt done: {result}")
+
+        if result.get("created", 0) > 0 and SLACK_ACCESS_TOKEN:
+            source_lines = "\n".join(
+                f"• {k}: {v} companies" for k, v in result.get("source_counts", {}).items()
+            )
+            _send_slack(
+                f":mag: *ECAS Directory Hunt Complete*\n"
+                f"*{result['created']} new companies* added to pipeline\n\n"
+                f"Sources:\n{source_lines}\n\n"
+                f"_Skipped: {result.get('skipped', 0)} (already in pipeline). "
+                f"Enrichment runs Monday 10am._"
+            )
+    except Exception as e:
+        logger.error(f"Directory hunt job failed: {e}", exc_info=True)
+
+
 def job_populate_projects():
     """
     The missing link: sector scores → specific companies to call.
@@ -771,6 +800,9 @@ def create_scheduler() -> BackgroundScheduler:
     # ── ICP company population (daily 5am — before enrichment at 10am) ──────
     scheduler.add_job(job_populate_projects, CronTrigger(hour=5, minute=0), id="populate_projects")
 
+    # ── Directory hunt (weekly Sunday 6am — fresh leads before Mon enrichment) ─
+    scheduler.add_job(job_directory_hunt, CronTrigger(day_of_week="sun", hour=6, minute=0), id="directory_hunt")
+
     # ── Real-time alert jobs ─────────────────────────────────────────────────
     # Hot signal check runs inline inside job_sector_scoring, but also
     # available as a standalone manual trigger (not scheduled separately).
@@ -814,6 +846,7 @@ def run_job_now(job_id: str) -> dict:
         "hot_signal_check": job_hot_signal_check,
         "budget_window_monitor": job_budget_window_monitor,
         "populate_projects": job_populate_projects,
+        "directory_hunt": job_directory_hunt,
     }
 
     fn = job_map.get(job_id)

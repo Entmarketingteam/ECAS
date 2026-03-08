@@ -8,6 +8,7 @@ Endpoints:
   GET  /admin/signals       → Recent signals from Airtable
   GET  /admin/scores        → Current sector heat scores
   POST /admin/enroll        → Manually enroll a lead in Smartlead
+  POST /admin/generate-sequence → Generate cold email sequence via Claude (optional Smartlead push)
   POST /scrape-pdf          → PDF extraction via Reducto
   POST /scrape-page         → Playwright page scrape
   POST /parse-ercot-queue   → Parse ERCOT CSV
