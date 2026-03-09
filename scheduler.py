@@ -233,6 +233,63 @@ def job_smartlead_enrollment():
         logger.error(f"Smartlead enrollment job failed: {e}", exc_info=True)
 
 
+def job_usaspending_hunt():
+    """
+    Weekly hunt via USASpending.gov free API.
+    Finds EPC contractors actively winning federal contracts in defense + energy.
+    Contract dollar amounts = revenue proxy for ICP filtering ($5M-$200M federal = $10M-$400M total).
+    CAGE codes cross-reference against SHIELD IDIQ awardees already in pipeline.
+    Runs Saturdays 5am UTC — before directory_hunt (Sundays) and weekly digest (Mondays).
+    """
+    logger.info("=== JOB: USASpending Contract Hunter ===")
+    try:
+        from signals.usaspending_hunter import run_usaspending_hunt
+        result = run_usaspending_hunt(days_back=365)
+        logger.info(f"USASpending hunt done: {result}")
+
+        total_created = sum(r.get("created", 0) for r in result.values())
+        if total_created > 0 and SLACK_ACCESS_TOKEN:
+            lines = [":us: *ECAS USASpending Hunt Complete*"]
+            for sector, r in result.items():
+                lines.append(
+                    f"• {sector}: {r['companies_found']} companies found "
+                    f"(${r['total_contract_value_m']:.0f}M total contracts) "
+                    f"→ {r['created']} new, {r['skipped']} already tracked"
+                )
+            _send_slack("\n".join(lines))
+    except Exception as e:
+        logger.error(f"USASpending hunt job failed: {e}", exc_info=True)
+
+
+def job_job_posting_monitor():
+    """
+    Twice-weekly job posting scan via SerpAPI Google Jobs.
+    Companies hiring estimators + BD directors = active pipeline = highest conversion moment.
+    Boosts confidence score of existing pipeline companies, creates new records for unknowns.
+    Runs Wednesdays + Saturdays 7am UTC to catch weekly job posting cycles.
+    """
+    logger.info("=== JOB: Job Posting Monitor (Hiring Surge Detector) ===")
+    try:
+        from signals.job_posting_monitor import run_job_monitor
+        result = run_job_monitor()
+        logger.info(f"Job posting monitor done: {result}")
+
+        total_surge = sum(r.get("surge_companies", 0) for r in result.values())
+        total_boosted = sum(r.get("boosted", 0) for r in result.values())
+        if (total_surge > 0 or total_boosted > 0) and SLACK_ACCESS_TOKEN:
+            lines = [":briefcase: *ECAS Hiring Surge Alert*"]
+            for sector, r in result.items():
+                lines.append(
+                    f"• {sector}: {r['surge_companies']} companies surging "
+                    f"({r['total_open_roles']} open roles) "
+                    f"→ {r.get('created', 0)} new, {r.get('boosted', 0)} score-boosted"
+                )
+            lines.append("\n_Hiring surge = active pipeline. High conversion probability._")
+            _send_slack("\n".join(lines))
+    except Exception as e:
+        logger.error(f"Job posting monitor job failed: {e}", exc_info=True)
+
+
 def job_directory_hunt():
     """
     Weekly hunt: SAM.gov Entity API + MapYourShow conference exhibitors + ENR rankings.
@@ -800,7 +857,12 @@ def create_scheduler() -> BackgroundScheduler:
     # ── ICP company population (daily 5am — before enrichment at 10am) ──────
     scheduler.add_job(job_populate_projects, CronTrigger(hour=5, minute=0), id="populate_projects")
 
-    # ── Directory hunt (weekly Sunday 6am — fresh leads before Mon enrichment) ─
+    # ── Discovery layer (contract data + hiring signals + conference exhibitors) ─
+    # USASpending: Saturdays 5am — federal contract winners, revenue-proxied ICP list
+    scheduler.add_job(job_usaspending_hunt, CronTrigger(day_of_week="sat", hour=5, minute=0), id="usaspending_hunt")
+    # Job postings: Wed + Sat 7am — hiring surge = active pipeline signal
+    scheduler.add_job(job_job_posting_monitor, CronTrigger(day_of_week="wed,sat", hour=7, minute=0), id="job_posting_monitor")
+    # Directory hunt: Sundays 6am — MapYourShow conferences + ENR rankings
     scheduler.add_job(job_directory_hunt, CronTrigger(day_of_week="sun", hour=6, minute=0), id="directory_hunt")
 
     # ── Real-time alert jobs ─────────────────────────────────────────────────
@@ -847,6 +909,8 @@ def run_job_now(job_id: str) -> dict:
         "budget_window_monitor": job_budget_window_monitor,
         "populate_projects": job_populate_projects,
         "directory_hunt": job_directory_hunt,
+        "usaspending_hunt": job_usaspending_hunt,
+        "job_posting_monitor": job_job_posting_monitor,
     }
 
     fn = job_map.get(job_id)
