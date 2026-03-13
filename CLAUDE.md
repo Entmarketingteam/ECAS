@@ -4,9 +4,10 @@
 Signal-driven enterprise contract acquisition for mid-tier power/grid EPCs ($20M–$300M).
 Positioning: "We get you on the short-list before the RFP drops."
 
-## Status: FULLY LIVE ✅ (2026-03-05)
+## Status: LIVE — Signal Engine Running, FERC/PJM Broken (2026-03-13)
 - 51 companies in projects, 118 contacts, 60 enrolled in Smartlead campaign
-- Brand name decision pending: ContractMotion.com (#1), EnterpriseCapture.com, ContractWon.com
+- Brand: **ContractMotion.com** ✅ purchased 2026-03-10
+- Smartlead sequence expanded to 6 emails (Day 0/4/9/15/22/30) ✅ 2026-03-13
 
 ## Code & Deploy
 - **Local:** `~/Desktop/ECAS/`
@@ -25,8 +26,9 @@ Positioning: "We get you on the short-list before the RFP drops."
 
 ## Smartlead
 - **Campaign:** `3005694` — "ECAS — EPC Power & Grid Outreach 2026"
-- 3 emails: Day 0/4/9 | 60 leads STARTED
+- 6 emails: Day 0/4/9/15/22/30 ✅ updated 2026-03-13 | 60 leads in sequence
 - ⚠️ Sending from marketingteam@nickient.com — needs dedicated ECAS domain/mailbox
+- Sending domains to buy: `contractmotion.io`, `getcontractmotion.com` — then 3-week warmup before switching
 
 ## Admin API
 - `POST /admin/run/{job_id}` — trigger any job manually
@@ -41,6 +43,21 @@ Positioning: "We get you on the short-list before the RFP drops."
 
 ## Pipeline
 signals → Claude extraction → sector scoring → ICP hunt (Apollo orgs) → enrichment (Apollo people) → Smartlead enrollment
+
+## Signal Collection Status (2026-03-13)
+| Source | Job | Status | Notes |
+|--------|-----|--------|-------|
+| USASpending.gov | `gov_contracts` | ✅ WORKING | 662 contracts, pushing 45/run to Airtable |
+| Politician trades | `politician_trades` | ✅ WORKING | Running every 4h |
+| RSS feeds | `rss_feeds` | ✅ WORKING | Running every 6h |
+| SEC 13F | `sec_13f` | ✅ WORKING | Weekly Mon 7am |
+| Earnings transcripts | `earnings_transcripts` | ✅ WORKING | Weekly Tue 6am (FMP API) |
+| FERC eLibrary | `ferc_poller` | ❌ BROKEN | Cloudflare-protected SPA — always returns HTML, 0 filings collected |
+| PJM interconnection queue | (none) | ❌ MISSING | URL changed (404), no working poller |
+| ERCOT interconnection queue | (none) | ❌ MISSING | API inaccessible |
+
+**Fix needed:** Replace `ferc_poller` with EIA API (`api.eia.gov` — free, just needs API key) + PJM Dataminer2.
+FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboarding.
 
 ## Known Gotchas ⚠️
 - **Apollo:** Use `/mixed_people/api_search` NOT `/people/search` (deprecated)
@@ -75,9 +92,12 @@ signals → Claude extraction → sector scoring → ICP hunt (Apollo orgs) → 
 - Target niches: Substation EPC, Solar EPC (Utility-Scale), EV Charging Station Installers
 
 ## Remaining GTM Steps
-- [ ] Register domain (ContractMotion.com decision pending)
-- [ ] Purchase sending domain (3-week warmup — Day 1 action)
-- [ ] Wire n8n credentials + activate workflows
-- [ ] Add Airtable linked/formula fields manually
-- [ ] Build ICP list (PDL API)
-- [ ] Build website (Framer)
+- [x] Register domain — ContractMotion.com ✅ purchased 2026-03-10
+- [x] Expand Smartlead sequence to 6 emails ✅ 2026-03-13
+- [ ] **PRIORITY: Fix FERC poller** — replace with EIA API (`api.eia.gov`) + PJM/ERCOT alternatives
+- [ ] **PRIORITY: Purchase sending domains** — `contractmotion.io` + `getcontractmotion.com`, set up Google Workspace mailboxes, add to Smartlead warmup (3 weeks)
+- [ ] Wire new sending domains to Smartlead campaign (replace marketingteam@nickient.com)
+- [ ] Wire n8n credentials + activate workflows (or deprecate n8n in favor of Python jobs)
+- [ ] Add Airtable linked/formula fields manually (see Airtable Manual Items below)
+- [ ] Build ICP list (PDL API or USASpending hunter already running)
+- [ ] Build website (Framer) — copy ready in `ECAS-Brand-GTM.md`
