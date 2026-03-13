@@ -31,6 +31,9 @@ SMARTLEAD_CAMPAIGN_ID = os.environ.get("SMARTLEAD_CAMPAIGN_ID", "")
 REDUCTO_API_KEY = os.environ.get("REDUCTO_API_KEY", "")
 SLACK_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN", "")
 SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "#ecas-signals")
+# EIA Open Data API — free, register at https://www.eia.gov/opendata/register.php
+# Falls back to "DEMO_KEY" (rate-limited) if not set
+EIA_API_KEY = os.environ.get("EIA_API_KEY", "")
 
 # ─── ECAS Target Sectors ──────────────────────────────────────────────────────
 # These are the UTILITIES and infrastructure developers we monitor for signals.

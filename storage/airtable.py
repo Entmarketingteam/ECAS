@@ -44,6 +44,8 @@ SOURCE_MAP = {
     "rss_news": "rss_feed",
     "gov_contract": "manual",
     "ferc_filing": "ferc_efts",
+    "eia_capacity_addition": "manual",
+    "pjm_capacity_addition": "manual",
     "politician_trade": "manual",
     "hedge_fund": "manual",
 }

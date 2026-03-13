@@ -154,13 +154,23 @@ def job_rss_feeds():
 
 
 def job_ferc_poller():
-    logger.info("=== JOB: FERC Poller ===")
+    logger.info("=== JOB: EIA Capacity Poller (replaces FERC eLibrary) ===")
     try:
         from signals.ferc_poller import run_poller
         result = run_poller(push_to_airtable=True)
-        logger.info(f"FERC done: {result}")
+        logger.info(f"EIA done: {result}")
     except Exception as e:
-        logger.error(f"FERC job failed: {e}", exc_info=True)
+        logger.error(f"EIA poller job failed: {e}", exc_info=True)
+
+
+def job_pjm_poller():
+    logger.info("=== JOB: PJM Territory Capacity Poller ===")
+    try:
+        from signals.pjm_poller import run_poller
+        result = run_poller(push_to_airtable=True)
+        logger.info(f"PJM done: {result}")
+    except Exception as e:
+        logger.error(f"PJM poller job failed: {e}", exc_info=True)
 
 
 def job_claude_extraction():
@@ -836,6 +846,9 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(job_politician_trades, IntervalTrigger(hours=4, start_date="2000-01-01 00:00:00"), id="politician_trades")
     scheduler.add_job(job_government_contracts, IntervalTrigger(hours=4, start_date="2000-01-01 01:20:00"), id="gov_contracts")
     scheduler.add_job(job_ferc_poller, IntervalTrigger(hours=4, start_date="2000-01-01 02:40:00"), id="ferc_poller")
+    # PJM territory capacity — every 12h (EIA data refreshes ~monthly, but frequent
+    # queries catch any data corrections + keeps the job in the active signal loop)
+    scheduler.add_job(job_pjm_poller, IntervalTrigger(hours=12, start_date="2000-01-01 03:20:00"), id="pjm_poller")
 
     # ── RSS every 6 hours ────────────────────────────────────────────────────
     scheduler.add_job(job_rss_feeds, IntervalTrigger(hours=6), id="rss_feeds")
@@ -899,6 +912,7 @@ def run_job_now(job_id: str) -> dict:
         "gov_contracts": job_government_contracts,
         "rss_feeds": job_rss_feeds,
         "ferc_poller": job_ferc_poller,
+        "pjm_poller": job_pjm_poller,
         "claude_extraction": job_claude_extraction,
         "sector_scoring": job_sector_scoring,
         "enrichment": job_enrichment,
