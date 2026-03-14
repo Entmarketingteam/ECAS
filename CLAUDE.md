@@ -90,6 +90,7 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 - `~/Desktop/ECAS-Master-Plan.md`, `~/Desktop/ECAS-Sales-Motion.md`, `~/Desktop/ECAS-Brand-GTM.md`
 - Lead magnet: "Contract Signal Report" — 5 active grid projects in territory before RFPs drop
 - Target niches: Substation EPC, Solar EPC (Utility-Scale), EV Charging Station Installers
+- **Website:** https://contractmotion-site-production.up.railway.app ✅ LIVE 2026-03-13
 
 ## Remaining GTM Steps
 - [x] Register domain — ContractMotion.com ✅ purchased 2026-03-10
@@ -100,4 +101,4 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 - [ ] Wire n8n credentials + activate workflows (or deprecate n8n in favor of Python jobs)
 - [ ] Add Airtable linked/formula fields manually (see Airtable Manual Items below)
 - [ ] Build ICP list (PDL API or USASpending hunter already running)
-- [ ] Build website (Framer) — copy ready in `ECAS-Brand-GTM.md`
+- [x] Build website ✅ LIVE at https://contractmotion-site-production.up.railway.app (2026-03-13)
