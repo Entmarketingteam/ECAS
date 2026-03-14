@@ -249,6 +249,52 @@ RSS_FEEDS = [
     #     "url": "https://www.rrc.texas.gov/resource-center/research/data-sets-available-for-download/",
     #     "sector": "Power & Grid Infrastructure",
     # },
+
+    # ── PPA / Renewable Finance feeds (added 2026-03-13) ──────────────────────
+    # These cover PPA announcements, project finance closings, and utility-scale
+    # project news — all tier-1 EPC demand signals (PPA signed → plant to be built).
+    {
+        "name": "PV Magazine USA",
+        "url": "https://www.pv-magazine-usa.com/feed/",
+        "sector": "Power & Grid Infrastructure",
+    },
+    {
+        "name": "POWER Magazine",
+        "url": "https://www.powermag.com/feed/",
+        "sector": "Power & Grid Infrastructure",
+    },
+    {
+        "name": "Energy Monitor",
+        "url": "https://www.energymonitor.ai/feed/",
+        "sector": "Power & Grid Infrastructure",
+    },
+    {
+        "name": "Canary Media",
+        "url": "https://www.canarymedia.com/rss",
+        "sector": "Power & Grid Infrastructure",
+    },
+
+    # ── Nuclear / Critical Minerals (added 2026-03-13) ────────────────────────
+    # NEI covers SMR deals, nuclear PPAs, and DOE grant announcements.
+    {
+        "name": "Nuclear Energy Institute",
+        "url": "https://www.nei.org/rss/news",
+        "sector": "Nuclear & Critical Minerals",
+    },
+
+    # ── State PUC / Utility Regulation coverage (added 2026-03-13) ───────────
+    # These outlets cover rate case filings, IRP approvals, and utility capex plans
+    # in high-activity EPC markets (VA, TX). Rate case approval → capex unlock.
+    {
+        "name": "Texas Tribune Energy",
+        "url": "https://www.texastribune.org/sections/energy-environment/rss.xml",
+        "sector": "Power & Grid Infrastructure",
+    },
+    {
+        "name": "Virginia Mercury",
+        "url": "https://virginiamercury.com/feed/",
+        "sector": "Power & Grid Infrastructure",
+    },
 ]
 
 # ─── Claude Model ─────────────────────────────────────────────────────────────

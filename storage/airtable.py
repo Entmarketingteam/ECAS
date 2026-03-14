@@ -48,6 +48,8 @@ SOURCE_MAP = {
     "pjm_capacity_addition": "manual",
     "politician_trade": "manual",
     "hedge_fund": "manual",
+    # New signal types (added 2026-03-13)
+    "ppa_announcement": "rss_feed",   # PPA monitor — RSS-sourced PPA deal announcements
 }
 
 

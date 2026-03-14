@@ -5,7 +5,9 @@ Replaces all 5 n8n workflows with in-process Python jobs.
 Job schedule:
   - Every 4h:        Politician trade scan (real-time signal detection)
   - Every 4h:        Government contract scan (real-time signal detection)
-  - Every 4h:        FERC poller (real-time signal detection)
+  - Every 4h:        FERC poller / EIA capacity (real-time signal detection)
+  - Every 6h:        FERC EFTS filing poller (interconnection agreements, rate cases)
+  - Every 12h:       PPA monitor (boosts PPA signals + polls PPA-focused feeds)
   - Weekly Mon 7am:  SEC 13F hedge fund scan
   - Weekly Tue 6am:  Earnings call transcript scan (FMP API — capex, SMR, grid language)
   - Every 6h:        RSS feed aggregation
@@ -171,6 +173,39 @@ def job_pjm_poller():
         logger.info(f"PJM done: {result}")
     except Exception as e:
         logger.error(f"PJM poller job failed: {e}", exc_info=True)
+
+
+def job_ferc_rss():
+    """
+    FERC EFTS API poller — queries the FERC electronic filing search index for
+    interconnection agreements, transmission construction filings, and rate cases.
+    Replaces the dead FERC eLibrary scraper (Cloudflare-blocked SPA).
+    Runs every 6h alongside the EIA capacity poller.
+    """
+    logger.info("=== JOB: FERC EFTS Filing Poller ===")
+    try:
+        from signals.ferc_rss_poller import run_poller
+        result = run_poller(push_to_airtable=True)
+        logger.info(f"FERC EFTS done: {result}")
+    except Exception as e:
+        logger.error(f"FERC EFTS job failed: {e}", exc_info=True)
+
+
+def job_ppa_monitor():
+    """
+    PPA (Power Purchase Agreement) signal monitor.
+    Two-pronged: boosts confidence scores on existing rss_news signals containing
+    PPA keywords, then polls 6 PPA-focused RSS feeds for new deal announcements.
+    PPA signed → developer must build plant → EPC needed within 3-6 months.
+    Runs every 12h.
+    """
+    logger.info("=== JOB: PPA Monitor ===")
+    try:
+        from signals.ppa_monitor import run_monitor
+        result = run_monitor(push_to_airtable=True)
+        logger.info(f"PPA monitor done: {result}")
+    except Exception as e:
+        logger.error(f"PPA monitor job failed: {e}", exc_info=True)
 
 
 def job_claude_extraction():
@@ -853,6 +888,12 @@ def create_scheduler() -> BackgroundScheduler:
     # ── RSS every 6 hours ────────────────────────────────────────────────────
     scheduler.add_job(job_rss_feeds, IntervalTrigger(hours=6), id="rss_feeds")
 
+    # ── FERC EFTS filing poller (every 6h, offset from RSS to avoid thundering herd) ─
+    scheduler.add_job(job_ferc_rss, IntervalTrigger(hours=6, start_date="2000-01-01 03:00:00"), id="ferc_rss")
+
+    # ── PPA monitor (every 12h — boosts existing signals + polls PPA RSS feeds) ─
+    scheduler.add_job(job_ppa_monitor, IntervalTrigger(hours=12, start_date="2000-01-01 01:00:00"), id="ppa_monitor")
+
     # ── Weekly heavy scan (Mondays) ──────────────────────────────────────────
     scheduler.add_job(job_sec_13f, CronTrigger(day_of_week="mon", hour=7, minute=0), id="sec_13f")
     scheduler.add_job(job_weekly_digest, CronTrigger(day_of_week="mon", hour=8, minute=0), id="weekly_digest")
@@ -925,6 +966,8 @@ def run_job_now(job_id: str) -> dict:
         "directory_hunt": job_directory_hunt,
         "usaspending_hunt": job_usaspending_hunt,
         "job_posting_monitor": job_job_posting_monitor,
+        "ferc_rss": job_ferc_rss,
+        "ppa_monitor": job_ppa_monitor,
     }
 
     fn = job_map.get(job_id)
