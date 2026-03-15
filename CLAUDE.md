@@ -72,13 +72,17 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 - `REDUCTO_API_KEY`, `APOLLO_API_KEY`, `PROXYCURL_API_KEY`, `FULLENRICH_API_KEY`
 - `FMP_API_KEY`, `ECAS_BASE_ID=appoi8SzEJY8in57x`, `CLOSE_CRM_API_KEY`
 
-## n8n Workflows (all INACTIVE — need credential wiring)
-- `g4g5Eom2pQV8ybHR` — ECAS 01 FERC Signal Poller
-- `Kg0xi3Ldem59lYuF` — ECAS 02 PJM Queue Poller
-- `0DmEuRRQqcLXCUUY` — ECAS 03 RSS Aggregator
-- `8nQHnHFmdnH8lWmL` — ECAS 05 Signal Processor / Claude Extraction
-- `kMssKmg50794zXl8` — ECAS 07 Contact Enricher
+## n8n Workflows — ALL ACTIVE ✅ (wired 2026-03-14)
+- `g4g5Eom2pQV8ybHR` — ECAS 01 FERC Signal Poller — ACTIVE (every 6h)
+- `Kg0xi3Ldem59lYuF` — ECAS 02 PJM Queue Poller — ACTIVE (Mon 7am)
+- `0DmEuRRQqcLXCUUY` — ECAS 03 RSS Aggregator — ACTIVE (every 15min)
+- `8nQHnHFmdnH8lWmL` — ECAS 05 Signal Processor / Claude Extraction — ACTIVE (every 15min)
+- `kMssKmg50794zXl8` — ECAS 07 Contact Enricher — ACTIVE (every 5min poll)
+  - NOTE: airtableTrigger replaced with scheduleTrigger + Airtable poll (v2 trigger had airtableApi cred conflict)
 - n8n creds: Airtable `dAoeOLbTnBUK1gTy`, Anthropic `MwxIqQP3l6cUcwcZ`, Slack `EMdoV2Sq9neZV1Tn`
+- ⚠️ Doppler PLACEHOLDERS still need real values: `PROXYCURL_API_KEY`, `FULLENRICH_API_KEY`, `FMP_API_KEY`, `CLOSE_CRM_API_KEY`
+  - Contact Enricher (07) will fail at Proxycurl node until PROXYCURL_API_KEY is set
+  - Signal Processor (05) will fail at Claude extraction until Anthropic cred is confirmed working
 
 ## Airtable Manual Items Still Needed
 - Linked record fields: projects↔signals, projects↔contacts, projects↔deals, contacts↔project, deals↔project, deals↔contact
@@ -98,7 +102,7 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 - [ ] **PRIORITY: Fix FERC poller** — replace with EIA API (`api.eia.gov`) + PJM/ERCOT alternatives
 - [ ] **PRIORITY: Purchase sending domains** — `contractmotion.io` + `getcontractmotion.com`, set up Google Workspace mailboxes, add to Smartlead warmup (3 weeks)
 - [ ] Wire new sending domains to Smartlead campaign (replace marketingteam@nickient.com)
-- [ ] Wire n8n credentials + activate workflows (or deprecate n8n in favor of Python jobs)
+- [x] Wire n8n credentials + activate all 5 workflows ✅ 2026-03-14
 - [ ] Add Airtable linked/formula fields manually (see Airtable Manual Items below)
 - [ ] Build ICP list (PDL API or USASpending hunter already running)
 - [x] Build website ✅ LIVE at https://contractmotion-site-production.up.railway.app (2026-03-13)
