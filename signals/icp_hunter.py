@@ -67,6 +67,36 @@ SECTOR_KEYWORDS = {
         "rare earth minerals",
         "critical minerals",
     ],
+    "Data Center & AI Infrastructure": [
+        "data center contractor",
+        "critical facility contractor",
+        "data center epc",
+        "mission critical contractor",
+        "electrical contractor data center",
+        "power infrastructure contractor",
+        "substation contractor",
+        "electrical construction",
+    ],
+    "Water & Wastewater Infrastructure": [
+        "water treatment contractor",
+        "wastewater contractor",
+        "municipal utility contractor",
+        "water infrastructure contractor",
+        "civil contractor water",
+        "water epc",
+        "environmental contractor",
+        "water system contractor",
+    ],
+    "Industrial & Manufacturing Facilities": [
+        "industrial contractor",
+        "process plant contractor",
+        "lng contractor",
+        "industrial epc",
+        "heavy industrial contractor",
+        "manufacturing facility contractor",
+        "petrochemical contractor",
+        "industrial electrical contractor",
+    ],
 }
 
 # Employee count ranges as revenue proxy

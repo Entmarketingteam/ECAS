@@ -116,6 +116,79 @@ TARGET_SECTORS = {
         "naics_codes": ["212291", "212299", "221113", "325180", "331410"],
         "description": "Nuclear power infrastructure, SMR development, uranium supply chain, and critical minerals for AI/defense buildout",
     },
+    "Data Center & AI Infrastructure": {
+        "keywords": [
+            "hyperscaler", "data center campus", "ai campus", "colocation facility",
+            "microsoft data center", "amazon data center", "google data center",
+            "meta data center", "nvidia data center", "data center power",
+            "on-site generation", "modular power", "grid-constrained data center",
+            "critical facility", "tier 3 data center", "tier 4 data center",
+            "campus power", "hyperscale campus", "digital realty", "equinix",
+            "coresite", "cyrusone", "iron mountain dc", "data center construction",
+            "data center epc", "dc campus substation", "campus 33kv", "campus 138kv",
+        ],
+        "tickers": [
+            # Hyperscalers — capex hike = downstream EPC demand
+            "MSFT", "AMZN", "GOOGL", "META", "ORCL",
+            # GPU/AI infra — supply signals for power demand
+            "NVDA", "AMD",
+            # Data center REITs
+            "DLR", "EQIX", "CONE", "QTS",
+            # Power/cooling for DCs
+            "VRT", "SMCI", "ANET",
+            # Crypto miners (repurposing grid capacity = EPC opportunity)
+            "WULF", "CORZ", "APLD", "MARA",
+        ],
+        "naics_codes": ["518210", "236220", "237130", "238210", "541513"],
+        "description": "Hyperscaler and colocation data center campus construction requiring 100–1000 MW power infrastructure. Fastest-growing EPC demand segment in 2025-2027.",
+    },
+    "Water & Wastewater Infrastructure": {
+        "keywords": [
+            "water treatment plant", "wastewater treatment", "water infrastructure",
+            "cwsrf", "dwsrf", "state revolving fund", "clean water act",
+            "water system upgrade", "water main replacement", "lead service line",
+            "water resilience", "desalination plant", "water reclamation",
+            "municipal water", "stormwater", "combined sewer overflow",
+            "iija water", "bipartisan infrastructure water",
+            "american water works", "veolia water", "aecom water",
+            "jacobs water", "black and veatch water", "wsatco",
+        ],
+        "tickers": [
+            # Water utilities — capex = EPC spend
+            "AWK", "WTR", "MSEX", "CWCO", "YORW",
+            # Water tech/treatment
+            "XYL", "XYLEM", "PNR", "FELE", "REXNORD",
+            # Infrastructure — overlaps with power EPCs
+            "PWR", "MTZ",
+        ],
+        "naics_codes": ["221310", "221320", "237110", "237120", "562212"],
+        "description": "Municipal water and wastewater infrastructure upgrades funded by IIJA/BIL state revolving funds. $50B+ federal spend through 2026.",
+    },
+    "Industrial & Manufacturing Facilities": {
+        "keywords": [
+            "semiconductor fab", "chips act", "tsmc", "intel fab", "samsung fab",
+            "micron fab", "ev battery factory", "gigafactory", "battery gigafactory",
+            "lng export terminal", "natural gas liquefaction", "lng facility",
+            "hydrogen plant", "green hydrogen", "ammonia facility",
+            "industrial campus", "manufacturing expansion", "greenfield facility",
+            "freeport lng", "sabine pass", "calcasieu pass",
+            "ford ev plant", "gm ev plant", "rivian factory",
+            "industrial power", "heavy industrial epc", "process plant",
+            "refinery upgrade", "petrochemical expansion",
+        ],
+        "tickers": [
+            # Semis — fab construction = massive power/civil EPC contracts
+            "TSM", "INTC", "SSNLF", "MU", "AMAT",
+            # EV/battery — gigafactory = 500+ MW demand
+            "TSLA", "F", "GM", "RIVN", "QS",
+            # LNG — terminal = big EPC
+            "LNG", "CQP", "NEXT", "CVX", "XOM",
+            # Industrial gases / hydrogen
+            "LIN", "APD", "CE",
+        ],
+        "naics_codes": ["336390", "311312", "325193", "324110", "333249"],
+        "description": "CHIPS Act semiconductor fabs, EV gigafactories, LNG export terminals, and hydrogen/ammonia facilities — all requiring 500MW+ power infrastructure built by EPCs.",
+    },
 }
 
 # ─── ICP Definition (companies we're selling TO) ─────────────────────────────
@@ -294,6 +367,58 @@ RSS_FEEDS = [
         "name": "Virginia Mercury",
         "url": "https://virginiamercury.com/feed/",
         "sector": "Power & Grid Infrastructure",
+    },
+
+    # ── Data Center & AI Infrastructure (added 2026-03-15) ───────────────────
+    # Covers hyperscaler campus builds, colocation expansions, and DC power
+    # infrastructure — all driving 100–1000 MW EPC substation demand.
+    {
+        "name": "Data Center Dynamics",
+        "url": "https://www.datacenterdynamics.com/en/rss/",
+        "sector": "Data Center & AI Infrastructure",
+    },
+    {
+        "name": "Data Center Frontier",
+        "url": "https://datacenterfrontier.com/feed/",
+        "sector": "Data Center & AI Infrastructure",
+    },
+    {
+        "name": "The Register DC",
+        "url": "https://www.theregister.com/data_centre/feed.atom",
+        "sector": "Data Center & AI Infrastructure",
+    },
+
+    # ── Water & Wastewater Infrastructure (added 2026-03-15) ─────────────────
+    # IIJA/BIL state revolving fund disbursements — $50B+ through 2026.
+    # Water EPCs and power EPCs share contractor pools in most target states.
+    {
+        "name": "Water World",
+        "url": "https://www.waterworld.com/rss/all",
+        "sector": "Water & Wastewater Infrastructure",
+    },
+    {
+        "name": "Water Finance & Management",
+        "url": "https://waterfm.com/feed/",
+        "sector": "Water & Wastewater Infrastructure",
+    },
+
+    # ── Industrial & Manufacturing Facilities (added 2026-03-15) ─────────────
+    # CHIPS Act fabs, EV gigafactories, LNG terminals, hydrogen plants —
+    # all 500MW+ power builds contracted to EPCs.
+    {
+        "name": "Chemical Engineering",
+        "url": "https://www.chemengonline.com/feed/",
+        "sector": "Industrial & Manufacturing Facilities",
+    },
+    {
+        "name": "LNG Industry",
+        "url": "https://www.lngindustry.com/rss/",
+        "sector": "Industrial & Manufacturing Facilities",
+    },
+    {
+        "name": "Semiconductor Engineering",
+        "url": "https://semiengineering.com/feed/",
+        "sector": "Industrial & Manufacturing Facilities",
     },
 ]
 
