@@ -12,7 +12,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import SMARTLEAD_API_KEY, SMARTLEAD_CAMPAIGN_ID
+from config import SMARTLEAD_API_KEY, SMARTLEAD_CAMPAIGN_ID, SECTOR_CAMPAIGN_MAP
 
 logger = logging.getLogger(__name__)
 
@@ -119,6 +119,24 @@ def enroll_lead(
         return {"status": "error", "reason": str(e), "email": email}
 
 
+def _resolve_campaign_id(sector: str, override: str = None) -> str:
+    """
+    Return the Smartlead campaign ID for a given sector.
+    Priority: explicit override → SECTOR_CAMPAIGN_MAP → SMARTLEAD_CAMPAIGN_ID fallback.
+    """
+    if override:
+        return override
+    campaign = SECTOR_CAMPAIGN_MAP.get(sector)
+    if campaign:
+        return campaign
+    # Partial match — e.g. "Power & Grid" hits "Power & Grid Infrastructure"
+    sector_lower = sector.lower()
+    for key, cid in SECTOR_CAMPAIGN_MAP.items():
+        if sector_lower in key.lower() or key.lower() in sector_lower:
+            return cid
+    return SMARTLEAD_CAMPAIGN_ID  # fallback to default
+
+
 def enroll_airtable_contacts(
     min_heat_score: float = 50.0,
     outreach_status: str = "pending_review",
@@ -127,8 +145,9 @@ def enroll_airtable_contacts(
 ) -> dict:
     """
     Pull contacts from Airtable and enroll qualified ones in Smartlead.
-    Only enrolls contacts whose company has heat_score >= min_heat_score.
-    Pass company_filter to target a single company (used by hot signal / budget window triggers).
+    Routes each contact to the correct campaign based on their parent project's sector.
+    Pass campaign_id to force a specific campaign (overrides sector routing).
+    Pass company_filter to target a single company.
     """
     from storage.airtable import get_client
     at = get_client()
@@ -153,18 +172,27 @@ def enroll_airtable_contacts(
         if not email:
             continue
 
-        # Get parent company heat score
         company = fields.get("company_name", "")
+        heat = 0.0
+        sector = "Power & Grid Infrastructure"  # default
+
+        # Look up parent project for heat score + sector
         projects = at._get("projects", {
             "filterByFormula": f"{{owner_company}}='{company}'",
             "maxRecords": 1,
         })
         if projects:
-            heat = float(projects[0].get("fields", {}).get("confidence_score") or 0)
+            proj_fields = projects[0].get("fields", {})
+            heat = float(proj_fields.get("confidence_score") or 0)
+            sector = proj_fields.get("scope_summary") or sector
             if heat < min_heat_score:
                 logger.debug(f"[Smartlead] {company} heat={heat} < {min_heat_score} — skipping")
                 skipped += 1
                 continue
+
+        # Route to correct campaign based on sector
+        target_campaign = _resolve_campaign_id(sector, override=campaign_id)
+        logger.info(f"[Smartlead] {company} → sector='{sector}' → campaign {target_campaign}")
 
         result = enroll_lead(
             email=email,
@@ -172,17 +200,17 @@ def enroll_airtable_contacts(
             last_name=fields.get("last_name", ""),
             company=company,
             title=fields.get("title", ""),
-            heat_score=heat if projects else 0.0,
-            campaign_id=campaign_id,
+            sector=sector,
+            heat_score=heat,
+            campaign_id=target_campaign,
         )
 
         if result["status"] == "enrolled":
             enrolled += 1
-            # Update Airtable contact status
             at.update_contact_status(
                 contact["id"],
                 "in_sequence",
-                notes=f"Enrolled in Smartlead {datetime.utcnow().date()}",
+                notes=f"Enrolled in campaign {target_campaign} ({sector}) on {datetime.utcnow().date()}",
             )
         elif result["status"] == "skipped":
             skipped += 1

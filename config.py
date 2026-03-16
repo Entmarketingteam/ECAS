@@ -28,6 +28,17 @@ APOLLO_API_KEY = os.environ.get("APOLLO_API_KEY", "")
 CLAY_API_KEY = os.environ.get("CLAY_API_KEY", "")
 SMARTLEAD_API_KEY = os.environ.get("SMARTLEAD_API_KEY", "")
 SMARTLEAD_CAMPAIGN_ID = os.environ.get("SMARTLEAD_CAMPAIGN_ID", "")
+
+# Maps sector (scope_summary in Airtable projects) → Smartlead campaign ID.
+# Contacts are auto-routed at enrollment time based on their parent project's sector.
+# Power & Grid is the default fallback for any unmapped sector.
+SECTOR_CAMPAIGN_MAP: dict[str, str] = {
+    "Power & Grid Infrastructure":        "3005694",
+    "Data Center & AI Infrastructure":    "3040599",
+    "Water & Wastewater Infrastructure":  "3040600",
+    "Industrial & Manufacturing Facilities": "3040601",
+    # Defense and Nuclear campaigns TBD — fall back to Power & Grid until built
+}
 REDUCTO_API_KEY = os.environ.get("REDUCTO_API_KEY", "")
 SLACK_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN", "")
 SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "#ecas-signals")
