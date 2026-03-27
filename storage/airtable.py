@@ -166,13 +166,13 @@ class AirtableClient:
             return None
 
         # ── Dedup check ────────────────────────────────────────────────────────
-        # Strip apostrophes using same SUBSTITUTE/CHAR(39) pattern as upsert_project
-        # to avoid breaking Airtable formula strings (e.g. "Abbott's" → "Abbotts").
-        name_no_apos = company_name.replace("'", "")
+        # Use backslash-escaped apostrophes — CHAR(39)/SUBSTITUTE are not supported
+        # in REST API filterByFormula calls (only in Airtable UI formula fields).
+        escaped_name = company_name.replace("'", "\\'")
         signal_date_only = signal_date[:10] if signal_date else ""
         dedup_formula = (
             f"AND("
-            f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))=LOWER('{name_no_apos}'),"
+            f"LOWER({{company_name}})=LOWER('{escaped_name}'),"
             f"{{signal_type}}='{signal_type}',"
             f"LEFT({{captured_at}},10)='{signal_date_only}'"
             f")"
@@ -278,16 +278,12 @@ class AirtableClient:
         """
         import json as _json
 
-        # Strip apostrophes from both sides of the comparison so names like
-        # "McCarl's LLC" don't break the Airtable formula string.  Backslash-
-        # escaping is unreliable in Airtable formulas; SUBSTITUTE + CHAR(39) is
-        # the safe pattern.
-        name_no_apos = company_name.replace("'", "")
+        # Escape apostrophes with backslash for the REST API filter formula.
+        # Note: CHAR(39)/SUBSTITUTE are not supported in filterByFormula API calls
+        # (only in Airtable UI formula fields). Backslash escaping works correctly.
+        escaped_name = company_name.replace("'", "\\'")
         existing = self._get("projects", {
-            "filterByFormula": (
-                f"LOWER(SUBSTITUTE({{owner_company}},CHAR(39),''))"
-                f"=LOWER('{name_no_apos}')"
-            ),
+            "filterByFormula": f"LOWER({{owner_company}})=LOWER('{escaped_name}')",
             "maxRecords": 1,
         })
 
@@ -492,12 +488,9 @@ class AirtableClient:
 
     def get_contacts_by_company(self, company_name: str) -> list[dict]:
         """Get all contacts for a given company."""
-        name_no_apos = company_name.replace("'", "")
+        escaped_name = company_name.replace("'", "\\'")
         return self._get("contacts", {
-            "filterByFormula": (
-                f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))"
-                f"=LOWER('{name_no_apos}')"
-            ),
+            "filterByFormula": f"LOWER({{company_name}})=LOWER('{escaped_name}')",
         })
 
     # ── Deals ──────────────────────────────────────────────────────────────────
@@ -516,12 +509,9 @@ class AirtableClient:
           mrr_target → contract_value (monthly retainer as annual equivalent)
           notes      → close_notes
         """
-        name_no_apos = company_name.replace("'", "")
+        escaped_name = company_name.replace("'", "\\'")
         existing = self._get("deals", {
-            "filterByFormula": (
-                f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))"
-                f"=LOWER('{name_no_apos}')"
-            ),
+            "filterByFormula": f"LOWER({{company_name}})=LOWER('{escaped_name}')",
             "maxRecords": 1,
         })
 
