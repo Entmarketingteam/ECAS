@@ -430,7 +430,7 @@ def push_signal_to_airtable(sector: str, total_companies: int, total_value_m: fl
         at.insert_signal(
             signal_type="government_contract",
             source="USASpending.gov",
-            company_name=f"{sector} Sector",
+            company_name="USASpending Summary",
             sector=sector,
             signal_date=datetime.utcnow().strftime("%Y-%m-%d"),
             raw_content=(

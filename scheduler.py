@@ -78,7 +78,7 @@ def _push_politician_signals_to_airtable(trade_result: dict) -> None:
         at.insert_signal(
             signal_type="politician_trade",
             source="House/Senate Stock Watcher",
-            company_name=f"{sector} Sector",
+            company_name="Politician Trade Summary",
             sector=sector,
             signal_date=__import__("datetime").datetime.utcnow().strftime("%Y-%m-%d"),
             raw_content=(

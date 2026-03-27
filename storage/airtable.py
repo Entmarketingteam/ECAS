@@ -154,6 +154,17 @@ class AirtableClient:
           signal_date     → captured_at (dateTime)
           source string   → source (singleSelect, mapped via SOURCE_MAP)
         """
+        # ── Guard: reject sector-label company names ───────────────────────────
+        # Some callers pass f"{sector} Sector" (e.g. "Defense Sector") as a
+        # summary placeholder when there is no real company. These pollute the
+        # signals table with garbage company names. Skip them entirely.
+        if not company_name or company_name.strip().endswith(" Sector"):
+            logger.warning(
+                f"insert_signal: skipping signal with sector label as company_name "
+                f"'{company_name}' (signal_type={signal_type}, sector={sector})"
+            )
+            return None
+
         # ── Dedup check ────────────────────────────────────────────────────────
         # Strip apostrophes using same SUBSTITUTE/CHAR(39) pattern as upsert_project
         # to avoid breaking Airtable formula strings (e.g. "Abbott's" → "Abbotts").

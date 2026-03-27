@@ -500,7 +500,7 @@ def push_jobs_signal(sector: str, surge_count: int, total_roles: int) -> None:
         at.insert_signal(
             signal_type="hiring_surge",
             source="Google Jobs / SerpAPI",
-            company_name=f"{sector} Sector",
+            company_name="Job Posting Summary",
             sector=sector,
             signal_date=datetime.utcnow().strftime("%Y-%m-%d"),
             raw_content=(
