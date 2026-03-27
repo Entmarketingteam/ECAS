@@ -145,6 +145,8 @@ class AirtableClient:
     ) -> str | None:
         """
         Insert a new signal into signals_raw. Returns Airtable record ID or None.
+        Deduplicates on (company_name + signal_type + signal_date) — skips insert
+        if a matching record already exists and returns the existing record ID.
 
         Field mapping:
           raw_content     → raw_text
@@ -152,6 +154,31 @@ class AirtableClient:
           signal_date     → captured_at (dateTime)
           source string   → source (singleSelect, mapped via SOURCE_MAP)
         """
+        # ── Dedup check ────────────────────────────────────────────────────────
+        # Strip apostrophes using same SUBSTITUTE/CHAR(39) pattern as upsert_project
+        # to avoid breaking Airtable formula strings (e.g. "Abbott's" → "Abbotts").
+        name_no_apos = company_name.replace("'", "")
+        signal_date_only = signal_date[:10] if signal_date else ""
+        dedup_formula = (
+            f"AND("
+            f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))=LOWER('{name_no_apos}'),"
+            f"{{signal_type}}='{signal_type}',"
+            f"LEFT({{captured_at}},10)='{signal_date_only}'"
+            f")"
+        )
+        existing = self._get("signals_raw", {
+            "filterByFormula": dedup_formula,
+            "maxRecords": 1,
+            "fields[]": ["signal_type", "company_name", "captured_at"],
+        })
+        if existing:
+            existing_id = existing[0]["id"]
+            logger.info(
+                f"Signal already exists — skipping insert: {signal_type} | "
+                f"{company_name} | {signal_date_only} | id={existing_id}"
+            )
+            return existing_id
+        # ── Insert ─────────────────────────────────────────────────────────────
         airtable_source = SOURCE_MAP.get(signal_type, "manual")
         captured_at = _to_airtable_datetime(signal_date)
 
