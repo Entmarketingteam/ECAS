@@ -240,8 +240,16 @@ class AirtableClient:
         """
         import json as _json
 
+        # Strip apostrophes from both sides of the comparison so names like
+        # "McCarl's LLC" don't break the Airtable formula string.  Backslash-
+        # escaping is unreliable in Airtable formulas; SUBSTITUTE + CHAR(39) is
+        # the safe pattern.
+        name_no_apos = company_name.replace("'", "")
         existing = self._get("projects", {
-            "filterByFormula": f"{{owner_company}}='{company_name}'",
+            "filterByFormula": (
+                f"LOWER(SUBSTITUTE({{owner_company}},CHAR(39),''))"
+                f"=LOWER('{name_no_apos}')"
+            ),
             "maxRecords": 1,
         })
 
