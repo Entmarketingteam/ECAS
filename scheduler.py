@@ -417,6 +417,62 @@ def job_populate_projects():
         logger.error(f"Populate projects job failed: {e}", exc_info=True)
 
 
+def job_dedup_projects():
+    """Weekly safety net: delete duplicate project records (same owner_company)."""
+    logger.info("=== JOB: Dedup Projects ===")
+    try:
+        import requests as _req
+        from storage.airtable import get_client
+        at = get_client()
+
+        all_records: list[dict] = []
+        offset = None
+        while True:
+            params: dict = {"fields[]": ["owner_company", "confidence_score"]}
+            if offset:
+                params["offset"] = offset
+            resp = _req.get(
+                f"https://api.airtable.com/v0/appoi8SzEJY8in57x/tbloen0rEkHttejnC",
+                headers=at.headers,
+                params=params,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            all_records.extend(data.get("records", []))
+            offset = data.get("offset")
+            if not offset:
+                break
+
+        # Group by normalised company name
+        from collections import defaultdict
+        groups: dict[str, list[dict]] = defaultdict(list)
+        for r in all_records:
+            key = r.get("fields", {}).get("owner_company", "").lower().replace("'", "").strip()
+            if key:
+                groups[key].append(r)
+
+        deleted = 0
+        for key, records in groups.items():
+            if len(records) <= 1:
+                continue
+            # Keep highest confidence_score; break ties by created order (first wins)
+            records.sort(key=lambda r: r.get("fields", {}).get("confidence_score", 0), reverse=True)
+            for dupe in records[1:]:
+                del_resp = _req.delete(
+                    f"https://api.airtable.com/v0/appoi8SzEJY8in57x/tbloen0rEkHttejnC/{dupe['id']}",
+                    headers=at.headers,
+                    timeout=30,
+                )
+                if del_resp.status_code == 200:
+                    deleted += 1
+                    logger.info(f"Dedup: deleted {dupe['id']} ({records[0].get('fields',{}).get('owner_company')})")
+
+        logger.info(f"Dedup complete — {deleted} duplicate records removed from {len(all_records)} total")
+    except Exception as e:
+        logger.error(f"Dedup projects job failed: {e}", exc_info=True)
+
+
 def job_weekly_digest():
     logger.info("=== JOB: Weekly Digest ===")
     try:
@@ -918,6 +974,7 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(job_job_posting_monitor, CronTrigger(day_of_week="wed,sat", hour=7, minute=0), id="job_posting_monitor")
     # Directory hunt: Sundays 6am — MapYourShow conferences + ENR rankings
     scheduler.add_job(job_directory_hunt, CronTrigger(day_of_week="sun", hour=6, minute=0), id="directory_hunt")
+    scheduler.add_job(job_dedup_projects, CronTrigger(day_of_week="sun", hour=7, minute=0), id="dedup_projects")
 
     # ── Real-time alert jobs ─────────────────────────────────────────────────
     # Hot signal check runs inline inside job_sector_scoring, but also
@@ -964,6 +1021,7 @@ def run_job_now(job_id: str) -> dict:
         "budget_window_monitor": job_budget_window_monitor,
         "populate_projects": job_populate_projects,
         "directory_hunt": job_directory_hunt,
+        "dedup_projects": job_dedup_projects,
         "usaspending_hunt": job_usaspending_hunt,
         "job_posting_monitor": job_job_posting_monitor,
         "ferc_rss": job_ferc_rss,

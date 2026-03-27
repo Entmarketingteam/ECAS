@@ -454,8 +454,12 @@ class AirtableClient:
 
     def get_contacts_by_company(self, company_name: str) -> list[dict]:
         """Get all contacts for a given company."""
+        name_no_apos = company_name.replace("'", "")
         return self._get("contacts", {
-            "filterByFormula": f"{{company_name}}='{company_name}'",
+            "filterByFormula": (
+                f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))"
+                f"=LOWER('{name_no_apos}')"
+            ),
         })
 
     # ── Deals ──────────────────────────────────────────────────────────────────
@@ -474,8 +478,12 @@ class AirtableClient:
           mrr_target → contract_value (monthly retainer as annual equivalent)
           notes      → close_notes
         """
+        name_no_apos = company_name.replace("'", "")
         existing = self._get("deals", {
-            "filterByFormula": f"{{company_name}}='{company_name}'",
+            "filterByFormula": (
+                f"LOWER(SUBSTITUTE({{company_name}},CHAR(39),''))"
+                f"=LOWER('{name_no_apos}')"
+            ),
             "maxRecords": 1,
         })
 
