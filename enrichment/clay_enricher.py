@@ -215,6 +215,9 @@ def enrich_and_store(company_name: str, project_record_id: str = None) -> dict:
         )
         if record_id:
             stored += 1
+            # BUG FIX: link the contact back to its parent project record
+            if project_record_id:
+                at.link_contact_to_project(project_record_id, record_id)
 
     logger.info(f"[Enrichment] {company_name}: {len(contacts)} found, {stored} stored")
     return {

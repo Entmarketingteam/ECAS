@@ -399,6 +399,44 @@ class AirtableClient:
             result = self._post("contacts", fields)
             return result.get("id") if result else None
 
+    def link_contact_to_project(self, project_record_id: str, contact_record_id: str) -> None:
+        """
+        Append a contact to the project's contacts linked field (multipleRecordLinks).
+        GETs existing linked contact IDs first, then PATCHes with appended list to
+        avoid overwriting previously linked contacts.
+        """
+        # Fetch current contacts linked to this project
+        try:
+            time.sleep(RATE_LIMIT_DELAY)
+            resp = requests.get(
+                f"{self._url('projects')}/{project_record_id}",
+                headers=self.headers,
+                timeout=30,
+            )
+            resp.raise_for_status()
+            existing_contacts = resp.json().get("fields", {}).get("contacts", [])
+        except requests.RequestException as e:
+            logger.error(f"Airtable GET project/{project_record_id} for contact link: {e}")
+            existing_contacts = []
+
+        # Normalise: Airtable returns either list of record-id strings or list of {id: ...} dicts
+        existing_ids: list[str] = []
+        for item in existing_contacts:
+            if isinstance(item, dict):
+                existing_ids.append(item.get("id", ""))
+            elif isinstance(item, str):
+                existing_ids.append(item)
+
+        if contact_record_id in existing_ids:
+            logger.debug(f"Contact {contact_record_id} already linked to project {project_record_id}")
+            return
+
+        all_ids = existing_ids + [contact_record_id]
+        self._patch("projects", project_record_id, {
+            "contacts": [cid for cid in all_ids if cid]
+        })
+        logger.info(f"Linked contact {contact_record_id} → project {project_record_id} ({len(all_ids)} total)")
+
     def update_contact_status(self, record_id: str, status: str, notes: str = "") -> None:
         """Update a contact's outreach status."""
         fields = {"outreach_status": status}
