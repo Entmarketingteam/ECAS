@@ -18,6 +18,7 @@ SECTOR_TO_CAMPAIGN = {
     'Data Center & AI Infrastructure': 3040599,
     'Water & Wastewater': 3040600,
     'Industrial & Manufacturing Facilities': 3040601,
+    'Defense': 3095136,
 }
 
 def fetch_all(table_id):
