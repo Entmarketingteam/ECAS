@@ -186,7 +186,7 @@ def enrich_company(company_name: str, titles: list[str] = None) -> list[dict]:
     return unique_contacts
 
 
-def enrich_and_store(company_name: str, project_record_id: str = None) -> dict:
+def enrich_and_store(company_name: str, project_record_id: str = None, titles: list[str] = None) -> dict:
     """
     Enrich a company with contacts and store in Airtable.
     Returns summary of contacts found and stored.
@@ -194,7 +194,7 @@ def enrich_and_store(company_name: str, project_record_id: str = None) -> dict:
     from storage.airtable import get_client
     at = get_client()
 
-    contacts = enrich_company(company_name)
+    contacts = enrich_company(company_name, titles=titles)
     stored = 0
 
     for contact in contacts:
