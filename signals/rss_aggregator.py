@@ -157,12 +157,17 @@ def run_aggregator(push_to_airtable: bool = True) -> dict:
         # Only push articles with score >= 10
         top_articles = [a for a in articles if a["heat_score"] >= 10.0][:50]
         for article in top_articles:
-            # Extract company name from title (best effort)
+            # Extract company name from title (best effort).
+            # Fall back to sector label (e.g. "Power & Grid Infrastructure Signal")
+            # rather than the RSS feed name — feed names like "Canary Media" or
+            # "POWER Magazine" are not companies and pollute the signals table.
             company = _extract_company(article["title"], article["summary"])
+            if not company:
+                company = f"{article['sector']} Signal"
             at.insert_signal(
                 signal_type="rss_news",
                 source=article["source"],
-                company_name=company or article["source"],
+                company_name=company,
                 sector=article["sector"],
                 signal_date=article["published_date"],
                 raw_content=f"{article['title']}\n\n{article['summary']}",

@@ -116,6 +116,7 @@ def _parse_date(s: str) -> datetime | None:
 
 
 def match_sector(trade: dict) -> list[str]:
+    import re as _re
     ticker = trade.get("ticker", "").upper().strip()
     desc = (trade.get("asset_description") or "").lower()
     matched = []
@@ -124,9 +125,17 @@ def match_sector(trade: dict) -> list[str]:
             matched.append(sector_name)
             continue
         for kw in cfg.get("keywords", []):
-            if kw.lower() in desc:
-                matched.append(sector_name)
-                break
+            kw_lower = kw.lower()
+            # Short keywords (≤5 chars) require word-boundary match to prevent
+            # false positives (e.g. "abb" matching inside "abbott").
+            if len(kw_lower) <= 5:
+                if _re.search(r'\b' + _re.escape(kw_lower) + r'\b', desc):
+                    matched.append(sector_name)
+                    break
+            else:
+                if kw_lower in desc:
+                    matched.append(sector_name)
+                    break
     return matched
 
 

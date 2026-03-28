@@ -363,10 +363,13 @@ def run_monitor(push_to_airtable: bool = True) -> dict:
             notes = " | ".join(p for p in notes_parts if p)
 
             try:
+                # Use sector label fallback instead of RSS feed name to avoid
+                # polluting signals table with publisher names as companies.
+                company_name = company or f"{article['sector']} Signal"
                 at.insert_signal(
                     signal_type="ppa_announcement",
                     source=article["source"],
-                    company_name=company or article["source"],
+                    company_name=company_name,
                     sector=article["sector"],
                     signal_date=article["published_date"],
                     raw_content=f"{article['title']}\n\n{article['summary']}",

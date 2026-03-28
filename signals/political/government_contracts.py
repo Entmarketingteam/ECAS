@@ -78,11 +78,20 @@ def _match_sector_by_naics(naics_code: str) -> str | None:
 
 
 def _match_sector_by_description(description: str, recipient: str) -> str | None:
+    import re
     text = (description + " " + recipient).lower()
     for sector_name, cfg in TARGET_SECTORS.items():
         for kw in cfg.get("keywords", []):
-            if kw.lower() in text:
-                return sector_name
+            kw_lower = kw.lower()
+            # Short keywords (≤5 chars like "abb", "aps", "pge") must match as whole
+            # words to avoid false positives (e.g. "abb" inside "abbott").
+            # Longer keywords use substring match (they're specific enough).
+            if len(kw_lower) <= 5:
+                if re.search(r'\b' + re.escape(kw_lower) + r'\b', text):
+                    return sector_name
+            else:
+                if kw_lower in text:
+                    return sector_name
     return None
 
 
