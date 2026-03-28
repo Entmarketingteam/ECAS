@@ -283,10 +283,12 @@ def hunt_energy_contractors(days_back: int = 365, limit_per_naics: int = 100) ->
     """
     Find EPC contractors winning DoE and utility-related federal contracts.
     Covers grid modernization, power plant construction, transmission.
+    Excludes water/sewer NAICS (handled by hunt_water_contractors).
     """
+    POWER_NAICS = {k: v for k, v in EPC_NAICS.items() if k != "237110"}
     all_awards = []
 
-    for naics in list(EPC_NAICS.keys()):
+    for naics in list(POWER_NAICS.keys()):
         # DoE awards + broad search (utilities contract through multiple agencies)
         awards = search_awards_by_naics(
             naics=naics,
@@ -295,6 +297,35 @@ def hunt_energy_contractors(days_back: int = 365, limit_per_naics: int = 100) ->
         )
         all_awards.extend(awards)
         time.sleep(0.5)
+
+    companies = aggregate_by_recipient(all_awards)
+    return filter_icp_range(companies)
+
+
+def hunt_water_contractors(days_back: int = 365, limit_per_naics: int = 100) -> list[dict]:
+    """
+    Find water/wastewater EPC contractors via NAICS 237110.
+    Targets EPA, Army Corps, and USDA Rural Development water grants.
+    """
+    WATER_NAICS = {
+        "237110": "Water and Sewer Line Construction",
+        "238220": "Plumbing, Heating, A/C Contractors",  # water treatment plant MEP
+        "541330": "Engineering Services",                  # municipal water design-build
+    }
+    WATER_AGENCIES = ["068", "096", "012"]  # EPA, Army Corps, USDA
+    all_awards = []
+
+    for naics in WATER_NAICS:
+        # Broad search first (includes municipal/state contracts)
+        awards = search_awards_by_naics(naics=naics, days_back=days_back, limit=limit_per_naics)
+        all_awards.extend(awards)
+        time.sleep(0.5)
+        # Agency-specific searches for water-focused agencies
+        for agency in WATER_AGENCIES:
+            awards = search_awards_by_naics(naics=naics, days_back=days_back,
+                                             limit=limit_per_naics // 2, agency_code=agency)
+            all_awards.extend(awards)
+            time.sleep(0.5)
 
     companies = aggregate_by_recipient(all_awards)
     return filter_icp_range(companies)
@@ -472,6 +503,8 @@ def run_usaspending_hunt(
         sectors_to_run.append(("Defense", hunt_defense_contractors))
     if sector in (None, "energy"):
         sectors_to_run.append(("Power & Grid Infrastructure", hunt_energy_contractors))
+    if sector in (None, "water"):
+        sectors_to_run.append(("Water & Wastewater Infrastructure", hunt_water_contractors))
 
     for sector_name, hunt_fn in sectors_to_run:
         logger.info(f"[USASpending] Hunting {sector_name}...")
@@ -509,7 +542,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="ECAS USASpending Hunter")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--sector", choices=["defense", "energy"], default=None)
+    parser.add_argument("--sector", choices=["defense", "energy", "water"], default=None)
     parser.add_argument("--days-back", type=int, default=365)
     parser.add_argument("--limit", type=int, default=100)
     args = parser.parse_args()
