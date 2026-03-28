@@ -112,22 +112,18 @@ def search_awards_by_naics(
             "time_period": [{"start_date": date_start, "end_date": date_end}],
         },
         "fields": [
-            "recipient_name",
-            "recipient_uei",
-            "recipient_location",
-            "award_amount",
-            "total_obligation",
-            "awarding_agency_name",
-            "awarding_sub_agency_name",
-            "naics_code",
-            "naics_description",
-            "period_of_performance_start_date",
-            "period_of_performance_current_end_date",
-            "description",
-            "award_id",
-            "cage_code",
+            "Recipient Name",
+            "recipient_id",
+            "Award Amount",
+            "Base Obligation Date",
+            "Awarding Agency",
+            "Awarding Sub Agency",
+            "NAICS Code",
+            "Description",
+            "Place of Performance State Code",
+            "Place of Performance City Code",
         ],
-        "sort": "total_obligation",
+        "sort": "Base Obligation Date",
         "order": "desc",
         "limit": min(limit, 100),
         "page": 1,
@@ -181,26 +177,25 @@ def aggregate_by_recipient(awards: list[dict]) -> list[dict]:
     companies = {}
 
     for award in awards:
-        name = (award.get("recipient_name") or "").strip()
+        name = (award.get("Recipient Name") or award.get("recipient_name") or "").strip()
         if not name or name in ("UNKNOWN", "REDACTED"):
             continue
 
-        # State filter
-        loc = award.get("recipient_location") or {}
-        state = loc.get("state_code", "")
+        # State filter (new API uses top-level fields)
+        state = award.get("Place of Performance State Code", "")
         if state and TARGET_STATES and state not in TARGET_STATES:
             continue
 
-        uei = award.get("recipient_uei", "")
-        key = uei or name.upper()
+        recipient_id = award.get("recipient_id", "")
+        key = recipient_id or name.upper()
 
         if key not in companies:
             companies[key] = {
                 "name": name,
-                "uei": uei,
-                "cage_code": award.get("cage_code", ""),
+                "uei": recipient_id,
+                "cage_code": "",
                 "state": state,
-                "city": loc.get("city_name", ""),
+                "city": award.get("Place of Performance City Code", ""),
                 "total_obligated_m": 0.0,
                 "award_count": 0,
                 "agencies": set(),
@@ -209,23 +204,23 @@ def aggregate_by_recipient(awards: list[dict]) -> list[dict]:
                 "contract_descriptions": [],
             }
 
-        obligated = float(award.get("total_obligation") or 0)
+        obligated = float(award.get("Award Amount") or award.get("total_obligation") or 0)
         companies[key]["total_obligated_m"] += obligated / 1_000_000
         companies[key]["award_count"] += 1
 
-        agency = award.get("awarding_agency_name", "")
+        agency = award.get("Awarding Agency", award.get("awarding_agency_name", ""))
         if agency:
             companies[key]["agencies"].add(agency)
 
-        naics = award.get("naics_code", "")
+        naics = award.get("NAICS Code", award.get("naics_code", ""))
         if naics:
-            companies[key]["naics_codes"].add(naics)
+            companies[key]["naics_codes"].add(str(naics))
 
-        award_date = award.get("period_of_performance_start_date", "")
+        award_date = award.get("Base Obligation Date", award.get("period_of_performance_start_date", ""))
         if award_date and award_date > companies[key]["latest_award_date"]:
             companies[key]["latest_award_date"] = award_date
 
-        desc = award.get("description", "")
+        desc = award.get("Description", award.get("description", ""))
         if desc and len(companies[key]["contract_descriptions"]) < 3:
             companies[key]["contract_descriptions"].append(desc[:100])
 
@@ -304,31 +299,29 @@ def hunt_energy_contractors(days_back: int = 365, limit_per_naics: int = 100) ->
 
 def hunt_water_contractors(days_back: int = 365, limit_per_naics: int = 100) -> list[dict]:
     """
-    Find water/wastewater EPC contractors via NAICS 237110.
-    Targets EPA, Army Corps, and USDA Rural Development water grants.
+    Find water/wastewater EPC contractors via water-specific NAICS codes.
+    Water infrastructure revenue is primarily state/municipal SRF-funded — federal contracts
+    are a smaller share, so use a lower revenue proxy threshold ($500K min vs $5M for power).
     """
     WATER_NAICS = {
         "237110": "Water and Sewer Line Construction",
-        "238220": "Plumbing, Heating, A/C Contractors",  # water treatment plant MEP
-        "541330": "Engineering Services",                  # municipal water design-build
+        "238220": "Plumbing, Heating, and Air-Conditioning Contractors",
     }
-    WATER_AGENCIES = ["068", "096", "012"]  # EPA, Army Corps, USDA
     all_awards = []
 
     for naics in WATER_NAICS:
-        # Broad search first (includes municipal/state contracts)
         awards = search_awards_by_naics(naics=naics, days_back=days_back, limit=limit_per_naics)
         all_awards.extend(awards)
         time.sleep(0.5)
-        # Agency-specific searches for water-focused agencies
-        for agency in WATER_AGENCIES:
-            awards = search_awards_by_naics(naics=naics, days_back=days_back,
-                                             limit=limit_per_naics // 2, agency_code=agency)
-            all_awards.extend(awards)
-            time.sleep(0.5)
 
     companies = aggregate_by_recipient(all_awards)
-    return filter_icp_range(companies)
+    # Water EPC ICP: lower federal contract floor since most revenue is state/municipal
+    filtered = [
+        c for c in companies
+        if 0.5 <= c["total_obligated_m"] <= REVENUE_PROXY_MAX_M
+    ]
+    logger.info(f"[USASpending] Water ICP filter: {len(companies)} → {len(filtered)} companies")
+    return filtered
 
 
 # ── Airtable upsert ────────────────────────────────────────────────────────────
@@ -428,15 +421,21 @@ def upsert_companies_to_airtable(companies: list[dict], sector: str, dry_run: bo
         except Exception:
             pass
 
+        import json as _json
         fields = {
             "owner_company": name,
-            "sector": sector,
             "stage": "Identified",
             "priority": "High" if company["total_obligated_m"] >= 20 else "Medium",
             "icp_fit": "Strong" if company["total_obligated_m"] >= 20 else "Moderate",
-            "notes": _build_notes(company, sector),
-            "signal_type": "government_contract",
+            "analyst_notes": _build_notes(company, sector),
+            "signal_type": "other",
             "confidence_score": _confidence_from_contracts(company),
+            "positioning_notes": _json.dumps({
+                "sector": sector,
+                "source": "USASpending.gov",
+                "total_obligated_m": round(company["total_obligated_m"], 2),
+                "award_count": company["award_count"],
+            }),
         }
 
         try:
