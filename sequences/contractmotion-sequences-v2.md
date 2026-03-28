@@ -364,34 +364,45 @@ Good luck out there.
 
 ---
 
-## Sequence IDs Reference
+## Sequence IDs Reference (Updated 2026-03-28 — Personalization Pass)
+
+**Personalization changes applied:**
+- `{{first_name}},` greeting added to all emails (Emails 1-6, all 4 campaigns)
+- PS added to Email 3 (social proof): "If {{first_name}} is not the right person for this — happy to connect with whoever handles project development or BD at {{company_name}}."
+- Email 6 updated to use "leaving this here for {{first_name}}" subject + same PS
 
 | Campaign | Seq | Smartlead ID | Day | Status |
 |----------|-----|-------------|-----|--------|
-| 3005694 Power & Grid | 1 | 6657767 | 0 | Updated |
-| 3005694 Power & Grid | 2 | 6657768 | 4 | Updated |
-| 3005694 Power & Grid | 3 | 6657769 | 9 | Updated |
-| 3005694 Power & Grid | 4 | 6657770 | 15 | Updated |
-| 3005694 Power & Grid | 5 | 6657771 | 22 | Updated |
-| 3005694 Power & Grid | 6 | 6657772 | 30 | Updated |
-| 3040599 Data Center | 1 | 6993820 | 0 | Inserted |
-| 3040599 Data Center | 2 | 6993821 | 4 | Inserted |
-| 3040599 Data Center | 3 | 6993822 | 9 | Inserted |
-| 3040599 Data Center | 4 | 6993823 | 15 | Inserted |
-| 3040599 Data Center | 5 | 6993824 | 22 | Inserted |
-| 3040599 Data Center | 6 | 6681006 | 30 | Updated |
-| 3040600 Water | 1 | 6993825 | 0 | Inserted |
-| 3040600 Water | 2 | 6993826 | 4 | Inserted |
-| 3040600 Water | 3 | 6993827 | 9 | Inserted |
-| 3040600 Water | 4 | 6993828 | 15 | Inserted |
-| 3040600 Water | 5 | 6993829 | 22 | Inserted |
-| 3040600 Water | 6 | 6681012 | 30 | Updated |
-| 3040601 Industrial | 1 | 6993830 | 0 | Inserted |
-| 3040601 Industrial | 2 | 6993831 | 4 | Inserted |
-| 3040601 Industrial | 3 | 6993832 | 9 | Inserted |
-| 3040601 Industrial | 4 | 6993833 | 15 | Inserted |
-| 3040601 Industrial | 5 | 6993834 | 22 | Inserted |
-| 3040601 Industrial | 6 | 6681018 | 30 | Updated |
+| 3005694 Power & Grid | 1 | 6993869 | 0 | Updated + {{first_name}} |
+| 3005694 Power & Grid | 2 | 6993870 | 4 | Updated + {{first_name}} |
+| 3005694 Power & Grid | 3 | 6993871 | 9 | Updated + {{first_name}} + PS |
+| 3005694 Power & Grid | 4 | 6993872 | 15 | Updated + {{first_name}} |
+| 3005694 Power & Grid | 5 | 6993873 | 22 | Updated + {{first_name}} |
+| 3005694 Power & Grid | 6 | 6993874 | 30 | Updated + {{first_name}} + PS |
+| 3040599 Data Center | 1 | (inserted 2026-03-28) | 0 | Inserted + {{first_name}} |
+| 3040599 Data Center | 2 | (inserted 2026-03-28) | 4 | Inserted + {{first_name}} |
+| 3040599 Data Center | 3 | (inserted 2026-03-28) | 9 | Inserted + {{first_name}} + PS |
+| 3040599 Data Center | 4 | (inserted 2026-03-28) | 15 | Inserted + {{first_name}} |
+| 3040599 Data Center | 5 | (inserted 2026-03-28) | 22 | Inserted + {{first_name}} |
+| 3040599 Data Center | 6 | 6993875 | 30 | Updated + {{first_name}} + PS |
+| 3040600 Water | 1 | (inserted 2026-03-28) | 0 | Inserted + {{first_name}} |
+| 3040600 Water | 2 | (inserted 2026-03-28) | 4 | Inserted + {{first_name}} |
+| 3040600 Water | 3 | (inserted 2026-03-28) | 9 | Inserted + {{first_name}} + PS |
+| 3040600 Water | 4 | (inserted 2026-03-28) | 15 | Inserted + {{first_name}} |
+| 3040600 Water | 5 | (inserted 2026-03-28) | 22 | Inserted + {{first_name}} |
+| 3040600 Water | 6 | 6993876 | 30 | Updated + {{first_name}} + PS |
+| 3040601 Industrial | 1 | (inserted 2026-03-28) | 0 | Inserted + {{first_name}} |
+| 3040601 Industrial | 2 | (inserted 2026-03-28) | 4 | Inserted + {{first_name}} |
+| 3040601 Industrial | 3 | (inserted 2026-03-28) | 9 | Inserted + {{first_name}} + PS |
+| 3040601 Industrial | 4 | (inserted 2026-03-28) | 15 | Inserted + {{first_name}} |
+| 3040601 Industrial | 5 | (inserted 2026-03-28) | 22 | Inserted + {{first_name}} |
+| 3040601 Industrial | 6 | 6993877 | 30 | Updated + {{first_name}} + PS |
+
+## NOTE: Duplicate Seq Entries (Smartlead API artifact)
+During the 2026-03-28 personalization push, a few extra sequence entries were created by
+test/probe calls and are now associated with canonical seq_numbers. They all have correct
+content applied. Clean up via Smartlead UI if desired (IDs: 6993901, 6993902, 6993905, 6993906, 6993907).
 
 ## ACTION NEEDED
 - Delete seq7 (ID: 6993818) from campaign 3005694 manually in Smartlead UI — diagnostic test artifact
+- Review/clean up duplicate seq entries above in Smartlead UI (optional, content is correct)

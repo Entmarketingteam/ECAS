@@ -25,10 +25,13 @@ Positioning: "We get you on the short-list before the RFP drops."
 - `deals` = `tbl2ZkD20cf6zMxJj`
 
 ## Smartlead
-- **Campaign:** `3005694` — "ECAS — EPC Power & Grid Outreach 2026"
-- 6 emails: Day 0/4/9/15/22/30 ✅ updated 2026-03-13 | 60 leads in sequence
-- ⚠️ Sending from marketingteam@nickient.com — needs dedicated ECAS domain/mailbox
-- Sending domains to buy: `contractmotion.io`, `getcontractmotion.com` — then 3-week warmup before switching
+- **Campaign `3005694`** — "ECAS — EPC Power & Grid Outreach 2026" | 6 emails Day 0/4/9/15/22/30 | 60 leads
+- **Campaign `3040599`** — "ContractMotion — Data Center & AI Infrastructure 2026" | 6 emails ✅ 2026-03-15
+- **Campaign `3040600`** — "ContractMotion — Water & Wastewater Infrastructure 2026" | 6 emails ✅ 2026-03-15
+- **Campaign `3040601`** — "ContractMotion — Industrial & Manufacturing Facilities 2026" | 6 emails ✅ 2026-03-15
+- ⚠️ Sending from marketingteam@nickient.com — switch after warmup completes (~2026-04-06)
+- **Sending domains purchased 2026-03-16:** `getcontractmotion.com`, `trycontractmotion.com`, `contractmotionai.com`, `aicontractmotion.com`, `usecontractmotion.com`
+- Warmup start: 2026-03-16 | Warmup end (3 weeks): ~2026-04-06 | Then switch campaigns to new inboxes
 
 ## Admin API
 - `POST /admin/run/{job_id}` — trigger any job manually
@@ -100,7 +103,11 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 - [x] Register domain — ContractMotion.com ✅ purchased 2026-03-10
 - [x] Expand Smartlead sequence to 6 emails ✅ 2026-03-13
 - [ ] **PRIORITY: Fix FERC poller** — replace with EIA API (`api.eia.gov`) + PJM/ERCOT alternatives
-- [ ] **PRIORITY: Purchase sending domains** — `contractmotion.io` + `getcontractmotion.com`, set up Google Workspace mailboxes, add to Smartlead warmup (3 weeks)
+- [x] **Sending domains purchased** — 5 domains, 4 inboxes exist on 2 domains ✅
+- [ ] **Start Smartlead warmup** — generate app passwords (Google Account → Security → App passwords), store in Doppler (`ecas/dev`), run `doppler run --project ecas --config dev -- python3 tools/smartlead_warmup_setup.py`
+  - Doppler keys needed: `INBOX_ETHAN_AICONTRACTMOTION_PASS`, `INBOX_ETHAN_ATCHLEY_AICONTRACTMOTION_PASS`, `INBOX_KARLEE_AICONTRACTMOTION_PASS`, `INBOX_ETHAN_CONTRACTMOTIONAI_PASS`
+  - DNS fix needed for `contractmotionai.com`: add `v=spf1 include:_spf.google.com -all` TXT record at `@` (Google Domains UI)
+  - 3 remaining domains (`getcontractmotion.com`, `trycontractmotion.com`, `usecontractmotion.com`) need Workspace setup + mailbox creation before they can be added
 - [ ] Wire new sending domains to Smartlead campaign (replace marketingteam@nickient.com)
 - [x] Wire n8n credentials + activate all 5 workflows ✅ 2026-03-14
 - [ ] Add Airtable linked/formula fields manually (see Airtable Manual Items below)
