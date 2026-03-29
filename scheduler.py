@@ -489,7 +489,7 @@ def job_weekly_digest():
         projects = at._get("projects", {})
         enrolled = sum(
             1 for c in contacts
-            if c.get("fields", {}).get("outreach_status") == "enrolled"
+            if c.get("fields", {}).get("outreach_status") == "in_sequence"
         )
 
         msg_lines = [
