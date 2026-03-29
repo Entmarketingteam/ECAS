@@ -131,10 +131,13 @@ def run_scraper() -> dict:
             desc = r.get("Description", "") or ""
             recipient = r.get("Recipient Name", "") or ""
 
-            # Determine sector
+            # Determine sector — require a real NAICS or description match.
+            # Do NOT fall back to default_sector: keyword "abb" fetches ABBOTT, etc.
             sector = _match_sector_by_naics(naics)
             if not sector:
-                sector = _match_sector_by_description(desc, recipient) or default_sector
+                sector = _match_sector_by_description(desc, recipient)
+            if not sector:
+                continue  # skip false-positive keyword hits
 
             all_contracts.append({
                 "award_id": award_id,
