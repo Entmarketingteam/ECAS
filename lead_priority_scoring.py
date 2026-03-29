@@ -7,6 +7,7 @@ ECAS Lead Priority Scoring System
 - Tags top contacts (C-suite at High priority companies) with TIER 1 analyst_notes
 """
 
+import re
 import requests
 import json
 import time
@@ -86,11 +87,22 @@ PRINCIPAL_TECHNICAL_EXCLUSIONS = ["engineer", "analyst", "scientist", "architect
 VP_KEYWORDS      = ["vp ", "vice president", "vp,", "vp-", "v.p."]
 DIR_KEYWORDS     = ["director"]
 
+def _word_in(keyword: str, text: str) -> bool:
+    """True if keyword appears as a whole word (or phrase) in text."""
+    return bool(re.search(r'(?<![a-z])' + re.escape(keyword) + r'(?![a-z])', text))
+
 def title_tier(title):
     if not title:
         return "Other"
     t = title.strip().lower()
-    if any(k in t for k in C_SUITE_KEYWORDS):
+    # VP check must come BEFORE C-Suite: "president" would substring-match
+    # "Vice President" before the VP check fires.
+    if any(k in t for k in VP_KEYWORDS):
+        return "VP"
+    # Use whole-word match for short C-Suite codes like "cto", "coo", "cfo"
+    # to avoid false positives: "cto" is inside "director", "cfo" inside nothing
+    # common, but better safe — all keywords use word-boundary check.
+    if any(_word_in(k, t) for k in C_SUITE_KEYWORDS):
         return "C-Suite"
     # "principal" only C-Suite if standalone or "managing principal"
     # but NOT "Principal Engineer", "Principal Analyst", etc.
@@ -99,8 +111,6 @@ def title_tier(title):
         if not is_technical:
             # standalone "principal" or "managing principal" or "principal partner"
             return "C-Suite"
-    if any(k in t for k in VP_KEYWORDS):
-        return "VP"
     if any(k in t for k in DIR_KEYWORDS):
         return "Director"
     return "Manager/Other"
