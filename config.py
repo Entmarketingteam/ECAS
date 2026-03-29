@@ -34,6 +34,7 @@ SMARTLEAD_CAMPAIGN_ID = os.environ.get("SMARTLEAD_CAMPAIGN_ID", "")
 # Power & Grid is the default fallback for any unmapped sector.
 SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     "Power & Grid Infrastructure":           "3005694",
+    "Nuclear & Critical Minerals":           "3005694",  # routes to Power & Grid (closest fit)
     "Data Center & AI Infrastructure":       "3040599",
     "Water & Wastewater Infrastructure":     "3040600",
     "Water & Wastewater":                    "3040600",  # alias

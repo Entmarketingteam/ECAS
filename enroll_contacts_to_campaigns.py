@@ -94,11 +94,11 @@ def enroll_in_smartlead(campaign_id, contact):
         return False, f'{r.status_code}: {r.text[:100]}'
 
 def update_airtable_campaign(record_id, campaign_id):
-    """Update smartlead_campaign_id in Airtable."""
+    """Update smartlead_campaign_id and outreach_status in Airtable."""
     r = requests.patch(
         f'https://api.airtable.com/v0/{BASE_ID}/{CONTACTS_TABLE}/{record_id}',
         headers=AT_HEADERS,
-        json={'fields': {'smartlead_campaign_id': str(campaign_id)}}
+        json={'fields': {'smartlead_campaign_id': str(campaign_id), 'outreach_status': 'in_sequence'}}
     )
     return r.ok
 
