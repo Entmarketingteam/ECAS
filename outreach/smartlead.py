@@ -9,6 +9,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+import json
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -184,7 +185,14 @@ def enroll_airtable_contacts(
         if projects:
             proj_fields = projects[0].get("fields", {})
             heat = float(proj_fields.get("confidence_score") or 0)
-            sector = proj_fields.get("scope_summary") or sector
+            # Sector lives in positioning_notes JSON, not a top-level field
+            raw_notes = proj_fields.get("positioning_notes", "")
+            if raw_notes:
+                try:
+                    notes_data = json.loads(raw_notes)
+                    sector = notes_data.get("sector") or sector
+                except (json.JSONDecodeError, TypeError):
+                    pass
             if heat < min_heat_score:
                 logger.debug(f"[Smartlead] {company} heat={heat} < {min_heat_score} — skipping")
                 skipped += 1
