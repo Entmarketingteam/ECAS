@@ -108,7 +108,27 @@ def main():
     projects_list = fetch_all(PROJECTS_TABLE)
     projects_map = {r['id']: r for r in projects_list}
 
-    print(f'  Contacts: {len(contacts)}, Projects: {len(projects_map)}')
+    # Build company_name → sector lookup for fast fallback
+    company_sector_map = {}
+    for p in projects_list:
+        f = p['fields']
+        company = (f.get('owner_company') or '').strip().lower()
+        if not company:
+            continue
+        notes_raw = f.get('positioning_notes', '')
+        if notes_raw:
+            try:
+                notes = json.loads(notes_raw)
+                sector = notes.get('sector', '')
+                if sector:
+                    for s in SECTOR_TO_CAMPAIGN:
+                        if s.lower() in sector.lower():
+                            company_sector_map[company] = s
+                            break
+            except:
+                pass
+
+    print(f'  Contacts: {len(contacts)}, Projects: {len(projects_map)}, Company→sector map: {len(company_sector_map)}')
 
     # Filter: only contacts that don't have smartlead_campaign_id set
     to_route = [c for c in contacts if not c['fields'].get('smartlead_campaign_id')]
@@ -134,6 +154,11 @@ def main():
                 if s:
                     sector = s
                     break
+
+        # Final fallback: look up by company_name
+        if not sector:
+            company_key = (f.get('company_name') or '').strip().lower()
+            sector = company_sector_map.get(company_key)
 
         if not sector:
             skipped['unknown'] += 1
