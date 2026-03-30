@@ -50,6 +50,16 @@ SOURCE_MAP = {
     "hedge_fund": "manual",
     # New signal types (added 2026-03-13)
     "ppa_announcement": "rss_feed",   # PPA monitor — RSS-sourced PPA deal announcements
+    # New signal types (added 2026-03-28)
+    "epa_compliance": "manual",       # EPA ECHO enforcement/compliance signals
+    "doe_grant": "rss_feed",          # DOE grants/loans (RSS + Grants.gov)
+    "congress_bill": "manual",        # Congressional appropriations/infrastructure bills
+    # New signal types (added 2026-03-30)
+    "sam_gov_opportunity": "manual",  # SAM.gov pre-sol / sources sought / solicitation
+    "federal_register": "manual",     # Federal Register proposed rules, NOIs, EIS
+    "sec_edgar": "manual",            # SEC EDGAR 8-K/10-K capex signals
+    "census_construction": "manual",  # Census Bureau construction spending trends
+    "bls_employment": "manual",       # BLS employment growth by construction NAICS
 }
 
 

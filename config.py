@@ -48,6 +48,11 @@ SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "#ecas-signals")
 # EIA Open Data API — free, register at https://www.eia.gov/opendata/register.php
 # Falls back to "DEMO_KEY" (rate-limited) if not set
 EIA_API_KEY = os.environ.get("EIA_API_KEY", "")
+# New Signal Source API Keys (all free registration)
+SAM_GOV_API_KEY = os.environ.get("SAM_GOV_API_KEY", "")       # sam.gov
+CENSUS_API_KEY = os.environ.get("CENSUS_API_KEY", "")          # api.census.gov
+BLS_API_KEY = os.environ.get("BLS_API_KEY", "")                # api.bls.gov
+CONGRESS_API_KEY = os.environ.get("CONGRESS_API_KEY", "")      # api.congress.gov
 
 # ─── ECAS Target Sectors ──────────────────────────────────────────────────────
 # These are the UTILITIES and infrastructure developers we monitor for signals.

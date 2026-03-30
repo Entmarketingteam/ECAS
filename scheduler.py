@@ -524,6 +524,98 @@ def job_weekly_digest():
         logger.error(f"Weekly digest job failed: {e}", exc_info=True)
 
 
+
+
+# ── New Signal Source Jobs (added 2026-03-30) ────────────────────────────────
+
+def job_sam_gov_opportunities():
+    """SAM.gov pre-solicitations + sources sought — the 'before the RFP' signals."""
+    logger.info("=== JOB: SAM.gov Opportunities ===")
+    try:
+        from signals.sam_gov_opportunities import run
+        result = run(push_to_airtable=True)
+        logger.info(f"SAM.gov opportunities done: {result}")
+    except Exception as e:
+        logger.error(f"SAM.gov opportunities job failed: {e}", exc_info=True)
+
+
+def job_federal_register():
+    """Federal Register: proposed rules, NOIs, EIS from DOE/EPA/DOD/NRC/FERC/DOT/DOI/USACE."""
+    logger.info("=== JOB: Federal Register ===")
+    try:
+        from signals.federal_register import run
+        result = run(push_to_airtable=True)
+        logger.info(f"Federal Register done: {result}")
+    except Exception as e:
+        logger.error(f"Federal Register job failed: {e}", exc_info=True)
+
+
+def job_sec_edgar_search():
+    """SEC EDGAR full-text search for capex signals in 8-K and 10-K filings."""
+    logger.info("=== JOB: SEC EDGAR Search ===")
+    try:
+        from signals.sec_edgar_search import run
+        result = run(push_to_airtable=True)
+        logger.info(f"SEC EDGAR search done: {result}")
+    except Exception as e:
+        logger.error(f"SEC EDGAR search job failed: {e}", exc_info=True)
+
+
+def job_census_construction():
+    """Census Bureau construction spending trends + building permits."""
+    logger.info("=== JOB: Census Construction Spending ===")
+    try:
+        from signals.census_construction import run
+        result = run(push_to_airtable=True)
+        logger.info(f"Census construction done: {result}")
+    except Exception as e:
+        logger.error(f"Census construction job failed: {e}", exc_info=True)
+
+
+def job_bls_employment():
+    """BLS employment growth by construction NAICS — hiring surge = sector expansion."""
+    logger.info("=== JOB: BLS Employment ===")
+    try:
+        from signals.bls_employment import run
+        result = run(push_to_airtable=True)
+        logger.info(f"BLS employment done: {result}")
+    except Exception as e:
+        logger.error(f"BLS employment job failed: {e}", exc_info=True)
+
+
+def job_epa_compliance():
+    """EPA ECHO enforcement — consent decrees + SNC = forced capital investment."""
+    logger.info("=== JOB: EPA Compliance ===")
+    try:
+        from signals.epa_compliance import run
+        result = run(push_to_airtable=True)
+        logger.info(f"EPA compliance done: {result}")
+    except Exception as e:
+        logger.error(f"EPA compliance job failed: {e}", exc_info=True)
+
+
+def job_doe_grants():
+    """DOE LPO/GDO/EERE grants + Grants.gov infrastructure opportunities."""
+    logger.info("=== JOB: DOE Grants ===")
+    try:
+        from signals.doe_grants import run
+        result = run(push_to_airtable=True)
+        logger.info(f"DOE grants done: {result}")
+    except Exception as e:
+        logger.error(f"DOE grants job failed: {e}", exc_info=True)
+
+
+def job_congress_appropriations():
+    """Congressional appropriations + infrastructure bills tracking."""
+    logger.info("=== JOB: Congress Appropriations ===")
+    try:
+        from signals.congress_appropriations import run
+        result = run(push_to_airtable=True)
+        logger.info(f"Congress appropriations done: {result}")
+    except Exception as e:
+        logger.error(f"Congress appropriations job failed: {e}", exc_info=True)
+
+
 # ── Hot signal threshold ───────────────────────────────────────────────────────
 
 _HOT_SIGNAL_THRESHOLD = 55.0
@@ -982,6 +1074,22 @@ def create_scheduler() -> BackgroundScheduler:
     # Budget window monitor: every hour so Day 1 alert fires within 60 min.
     scheduler.add_job(job_budget_window_monitor, IntervalTrigger(hours=1), id="budget_window_monitor")
 
+    # ── New signal sources (added 2026-03-30) ─────────────────────────────────
+    # SAM.gov + Federal Register: every 12h (staggered)
+    scheduler.add_job(job_sam_gov_opportunities, IntervalTrigger(hours=12, start_date="2000-01-01 04:00:00"), id="sam_gov")
+    scheduler.add_job(job_federal_register, IntervalTrigger(hours=12, start_date="2000-01-01 04:30:00"), id="federal_register")
+    # DOE grants: daily
+    scheduler.add_job(job_doe_grants, CronTrigger(hour=6, minute=30), id="doe_grants")
+    # SEC EDGAR: Wednesdays
+    scheduler.add_job(job_sec_edgar_search, CronTrigger(day_of_week="wed", hour=8, minute=0), id="sec_edgar")
+    # EPA compliance: Thursdays
+    scheduler.add_job(job_epa_compliance, CronTrigger(day_of_week="thu", hour=7, minute=0), id="epa_compliance")
+    # Congress appropriations: Fridays
+    scheduler.add_job(job_congress_appropriations, CronTrigger(day_of_week="fri", hour=8, minute=0), id="congress")
+    # Census + BLS: 1st of month
+    scheduler.add_job(job_census_construction, CronTrigger(day=1, hour=9, minute=0), id="census_construction")
+    scheduler.add_job(job_bls_employment, CronTrigger(day=1, hour=10, minute=0), id="bls_employment")
+
     return scheduler
 
 
@@ -1026,6 +1134,14 @@ def run_job_now(job_id: str) -> dict:
         "job_posting_monitor": job_job_posting_monitor,
         "ferc_rss": job_ferc_rss,
         "ppa_monitor": job_ppa_monitor,
+        "sam_gov": job_sam_gov_opportunities,
+        "federal_register": job_federal_register,
+        "sec_edgar": job_sec_edgar_search,
+        "census_construction": job_census_construction,
+        "bls_employment": job_bls_employment,
+        "epa_compliance": job_epa_compliance,
+        "doe_grants": job_doe_grants,
+        "congress": job_congress_appropriations,
     }
 
     fn = job_map.get(job_id)
