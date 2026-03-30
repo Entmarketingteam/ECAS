@@ -41,6 +41,9 @@ SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     "Industrial & Manufacturing Facilities": "3040601",
     "Defense":                               "3095136",
     "Defense & Federal Infrastructure":      "3095136",  # alias
+    # Drone/DFR vertical — B2G track targeting drone vendor BD/sales teams
+    # Campaign created 2026-03-30 — 6 sequences live
+    "Drone & Public Safety Technology":      "3103531",
 }
 REDUCTO_API_KEY = os.environ.get("REDUCTO_API_KEY", "")
 SLACK_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN", "")
@@ -183,6 +186,50 @@ TARGET_SECTORS = {
         "naics_codes": ["221310", "221320", "237110", "237120", "562212"],
         "description": "Municipal water and wastewater infrastructure upgrades funded by IIJA/BIL state revolving funds. $50B+ federal spend through 2026.",
     },
+    # ── Drone & Public Safety Technology ─────────────────────────────────────
+    # B2G track: we monitor MUNICIPALITIES for DFR buying intent.
+    # We sell those signals to drone vendors (BRINC, Skydio, Percepto, Fotokite, Axon Air).
+    # Signals: SAM.gov UAS RFIs, FEMA/COPS grants, city council minutes, USASpending drone awards.
+    "Drone & Public Safety Technology": {
+        "keywords": [
+            # DFR program signals
+            "drone as first responder", "dfr program", "autonomous drone dispatch",
+            "police drone program", "public safety drone", "drone dock",
+            "drone nest", "drone in a box", "bvlos waiver",
+            # RTCC and surveillance infrastructure
+            "real-time crime center", "rtcc", "gunshot detection", "shotspotter",
+            "aerial surveillance", "persistent aerial", "drone overwatch",
+            # Vendor-specific (signals a municipality already bought or is evaluating)
+            "brinc", "skydio", "fotokite", "percepto", "axon air", "dedrone",
+            "american robotics", "droneup",
+            # Procurement + compliance signals
+            "ndaa compliant drone", "american-made uas", "section 848",
+            "uas program", "unmanned aircraft system police",
+            "public safety uas", "aerial first responder",
+            # Grant programs that fund DFR purchases
+            "cops technology grant", "bsir grant", "edward byrne jag",
+            "public safety technology grant",
+        ],
+        "tickers": [
+            # Publicly traded drone/public safety tech companies
+            "AXON",   # Axon Enterprise — body cams, RTCC, Dedrone
+            "KTOS",   # Kratos — defense UAS, public safety adjacency
+            "AVAV",   # AeroVironment — UAS manufacturer
+            "RCAT",   # Red Cat Holdings — public safety drones (NDAA-compliant)
+            # Gunshot detection / RTCC
+            "SST",    # SoundThinking (ShotSpotter)
+            # Public safety tech
+            "MSI",    # Motorola Solutions — RTCC, CAD integration
+        ],
+        "naics_codes": [
+            "922120",  # Police Protection
+            "922160",  # Fire Protection
+            "922190",  # Other Justice, Public Order, Safety
+            "336411",  # Aircraft Manufacturing (drone makers)
+            "334511",  # Search, Detection, Navigation instruments
+        ],
+        "description": "Municipal DFR program procurement signals — SAM.gov UAS RFIs, FEMA/COPS grant awards, BVLOS waivers, city council DFR resolutions. Sold to drone vendor BD teams.",
+    },
     "Industrial & Manufacturing Facilities": {
         "keywords": [
             "semiconductor fab", "chips act", "tsmc", "intel fab", "samsung fab",
@@ -211,6 +258,7 @@ TARGET_SECTORS = {
 }
 
 # ─── ICP Definition (companies we're selling TO) ─────────────────────────────
+# Primary ICP: mid-tier EPC contractors ($20M–$300M) in infrastructure verticals
 ICP = {
     "revenue_min_m": 20,    # $20M minimum
     "revenue_max_m": 300,   # $300M maximum
@@ -229,6 +277,38 @@ ICP = {
         "electrical contractor", "epc contractor", "power line contractor",
         "substation contractor", "transmission contractor", "distribution contractor",
         "grid contractor", "utility contractor", "renewable contractor",
+    ],
+}
+
+# B2G ICP: drone/DFR vendors we sell municipal buying signals TO
+ICP_DRONE_VENDORS = {
+    "revenue_min_m": 2,      # includes well-funded startups
+    "revenue_max_m": 1000,   # up to Axon/Motorola scale
+    "naics_codes": [
+        "336411",   # Aircraft Manufacturing (drone OEMs)
+        "334511",   # Search/Detection/Navigation instruments
+        "511210",   # Software Publishers (drone software platforms)
+        "561621",   # Security Systems Services
+        "922120",   # Police Protection (for agency-side contacts)
+    ],
+    "titles": [
+        "VP of Sales", "VP of Government Sales", "Director of Business Development",
+        "Head of Public Safety Sales", "Director of Federal and Government Programs",
+        "Chief Revenue Officer", "VP of Revenue", "Head of Sales",
+        "State and Local Government Sales", "Director of Partnerships",
+        "VP of Public Safety", "Head of Law Enforcement Sales",
+    ],
+    "target_companies": [
+        "BRINC", "Skydio", "Percepto", "Fotokite", "Axon Enterprise",
+        "American Robotics", "DroneUp", "Shield AI", "Red Cat Holdings",
+        "Motorola Solutions", "SoundThinking", "Dedrone",
+        "Joby Aviation", "Valqari", "Ondas Holdings",
+    ],
+    "keywords": [
+        "drone as first responder", "public safety drone", "dfr",
+        "autonomous drone", "drone-in-a-box", "police drone",
+        "ndaa compliant drone", "government drone sales",
+        "public safety technology", "law enforcement drone",
     ],
 }
 
@@ -438,6 +518,35 @@ RSS_FEEDS = [
         "name": "Semiconductor Engineering",
         "url": "https://semiengineering.com/feed/",
         "sector": "Industrial & Manufacturing Facilities",
+    },
+
+    # ── Drone & Public Safety Technology (added 2026-03-30) ──────────────────
+    # Monitor municipal DFR buying signals — grant awards, program announcements,
+    # technology procurement notices. Sold to drone vendor BD teams.
+    {
+        "name": "Police1",
+        "url": "https://www.police1.com/rss/all/",
+        "sector": "Drone & Public Safety Technology",
+    },
+    {
+        "name": "Government Technology",
+        "url": "https://www.govtech.com/rss/all",
+        "sector": "Drone & Public Safety Technology",
+    },
+    {
+        "name": "Urgent Communications (IWCE)",
+        "url": "https://urgentcomm.com/feed/",
+        "sector": "Drone & Public Safety Technology",
+    },
+    {
+        "name": "Commercial UAV News",
+        "url": "https://www.commercialuavnews.com/feed",
+        "sector": "Drone & Public Safety Technology",
+    },
+    {
+        "name": "Dronelife",
+        "url": "https://dronelife.com/feed/",
+        "sector": "Drone & Public Safety Technology",
     },
 ]
 
