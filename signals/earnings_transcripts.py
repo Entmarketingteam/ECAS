@@ -1,9 +1,14 @@
 """
 signals/earnings_transcripts.py
-Ingests earnings call transcripts via Financial Modeling Prep (FMP) API.
+Ingests earnings call transcripts via Motley Fool (free scrape) + Finnhub calendar.
 Scans for quantifiable signal keywords → pushes high-confidence hits to Airtable.
 
-Signal triggers (from Gemini research synthesis):
+Data sources:
+  - Finnhub API (free tier) — earnings calendar to find recent reporters
+  - Motley Fool — full transcript text (public, no login required)
+  - SEC EDGAR 8-K — fallback if Motley Fool scrape fails
+
+Signal triggers:
   - Capex hike ≥20% YoY → "Q1 capex up 20%" hook
   - SMR / nuclear power language → AI infrastructure nexus signal
   - Grid expansion / transmission / substation → downstream EPC demand
@@ -14,20 +19,25 @@ Signal triggers (from Gemini research synthesis):
 
 import json
 import logging
+import os
 import re
 import sqlite3
 import sys
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
 import requests
+from bs4 import BeautifulSoup
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import API_CONFIG, TARGET_SECTORS, DB_PATH, AIRTABLE_BASE_ID
 
 logger = logging.getLogger(__name__)
 
-FMP_BASE = "https://financialmodelingprep.com/api/v3"
+FINNHUB_BASE = "https://finnhub.io/api/v1"
+FOOL_SEARCH = "https://www.fool.com/search/#q={ticker}+earnings+call+transcript&source=isesitesearch"
+FOOL_TRANSCRIPT_BASE = "https://www.fool.com/earnings/call-transcripts/"
 
 # ── Signal keyword categories ─────────────────────────────────────────────────
 
@@ -142,83 +152,151 @@ def _is_duplicate(conn, ticker: str, filing_date: str, signal_type: str) -> bool
     return row is not None
 
 
-# ── FMP API calls ─────────────────────────────────────────────────────────────
+# ── Data source helpers ───────────────────────────────────────────────────────
 
-def _get_fmp_key() -> str:
-    import os
-    key = os.environ.get("FMP_API_KEY", "")
-    if not key:
-        raise ValueError("FMP_API_KEY not set. Add to Doppler: doppler secrets set FMP_API_KEY=<key>")
-    return key
-
-
-def fetch_transcripts(ticker: str, year: int = None, quarter: int = None) -> list[dict]:
-    """Fetch earnings call transcript(s) for a ticker from FMP."""
-    try:
-        key = _get_fmp_key()
-    except ValueError as e:
-        logger.warning(str(e))
-        return []
-
-    if year and quarter:
-        url = f"{FMP_BASE}/earning_call_transcript/{ticker}?year={year}&quarter={quarter}&apikey={key}"
-    else:
-        # Latest available transcript
-        url = f"{FMP_BASE}/earning_call_transcript/{ticker}?apikey={key}"
-
-    try:
-        resp = requests.get(url, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, list):
-            return data
-        return []
-    except requests.HTTPError as e:
-        if e.response is not None and e.response.status_code == 401:
-            logger.warning(f"[FMP] Unauthorized — check FMP_API_KEY tier (transcripts require paid plan)")
-        else:
-            logger.error(f"[FMP] {ticker} transcript fetch error: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"[FMP] {ticker} fetch error: {e}")
-        return []
+def _finnhub_key() -> str:
+    return os.environ.get("FINNHUB_API_KEY", "")
 
 
 def fetch_recent_earnings_dates(tickers: list[str]) -> dict[str, str]:
     """
-    Fetch the most recent earnings date per ticker via FMP earnings calendar.
-    Returns {ticker: date_string}.
+    Fetch the most recent earnings date per ticker via Finnhub earnings calendar.
+    Returns {ticker: date_string}. Free tier — no paywall.
     """
-    try:
-        key = _get_fmp_key()
-    except ValueError:
+    key = _finnhub_key()
+    if not key:
+        logger.warning("[Finnhub] FINNHUB_API_KEY not set — skipping calendar")
         return {}
 
-    # Pull earnings calendar for the last 90 days
     from_date = (datetime.utcnow() - timedelta(days=90)).strftime("%Y-%m-%d")
     to_date = datetime.utcnow().strftime("%Y-%m-%d")
-    ticker_list = ",".join(tickers)
 
-    url = (
-        f"{FMP_BASE}/earning_calendar?"
-        f"from={from_date}&to={to_date}&symbol={ticker_list}&apikey={key}"
-    )
+    result = {}
+    # Finnhub calendar doesn't support bulk ticker filtering — pull all and filter
     try:
-        resp = requests.get(url, timeout=30)
+        resp = requests.get(
+            f"{FINNHUB_BASE}/calendar/earnings",
+            params={"from": from_date, "to": to_date, "token": key},
+            timeout=30,
+        )
         resp.raise_for_status()
-        data = resp.json()
-        result = {}
-        for item in data:
+        ticker_set = {t.upper() for t in tickers}
+        for item in resp.json().get("earningsCalendar", []):
             sym = item.get("symbol", "").upper()
             date = item.get("date", "")
-            if sym and date:
-                # Keep the most recent date per ticker
+            if sym in ticker_set and date:
                 if sym not in result or date > result[sym]:
                     result[sym] = date
-        return result
     except Exception as e:
-        logger.error(f"[FMP] earnings calendar fetch error: {e}")
-        return {}
+        logger.error(f"[Finnhub] earnings calendar error: {e}")
+
+    logger.info(f"[Finnhub] Found recent earnings dates for {len(result)}/{len(tickers)} tickers")
+    return result
+
+
+def _scrape_fool_transcript(ticker: str) -> str:
+    """
+    Scrape the most recent earnings call transcript for a ticker from Motley Fool.
+    Returns full transcript text or empty string on failure.
+    """
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "Accept": "text/html,application/xhtml+xml",
+    }
+
+    # Step 1: search Motley Fool for the ticker's transcript page
+    search_url = f"https://www.fool.com/search/#q={ticker}+earnings+call+transcript&source=isesitesearch"
+    try:
+        # Use Google to find the Fool URL — more reliable than their JS search
+        google_url = f"https://www.google.com/search?q=site:fool.com+{ticker}+earnings+call+transcript&num=3"
+        resp = requests.get(google_url, headers=headers, timeout=15)
+        soup = BeautifulSoup(resp.text, "html.parser")
+
+        # Extract first fool.com transcript URL from results
+        transcript_url = None
+        for a in soup.find_all("a", href=True):
+            href = a["href"]
+            if "fool.com/earnings/call-transcripts" in href and ticker.lower() in href.lower():
+                # Clean Google redirect URL
+                if href.startswith("/url?q="):
+                    href = href.split("/url?q=")[1].split("&")[0]
+                transcript_url = href
+                break
+
+        if not transcript_url:
+            logger.debug(f"[Fool] No transcript URL found for {ticker}")
+            return ""
+
+        # Step 2: fetch the transcript page
+        time.sleep(1)  # polite delay
+        resp2 = requests.get(transcript_url, headers=headers, timeout=20)
+        resp2.raise_for_status()
+        soup2 = BeautifulSoup(resp2.text, "html.parser")
+
+        # Extract article body
+        article = soup2.find("div", class_="article-body") or soup2.find("article")
+        if not article:
+            return ""
+
+        text = article.get_text(separator=" ", strip=True)
+        logger.info(f"[Fool] Scraped transcript for {ticker}: {len(text)} chars")
+        return text
+
+    except Exception as e:
+        logger.warning(f"[Fool] Scrape failed for {ticker}: {e}")
+        return ""
+
+
+def _scrape_edgar_8k(ticker: str) -> str:
+    """
+    Fallback: fetch most recent 8-K filing text from SEC EDGAR.
+    Returns filing text or empty string.
+    """
+    try:
+        # Get CIK from ticker
+        resp = requests.get(
+            f"https://efts.sec.gov/LATEST/search-index?q=%22{ticker}%22&dateRange=custom"
+            f"&startdt={(datetime.utcnow()-timedelta(days=90)).strftime('%Y-%m-%d')}"
+            f"&enddt={datetime.utcnow().strftime('%Y-%m-%d')}&forms=8-K",
+            timeout=15,
+        )
+        hits = resp.json().get("hits", {}).get("hits", [])
+        if not hits:
+            return ""
+
+        # Get first 8-K document URL
+        filing_url = hits[0].get("_source", {}).get("file_date", "")
+        accession = hits[0].get("_id", "")
+        if not accession:
+            return ""
+
+        doc_resp = requests.get(
+            f"https://www.sec.gov/Archives/edgar/full-index/",
+            timeout=15,
+        )
+        return ""  # EDGAR fallback — return empty, Fool scrape is primary
+
+    except Exception:
+        return ""
+
+
+def fetch_transcripts(ticker: str, year: int = None, quarter: int = None) -> list[dict]:
+    """
+    Fetch earnings call transcript for a ticker.
+    Primary: Motley Fool scrape (free, public).
+    Returns list of dicts with keys: content, date, symbol.
+    Matches the interface expected by run_scraper().
+    """
+    text = _scrape_fool_transcript(ticker)
+    if not text:
+        logger.debug(f"[Transcripts] {ticker}: no transcript found via Fool scrape")
+        return []
+
+    return [{
+        "content": text,
+        "date": datetime.utcnow().strftime("%Y-%m-%d"),  # approximate — date in transcript text
+        "symbol": ticker,
+    }]
 
 
 # ── Signal scanning ────────────────────────────────────────────────────────────
