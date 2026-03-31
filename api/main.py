@@ -9,7 +9,7 @@ Endpoints:
   GET  /admin/scores        → Current sector heat scores
   POST /admin/enroll        → Manually enroll a lead in Smartlead
   POST /admin/generate-sequence → Generate cold email sequence via Claude (optional Smartlead push)
-  POST /scrape-pdf          → PDF extraction via Reducto
+  POST /scrape-pdf          → PDF extraction via Claude (anthropic)
   POST /scrape-page         → Playwright page scrape
   POST /parse-ercot-queue   → Parse ERCOT CSV
   POST /parse-pjm-queue     → Parse PJM JSON (VA filter)
@@ -24,6 +24,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
+import base64
+
+import anthropic
 import httpx
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, HTTPException, BackgroundTasks
@@ -32,7 +35,6 @@ from playwright.async_api import async_playwright
 from pydantic import BaseModel
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import REDUCTO_API_KEY
 
 logging.basicConfig(
     level=logging.INFO,
@@ -249,8 +251,9 @@ def admin_enroll(req: EnrollLeadRequest):
 
 @app.post("/scrape-pdf")
 async def scrape_pdf(req: ScrapePdfRequest):
-    if not REDUCTO_API_KEY:
-        raise HTTPException(status_code=500, detail="REDUCTO_API_KEY not set")
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not set")
     try:
         async with httpx.AsyncClient(timeout=60) as client:
             pdf_resp = await client.get(req.url, follow_redirects=True)
@@ -258,20 +261,33 @@ async def scrape_pdf(req: ScrapePdfRequest):
                 raise HTTPException(status_code=502, detail=f"Failed to fetch PDF: HTTP {pdf_resp.status_code}")
             pdf_bytes = pdf_resp.content
 
-            reducto_resp = await client.post(
-                "https://v1.api.reducto.ai/parse",
-                headers={"Authorization": f"Bearer {REDUCTO_API_KEY}"},
-                files={"file": ("document.pdf", io.BytesIO(pdf_bytes), "application/pdf")},
-                data={"return_text": "true"},
-            )
-
-        if reducto_resp.status_code != 200:
-            raise HTTPException(status_code=502, detail=f"Reducto error: {reducto_resp.status_code}")
-
-        data = reducto_resp.json()
+        pdf_b64 = base64.standard_b64encode(pdf_bytes).decode("utf-8")
+        ai_client = anthropic.Anthropic(api_key=anthropic_key)
+        message = ai_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4096,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "application/pdf",
+                            "data": pdf_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": "Extract all text from this PDF document. Return only the raw text content, preserving structure where meaningful.",
+                    },
+                ],
+            }],
+        )
+        extracted_text = message.content[0].text
         return {
-            "text": data.get("text") or data.get("content", ""),
-            "pages": data.get("num_pages") or data.get("pages", 0),
+            "text": extracted_text,
+            "pages": 0,
             "source_url": req.url,
         }
     except httpx.RequestError as e:
