@@ -16,11 +16,12 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import APOLLO_API_KEY, ICP
+from config import APOLLO_API_KEY, FINDYMAIL_API_KEY, ICP
 
 logger = logging.getLogger(__name__)
 
 APOLLO_BASE = "https://api.apollo.io/v1"
+FINDYMAIL_BASE = "https://app.findymail.com/api"
 
 
 def _apollo_headers() -> dict:
@@ -95,6 +96,31 @@ def _reveal_contacts(person_ids: list[str]) -> list[dict]:
     return results
 
 
+def _findymail_email(first_name: str, last_name: str, domain: str) -> str | None:
+    """
+    Findymail fallback: find email by name + company domain.
+    Called when Apollo bulk_match doesn't reveal an email.
+    """
+    if not FINDYMAIL_API_KEY or not domain:
+        return None
+    try:
+        resp = requests.post(
+            f"{FINDYMAIL_BASE}/search",
+            headers={"Authorization": f"Bearer {FINDYMAIL_API_KEY}", "Content-Type": "application/json"},
+            json={"name": f"{first_name} {last_name}".strip(), "domain": domain},
+            timeout=15,
+        )
+        if resp.status_code == 200:
+            contact = resp.json().get("contact", {})
+            email = contact.get("email", "")
+            if email:
+                logger.debug(f"[Findymail] Found {email} for {first_name} {last_name} @ {domain}")
+                return email
+    except requests.RequestException as e:
+        logger.debug(f"[Findymail] Error for {first_name} {last_name}: {e}")
+    return None
+
+
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
     """
     Apollo three-step people search:
@@ -137,20 +163,46 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
         return []
 
     # Filter to people who have an email in Apollo's database
-    candidates = [p for p in data.get("people", []) if p.get("has_email")]
+    # Also keep people without has_email for Findymail fallback
+    candidates = data.get("people", [])
     if not candidates:
-        logger.info(f"[Apollo] No people with emails found at '{company_name}'")
+        logger.info(f"[Apollo] No people found at '{company_name}'")
         return []
 
-    # Step 3: reveal emails via bulk_match
-    person_ids = [p["id"] for p in candidates]
-    revealed = _reveal_contacts(person_ids)
+    # Build domain map from Apollo org data for Findymail fallback
+    domain_map: dict[str, str] = {}
+    for p in candidates:
+        org = p.get("organization") or {}
+        domain = org.get("primary_domain", "")
+        if domain:
+            domain_map[p.get("id", "")] = domain
+
+    # Step 3: reveal emails via bulk_match (only for has_email candidates)
+    has_email_ids = [p["id"] for p in candidates if p.get("has_email")]
+    revealed_map: dict[str, dict] = {}
+    if has_email_ids:
+        for person in _reveal_contacts(has_email_ids):
+            revealed_map[person.get("id", "")] = person
 
     contacts = []
-    for person in revealed:
+    for candidate in candidates:
+        pid = candidate.get("id", "")
+        person = revealed_map.get(pid, candidate)
+
         email = person.get("email", "")
         if not email or person.get("email_status") == "invalid":
+            # Findymail fallback for missing or invalid emails
+            domain = domain_map.get(pid, "")
+            email = _findymail_email(
+                person.get("first_name", ""),
+                person.get("last_name", ""),
+                domain,
+            ) or ""
+
+        if not email:
             continue
+
+        source = "Apollo" if pid in revealed_map and revealed_map[pid].get("email") else "Findymail"
         contacts.append({
             "first_name": person.get("first_name", ""),
             "last_name": person.get("last_name", ""),
@@ -160,7 +212,7 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
             "linkedin_url": person.get("linkedin_url", ""),
             "phone": person.get("sanitized_phone", ""),
             "email_verified": person.get("email_status") == "verified",
-            "source": "Apollo",
+            "source": source,
         })
 
     logger.info(f"[Apollo] Found {len(contacts)} contacts with emails at '{company_name}'")

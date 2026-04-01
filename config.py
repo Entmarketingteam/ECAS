@@ -45,7 +45,7 @@ SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     # Campaign created 2026-03-30 — 6 sequences live
     "Drone & Public Safety Technology":      "3103531",
 }
-REDUCTO_API_KEY = os.environ.get("REDUCTO_API_KEY", "")
+FINDYMAIL_API_KEY = os.environ.get("FINDYMAIL_API_KEY", "")
 SLACK_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN", "")
 SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "#ecas-signals")
 # EIA Open Data API — free, register at https://www.eia.gov/opendata/register.php
