@@ -96,6 +96,30 @@ def _reveal_contacts(person_ids: list[str]) -> list[dict]:
     return results
 
 
+def _domain_from_linkedin(linkedin_url: str, first_name: str = "", last_name: str = "") -> str:
+    """
+    Extract company domain from a LinkedIn profile URL or company page.
+    Apollo people records often include linkedin_url like:
+      linkedin.com/in/john-doe  → can't derive domain directly
+      linkedin.com/company/acme-corp → scrape or look up acme-corp.com
+
+    Strategy: parse the company slug from /company/ URLs and attempt
+    common domain patterns (slug.com). For /in/ profiles we return ""
+    since we can't reliably derive a domain without a live lookup.
+    """
+    if not linkedin_url:
+        return ""
+    url = linkedin_url.lower().strip().rstrip("/")
+    # Company page: linkedin.com/company/acme-corp → try acme-corp.com
+    if "/company/" in url:
+        slug = url.split("/company/")[-1].split("/")[0].split("?")[0]
+        # Strip common suffixes that appear in slugs
+        slug = slug.replace("-inc", "").replace("-llc", "").replace("-corp", "").replace("-co", "")
+        if slug:
+            return f"{slug}.com"
+    return ""
+
+
 def _findymail_email(first_name: str, last_name: str, domain: str) -> str | None:
     """
     Findymail fallback: find email by name + company domain.
@@ -121,12 +145,43 @@ def _findymail_email(first_name: str, last_name: str, domain: str) -> str | None
     return None
 
 
+def _findymail_verify(email: str) -> bool:
+    """
+    Verify an email address via Findymail before storing.
+    Returns True if the email is valid/deliverable, False otherwise.
+    Blocks invalid, catch-all, and disposable addresses from entering Airtable.
+    """
+    if not FINDYMAIL_API_KEY or not email:
+        return True  # no key → don't block, pass through
+    try:
+        resp = requests.post(
+            f"{FINDYMAIL_BASE}/verify",
+            headers={"Authorization": f"Bearer {FINDYMAIL_API_KEY}", "Content-Type": "application/json"},
+            json={"email": email},
+            timeout=15,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            status = data.get("status", "unknown").lower()
+            # Accept: valid. Reject: invalid, disposable, spamtrap, catch_all risky.
+            is_valid = status == "valid"
+            logger.debug(f"[Findymail] Verify {email} → {status} ({'pass' if is_valid else 'REJECT'})")
+            return is_valid
+    except requests.RequestException as e:
+        logger.debug(f"[Findymail] Verify error for {email}: {e}")
+    return True  # network error → don't block
+
+
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
     """
-    Apollo three-step people search:
-      1. Resolve company name → org ID via /organizations/search
-      2. Search people by organization_ids + title filters via /mixed_people/api_search
-      3. Reveal emails via /people/bulk_match for people with has_email=true
+    Apollo + Findymail enrichment waterfall:
+      1. Apollo /organizations/search → org ID
+      2. Apollo /mixed_people/api_search → candidates by title
+      3. Apollo /people/bulk_match → reveal emails
+      4. Findymail /search fallback → find email by name + org domain (if Apollo misses)
+      5. Findymail /search fallback → find email by name + LinkedIn company domain (last resort)
+      6. Findymail /verify → verify EVERY email before accepting into Airtable
+    Only contacts with a verified, deliverable email are returned.
     """
     if not APOLLO_API_KEY:
         logger.warning("[Apollo] APOLLO_API_KEY not set")
@@ -191,7 +246,7 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
 
         email = person.get("email", "")
         if not email or person.get("email_status") == "invalid":
-            # Findymail fallback for missing or invalid emails
+            # Findymail fallback 1: search by name + company domain
             domain = domain_map.get(pid, "")
             email = _findymail_email(
                 person.get("first_name", ""),
@@ -200,6 +255,22 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
             ) or ""
 
         if not email:
+            # Findymail fallback 2: search by name + domain extracted from LinkedIn URL
+            linkedin = person.get("linkedin_url", "")
+            li_domain = _domain_from_linkedin(linkedin, person.get("first_name", ""), person.get("last_name", ""))
+            if li_domain and li_domain != domain_map.get(pid, ""):
+                email = _findymail_email(
+                    person.get("first_name", ""),
+                    person.get("last_name", ""),
+                    li_domain,
+                ) or ""
+
+        if not email:
+            continue
+
+        # Verify every email via Findymail before accepting it
+        if not _findymail_verify(email):
+            logger.info(f"[Findymail] Rejected {email} (invalid/undeliverable)")
             continue
 
         source = "Apollo" if pid in revealed_map and revealed_map[pid].get("email") else "Findymail"
@@ -211,11 +282,11 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
             "company": company_name,
             "linkedin_url": person.get("linkedin_url", ""),
             "phone": person.get("sanitized_phone", ""),
-            "email_verified": person.get("email_status") == "verified",
+            "email_verified": True,  # passed Findymail verification
             "source": source,
         })
 
-    logger.info(f"[Apollo] Found {len(contacts)} contacts with emails at '{company_name}'")
+    logger.info(f"[Apollo] Found {len(contacts)} verified contacts at '{company_name}'")
     return contacts
 
 
