@@ -1090,6 +1090,32 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(job_census_construction, CronTrigger(day=1, hour=9, minute=0), id="census_construction")
     scheduler.add_job(job_bls_employment, CronTrigger(day=1, hour=10, minute=0), id="bls_employment")
 
+    # ── Contractor Verticals (Janitorial, Roofing, Pest Control) ─────────────
+    # Main pipeline: signal → score → qualify → enrich → enroll (every 4h)
+    from contractor.pipeline.orchestrator import run_contractor_pipeline
+    from contractor.signals.hail_events import run_hail_signal_job
+    from contractor.pipeline.health_monitor import run_health_check
+    from contractor.config import CONTRACTOR_CAMPAIGN_MAP
+
+    scheduler.add_job(
+        run_contractor_pipeline,
+        IntervalTrigger(hours=4, start_date="2000-01-01 00:30:00"),
+        id="contractor_pipeline",
+        name="Contractor Signal → Enroll Pipeline",
+    )
+    scheduler.add_job(
+        run_hail_signal_job,
+        IntervalTrigger(hours=6, start_date="2000-01-01 01:00:00"),
+        id="contractor_hail_signals",
+        name="NOAA Hail Event Signal Scraper",
+    )
+    scheduler.add_job(
+        lambda: run_health_check(CONTRACTOR_CAMPAIGN_MAP),
+        IntervalTrigger(hours=6, start_date="2000-01-01 03:30:00"),
+        id="contractor_health",
+        name="Contractor Campaign Health Monitor",
+    )
+
     return scheduler
 
 
