@@ -17,6 +17,10 @@
 10. [Tool Stack Reference](#10-tool-stack-reference)
 11. [Sales Philosophy & Call Framework](#11-sales-philosophy--call-framework)
 12. [Operational Playbook: Clay + ENT Stack Integration](#12-operational-playbook-clay--ent-stack-integration)
+13. [BLUF Cold Email Framework](#13-bluf-cold-email-framework)
+14. [Autonomous Email Agents & Speed-of-Thought GTM Testing](#14-autonomous-email-agents--speed-of-thought-gtm-testing)
+15. [B2B List Building System (COLDIQ Framework)](#15-b2b-list-building-system-coldiq-framework)
+16. [Outbound Agents Reference (janskuba/outbound-agents)](#16-outbound-agents-reference)
 
 ---
 
@@ -743,5 +747,434 @@ Clay + signal scoring can power ad targeting:
 
 ---
 
+---
+
+## 13. BLUF Cold Email Framework
+
+### What Is BLUF?
+
+BLUF (Bottom Line Up Front) — a 3-line cold email structure. Reader self-qualifies in under 5 seconds.
+
+### The Formula
+
+| Line | Purpose | Pattern |
+|------|---------|---------|
+| **Line 1** | What you do + proof | `We [outcome] for [ICP] — [credibility signal]` |
+| **Line 2** | Who you've done it for | `We've worked with [name-drop or category]` |
+| **Line 3** | CTA | One specific, low-friction ask |
+
+### Examples
+
+**SaaS / Outbound:**
+```
+We book 15–30 qualified demos/month for B2B SaaS teams — without paid ads.
+Past clients include Rippling, Deel, and two YC S24 companies.
+Worth a 15-min call to see if it's a fit?
+```
+
+**Creator / Influencer Agency (ENT-relevant):**
+```
+We source vetted creators for DTC brands and deliver content that converts — average 4.2x ROAS.
+We've run campaigns for LMNT, Momentous, and a handful of Series B health brands.
+Open to a quick overview of how we'd approach your next launch?
+```
+
+**Backlink / PR Outreach:**
+```
+I place data-driven stories from B2B SaaS companies in TechCrunch, Fast Company, and niche trades.
+Recent placements for Notion, Linear, and a no-code startup with 2k Twitter followers.
+Got a story worth telling? Happy to assess it for free.
+```
+
+### Variations by Persona
+
+| Persona | Line 1 Tweak | Notes |
+|---------|-------------|-------|
+| Cold skeptic | Lead with outcome only, no adjectives | Drop "best-in-class", "leading", etc. |
+| Warm (viewed your site) | Reference the trigger | "Saw you're hiring for growth..." |
+| Re-engage (ghosted) | Cut to Line 3 only | "Still relevant?" |
+| Executive | Make Line 2 a peer reference | Drop client count, name the specific company |
+
+### Clay / Claygent Output Mapping
+
+Build one column per line in Clay.
+
+| Clay Column | Claygent Task | Output |
+|-------------|--------------|--------|
+| `bluf_line1` | Outcome + proof for this prospect's vertical | 1 sentence, no filler |
+| `bluf_line2` | Closest relevant client/case study match | 1 sentence, name-drop or category |
+| `bluf_line3` | CTA calibrated to company stage | 1 question or soft ask |
+| `bluf_full` | Concatenated final email | `{{bluf_line1}} {{bluf_line2}} {{bluf_line3}}` |
+
+### Claygent Prompt for BLUF Output
+
+```
+You are writing a 3-line BLUF cold email targeting {{company_name}}.
+
+Context:
+- Company: {{company_name}}
+- Industry: {{industry}}
+- Job title: {{job_title}}
+- Known trigger: {{trigger_signal}}
+
+Our offer: [YOUR OFFER + PROOF POINTS]
+Reference clients: [3-5 CLIENT NAMES OR CATEGORIES]
+
+Output exactly 3 lines. No subject line. No greeting. No sign-off.
+
+Line 1: What we do + credibility signal relevant to their vertical. One sentence.
+Line 2: Name-drop or relevant category of client. One sentence.
+Line 3: Low-friction CTA — one question, no exclamation marks.
+
+Return only the 3 lines. Nothing else.
+```
+
+**Rules:** Max 25 words per line. CTA must be a question. Never output subject lines, greetings, or signatures — those are handled downstream in Instantly/Smartlead.
+
+---
+
+## 14. Autonomous Email Agents & Speed-of-Thought GTM Testing
+
+### The Core Insight
+
+> Claude Code + `.env` with Instantly API key + 2,000 warmed inboxes = test any GTM or PR idea at the speed of thought.
+
+> Agents that run email on your behalf are the most underrated tool in your GTM stack.
+
+### The Stack
+
+| Tool | Role |
+|------|------|
+| **Apollo.io** | Lead sourcing + contact data |
+| **MillionVerifier** | Email validation before send |
+| **Instantly.ai** | Sending infrastructure + inbox warming |
+| **Hypertide.io** | Additional lead enrichment / signals |
+| **Claude Code / Agent** | Orchestration, copy generation, routing logic |
+| **Railway** | Persistent deployment once a motion proves out |
+
+### Workflow: Idea → Test → Scale
+
+```
+1. Identify GTM motion to test
+        ↓
+2. Pull leads (Apollo / Goose scraper prompts / Clay)
+        ↓
+3. Validate emails (MillionVerifier)
+        ↓
+4. Generate BLUF copy (Claude Code + Claygent)
+        ↓
+5. Load into Instantly campaign
+        ↓
+6. Run 5-7 days, measure reply rate
+        ↓
+7. Works → deploy persistent agent on Railway
+   Doesn't → kill it, iterate the angle
+```
+
+### Use Cases & Success Signals
+
+| Motion | What You're Testing | Signal That It Works |
+|--------|--------------------|--------------------|
+| Outbound sales | Offer, ICP, angle | >3% positive reply rate |
+| Backlink building | Pitch angle, site relevance | >5% link placement rate |
+| PR placements | Story hook, journalist fit | Any response from target pub |
+| Creator outreach | Brief framing, comp structure | >10% response rate |
+| Partnership / co-marketing | Value prop alignment | Meeting booked |
+
+### Persistent Agent on Railway (Post-Validation)
+
+When a test hits signal, deploy it as a persistent agent.
+
+**Agent `.env` minimums:**
+```env
+INSTANTLY_API_KEY=
+ANTHROPIC_API_KEY=
+APOLLO_API_KEY=
+MILLIONVERIFIER_API_KEY=
+AIRTABLE_API_KEY=
+AIRTABLE_BASE_ID=
+CAMPAIGN_ID=        # Instantly campaign to push leads into
+```
+
+### High-Intent Lead Scraper Prompts
+
+Use as Claude Code prompts, Goose skills, or Claygent research tasks. Each targets a specific intent signal.
+
+| # | Source | Prompt | Best For | Signal Strength |
+|---|--------|--------|----------|----------------|
+| 1 | **GitHub Repo Stargazers** | `Find everyone who starred this GitHub repo: [URL]. Get names, companies, job titles, contact info. CSV.` | Dev tools, API products, open-source B2B | Technical interest |
+| 2 | **LinkedIn Post Commenters** | `Find everyone who commented on this LinkedIn post: [URL]. Get names, titles, companies, LinkedIn URLs. CSV.` | Thought leadership, community products | Active opinion holder |
+| 3 | **Competitor 3-Star Reviews (G2)** | `Find people who left 3-star reviews for [COMPETITOR] on G2. Get names, titles, companies, key pain points. CSV.` | Direct competitor displacement | Unhappy but still in-market |
+| 4 | **New Job Starters (ICP)** | `Find people who started a new [TITLE] role in last 30-60 days at [INDUSTRY] companies. Get names, companies, LinkedIn URLs, start dates. CSV.` | Tools new hires evaluate in first 90 days | New budget + mandate |
+| 5 | **Conference Speakers** | `Find people speaking at [INDUSTRY] conferences this quarter. Get names, companies, titles, LinkedIn URLs, event name. CSV.` | Enterprise, partnership, co-marketing | High visibility + networking mode |
+
+### Intent Signal → Outreach Angle Map
+
+| Lead Source | BLUF Line 1 Angle |
+|-------------|------------------|
+| GitHub stargazers | Lead with integration or dev workflow benefit |
+| LinkedIn commenters | Reference the topic they engaged with |
+| G2 3-star reviews | Lead with the specific pain they named |
+| New job starters | "Teams like yours usually tackle X in the first 90 days..." |
+| Conference speakers | Reference the event or their talk topic |
+
+---
+
+## 15. B2B List Building System (COLDIQ Framework)
+
+> Source: COLDIQ B2B List Building Masterclass
+
+### Benchmarks
+
+| Metric | Single-Source Baseline | Multi-Source Target |
+|--------|----------------------|-------------------|
+| Data coverage | 50–60% TAM | 80–90% TAM |
+| Email validity | 60–70% | 95%+ |
+| List conversion | 1–2% | 5–15% |
+| Build time | 8–10 hours | 1–2 hours |
+
+### The 3 Pillars
+
+| Pillar | What It Means | Why It Matters |
+|--------|--------------|---------------|
+| **Coverage** | Use 2+ data sources for every list | Single source misses 40% of TAM |
+| **Enrichment** | Append firmographic, technographic, behavioral data before outreach | Raw lists convert at 1-2%; enriched at 5-15% |
+| **Precision** | Tier and score companies; concentrate effort on A-tier | Not all leads are equal |
+
+### 8-Phase Build Process
+
+#### Phase 1 — Define ICP
+
+| Dimension | Examples |
+|-----------|---------|
+| Firmographics | Industry, headcount, revenue, geography, company age |
+| Technographics | Stack in use (CRM, MAP, ESPs, infrastructure) |
+| Behavioral signals | Hiring for specific roles, funding rounds, job changes, content engagement |
+
+#### Phase 2 — Multi-Source Company Discovery
+
+| Source | Use Case |
+|--------|---------|
+| Apollo | Broad company search, industry/size filters |
+| LinkedIn Sales Nav | Account-level targeting, department signals |
+| Clay | Enrichment hub + scraping orchestration |
+| CRM export | Existing accounts, past opps, churned customers |
+| Web scraping | Niche directories, review sites, G2, Clutch |
+| Ocean.io | Lookalike company discovery |
+
+Coverage math: Apollo ~60-70%, Clay ~60-70%, LinkedIn ~70-80%, with ~40-50% overlap. Combined = 85-92%.
+
+#### Phase 3 — Company Enrichment & Scoring
+
+**Required enrichment fields:**
+
+| Category | Fields |
+|----------|--------|
+| Firmographic | Revenue, headcount, HQ, founded year |
+| Technographic | Tools in use (via BuiltWith, HG Insights, Clay) |
+| Funding | Last round, amount, investors, date |
+| Hiring | Open roles, department, hiring velocity |
+
+**Tiering:**
+
+| Tier | Criteria | Action |
+|------|----------|--------|
+| **A** | Exact ICP match + strong signals + decision-maker reachable | Full sequence + manual touch |
+| **B** | Partial ICP match + moderate signals | Automated sequence |
+| **C** | Low fit or low signal | Nurture only or skip |
+
+#### Phase 4 — People Discovery (Waterfall)
+
+Run in order, stop when found:
+1. LinkedIn Sales Navigator
+2. Apollo (people search by role + domain)
+3. Clay (enrichment + people lookup)
+4. Prospeo / Vayne (fallback)
+
+**Target personas by company size:**
+
+| Company Size | Primary | Secondary |
+|-------------|---------|-----------|
+| 1–50 | Founder / CEO | Head of [function] |
+| 51–200 | VP / Director | Manager + C-suite cc |
+| 201–1000 | Director / VP | C-suite sponsorship |
+| 1000+ | VP / SVP | Champion + executive |
+
+#### Phase 5 — Contact Enrichment & Validation
+
+**Email waterfall:** Apollo → Hunter.io → Prospeo → Findymail → Instantly Verify / ZeroBounce
+
+**Phone waterfall:** Apollo mobile → Lusha → Datagma → Kaspr
+
+**Personalization data per contact:**
+
+| Data Point | Source |
+|-----------|--------|
+| Recent LinkedIn post | LinkedIn scrape via Clay |
+| Job title change (last 90 days) | LinkedIn / Clay |
+| Company news / funding | Crunchbase / Clearbit |
+| Tech they use | BuiltWith / HG Insights |
+| Mutual connection or group | LinkedIn |
+
+#### Phase 6 — Deduplication
+
+| Level | Key Field | Tool |
+|-------|----------|------|
+| Company | Domain (normalized) | Clay, dedupe formula |
+| Contact | Email + LinkedIn URL | Clay, CRM native dedup |
+
+Rules: Normalize domains (strip `www.`, `http://`). Merge on email first, LinkedIn URL as fallback. Flag rather than delete.
+
+#### Phase 7 — Personalization & Segmentation
+
+**Segment variables:** Industry, company size, persona, trigger/signal.
+
+**AI icebreaker rules:**
+- Input: LinkedIn post, company news, recent hire, tech stack
+- Output: 1-2 sentence custom first line specific to that contact
+- Rule: If no real data point exists, use segment-level personalization — **never send a generic opener**
+
+#### Phase 8 — Activation
+
+| Step | Detail |
+|------|--------|
+| CRM sync | Push to HubSpot/Salesforce with dedup check on import |
+| Sequencer load | Instantly/Smartlead/Lemlist — separate campaigns by tier |
+| Conditional logic | A-tier: manual + automated hybrid; B-tier: full auto; C-tier: excluded or drip only |
+| Daily cap | Set sending limits per domain to protect deliverability |
+
+### Golden Rules
+
+1. **Multi-source everything** — 1 provider = 50-60% coverage, 2 = 80-90%
+2. **Enrich before outreach** — raw 1-2%, enriched 5-15%
+3. **Dedupe religiously** — company AND people level
+4. **Validate emails** — 30-40% in databases are invalid
+5. **Personalization at scale** — AI + real data, not generic fluff
+6. **Test & iterate** — track sources, enrichments, segment performance
+7. **Refresh monthly** — data decays 30% per year
+
+### Common Failure Modes
+
+| Mistake | Consequence | Fix |
+|---------|------------|-----|
+| Single data source | Miss 40% TAM | Layer 2+ sources |
+| No enrichment | 1-2% conversion | Enrich all contacts before activation |
+| Skip dedup | Duplicate sends, deliverability damage | Dedupe company AND contact level |
+| Generic personalization | Low reply rate | Real data points or skip it entirely |
+| No email validation | Bounce rate, domain blacklist | Validate with waterfall, target 95%+ |
+| Treating all leads equally | Wasted effort | Tier before sequencing |
+| Vague ICP | Low precision | Define with all 3 dimensions before Phase 2 |
+
+---
+
+## 16. Outbound Agents Reference (janskuba/outbound-agents)
+
+> Source: github.com/janskuba/outbound-agents — A Claude Code-native B2B outbound pipeline.
+
+### What It Is
+
+7 Claude Code agents (`.md` files) wired by a single slash command (`/outbound-pipeline`). Drop in company names CSV → get enriched data, scored leads, profiles, personalized hooks, and 7-touch sequences ready for sequencer import. **No backend, no database, no API keys beyond Anthropic.**
+
+### Architecture
+
+```
+input/companies.csv
+  → Signal Scraper (web search enrichment + signal detection)
+  → Lead Prioritizer (1-100 score, A/B/C/D tier)
+  → Prospect Profiler (60-second actionable profiles)
+  → Hook Writer (120-char personalized openers)
+  → Sequence Builder (7-touch, 21-day multi-channel)
+  → output/5-sequences.csv (ready for Instantly/Apollo/Outreach)
+
+Standalone agents (run anytime):
+  → Reply Classifier (7-category intent classification)
+  → Meeting Prep (pre-call briefs under 500 words)
+```
+
+### The 7 Agents
+
+| # | Agent | Input | Output | Key Rules |
+|---|-------|-------|--------|-----------|
+| 1 | **Signal Scraper** | Company names CSV | `0-enriched.csv` + `1-signals.csv` | Only requires `company_name` column. Signal categories: HIRING, FUNDING, TECHNOLOGY, GROWTH, PAIN. Strength: HIGH/MEDIUM/LOW. Skips enrichment if data already complete. |
+| 2 | **Lead Prioritizer** | `1-signals.csv` | `2-prioritized.csv` | Scores 1-100: ICP Fit (40pts) + Signal Strength (35pts) + Engagement Potential (25pts). "50% ceiling" rule: missing data caps that dimension at half max. Tiers: TIER_1 (80-100) → TIER_4 (0-39). |
+| 3 | **Prospect Profiler** | `2-prioritized.csv` | `3-profiles.csv` | 100-word profile summaries. 3-5 pipe-separated talking points (must be company-specific). Communication style: formal/casual/technical. Recommended approach: `channel: X | message_type: Y | timing: Z`. |
+| 4 | **Hook Writer** | `3-profiles.csv` | `4-hooks.csv` | **Max 120 characters.** Banned openers: "I saw," "I noticed," "Congrats on," "Hope you're well." Types: SIGNAL, INSIGHT, PATTERN, CHALLENGE. Confidence scored 1-10; below 6 = NEEDS_REVIEW flag. |
+| 5 | **Sequence Builder** | `4-hooks.csv` | `5-sequences.csv` | 7 touches over 21 days. Email body max 80 words. Subject line 5-8 words. Single CTA. No repeated talking points across steps. Multi-channel: Email (D1, D5, D12, D17) + LinkedIn (D3, D8, D21). |
+| 6 | **Reply Classifier** | Replies CSV | Classified CSV | 7 categories: INTERESTED, TIMING, OBJECTION, REFERRAL, NOT_INTERESTED, AUTO_REPLY, UNCLEAR. **Never classify ambiguous as NOT_INTERESTED.** Response SLAs: INTERESTED = 2hr, OBJECTION = 24hr, REFERRAL = 24hr. |
+| 7 | **Meeting Prep** | Meeting CSV | Prep briefs | Under 500 words. **Anti-BANT:** no budget/authority/need/timeline questions. Discovery: 80% questions / 20% positioning. 30-min agenda: rapport (0-3) → questions (3-15) → positioning (15-22) → next steps (22-27) → recap (27-30). |
+
+### Scoring Framework (Lead Prioritizer Detail)
+
+| Dimension | Points | Components |
+|-----------|--------|-----------|
+| ICP Fit | 40 | Industry relevance, company size match, tech stack alignment |
+| Signal Strength | 35 | Signal recency, diversity of signal types, signal quality |
+| Engagement Potential | 25 | LinkedIn activity, approachability indicators |
+
+**Tier assignment:**
+
+| Tier | Score | Action |
+|------|-------|--------|
+| TIER_1 | 80-100 | Immediate outreach |
+| TIER_2 | 60-79 | This week |
+| TIER_3 | 40-59 | Nurture |
+| TIER_4 | 0-39 | Deprioritize |
+
+### 7-Touch Sequence Structure
+
+| Day | Channel | Purpose |
+|-----|---------|---------|
+| 1 | Email | Hook-based opener + value prop bridge |
+| 3 | LinkedIn | Personalized connection note |
+| 5 | Email | New angle + social proof |
+| 8 | LinkedIn | Content engagement or monitoring |
+| 12 | Email | Pattern interrupt with different pain point |
+| 17 | Email | Respectful breakup offer |
+| 21 | LinkedIn | Casual voice note prompt |
+
+### ICP Config Schema
+
+Two-column CSV (`field`, `value`):
+
+| Field | Controls |
+|-------|---------|
+| `product_name` | Sign-offs |
+| `product_description` | Tech stack alignment scoring |
+| `target_industries` | Industries scored higher |
+| `target_company_size_min/max` | Replaces default 50-500 |
+| `key_value_props` | Hook + sequence copy (pipe-separated) |
+| `common_objections` | Pre-handled in later sequence steps |
+| `case_studies` | Social proof in emails (pipe-separated) |
+| `sender_name/title/company` | Email sign-offs |
+
+### Cost & Performance
+
+| Companies | With Enrichment | Without | Cost |
+|-----------|----------------|---------|------|
+| 5 | 3-5 min | 2-3 min | $0.15-0.50 |
+| 25 | 10-15 min | 8-12 min | $0.75-2.50 |
+| 50 | 20-30 min | 15-20 min | $1.50-5.00 |
+
+### Key Architectural Patterns
+
+1. **Agents as `.md` files** — trivially editable, no code required
+2. **CSV-native I/O** — every stage reads numbered CSV, writes next one
+3. **Slash command as orchestrator** — `/outbound-pipeline` sequences agents + handles pause-for-review
+4. **Optional enrichment skip** — if input data complete, web search bypassed automatically
+5. **Clay integration** — Clay handles structured API enrichment; this system handles interpretation + copy generation
+6. **API injection** — swap web search for Apollo/Clearbit/PDL by adding `Bash` to agent tools + curl calls
+7. **Standalone agents** — Reply Classifier + Meeting Prep run independently, not just in pipeline
+
+### Sequencer Export Mapping
+
+| Tool | Mapping |
+|------|---------|
+| **Instantly** | `body` → Email Body, `subject` → Subject Line; filter `channel`=Email |
+| **Apollo** | `subject` → Subject, `body` → Body, `day` → Send Day |
+| **Outreach.io** | `step_number` → Step Order, `channel` → Step Type, `day` → Day |
+| **LinkedIn steps** | Always manual tasks across all tools |
+
+---
+
 *Last updated: 2026-04-03*
-*Source: Grok research synthesis on Clay.com, GTM engineering, signal-based outbound, and field-tested sales principles*
+*Sources: Grok research (Clay.com, GTM engineering, signal-based outbound), field-tested sales principles, COLDIQ B2B List Building Masterclass, janskuba/outbound-agents*
