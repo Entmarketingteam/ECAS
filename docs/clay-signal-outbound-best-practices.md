@@ -142,7 +142,7 @@ Seed List → Enrich (Waterfall) → Signal Detection → Score → AI Personali
 3. **AI Research:** Claygent column for "why now" research
 4. **Score:** Formula column with weighted points per signal
 5. **Personalize:** AI column drafts hooks/emails grounded in enriched data
-6. **Export:** One-click to Instantly/Smartlead or webhook to CRM
+6. **Export:** One-click to Smartlead or webhook to CRM
 7. **Loop:** Refresh table periodically for fresh signals
 
 ### 4.2 Job Change + Funding Combined Workflow
@@ -503,7 +503,7 @@ Per project (3-5 projects total):
 1. **Problem & Business Context** (ICP, pain point)
 2. **Solution Overview** (workflow diagram or Clay table screenshot)
 3. **Key Steps/Columns** (enrichment waterfall, AI prompts, conditional logic, integrations)
-4. **Tools Stacked** (Clay + Apollo + Instantly + CRM + n8n + etc.)
+4. **Tools Stacked** (Clay + Apollo + Smartlead + CRM + n8n + etc.)
 5. **Results/Metrics** (reply rates, hours saved, qualified opps generated)
 6. **Learnings/Challenges** (data cleaning, prompt iteration, error handling)
 
@@ -533,7 +533,7 @@ Per project (3-5 projects total):
 | **Intelligence** | Clay.com | Central spreadsheet — enrichment, signals, AI, scoring |
 | **Data/Enrichment** | Apollo, Crunchbase, HG Insights, BuiltWith | Lead sourcing, funding, technographics |
 | **AI** | Claygent (Claude/GPT inside Clay) | Research, personalization, scoring |
-| **Sequencing** | Instantly, Smartlead, Lemlist | Cold email sending, deliverability |
+| **Sequencing** | Smartlead (primary), Lemlist | Cold email sending, deliverability |
 | **CRM** | Salesforce, HubSpot | Pipeline management, routing |
 | **Automation** | Zapier, Make, n8n | Webhooks, orchestration, complex routing |
 | **Calls** | Gong | Call recording, post-call automation |
@@ -829,7 +829,7 @@ Line 3: Low-friction CTA — one question, no exclamation marks.
 Return only the 3 lines. Nothing else.
 ```
 
-**Rules:** Max 25 words per line. CTA must be a question. Never output subject lines, greetings, or signatures — those are handled downstream in Instantly/Smartlead.
+**Rules:** Max 25 words per line. CTA must be a question. Never output subject lines, greetings, or signatures — those are handled downstream in Smartlead.
 
 ---
 
@@ -837,7 +837,7 @@ Return only the 3 lines. Nothing else.
 
 ### The Core Insight
 
-> Claude Code + `.env` with Instantly API key + 2,000 warmed inboxes = test any GTM or PR idea at the speed of thought.
+> Claude Code + `.env` with Smartlead API key + 2,000 warmed inboxes = test any GTM or PR idea at the speed of thought.
 
 > Agents that run email on your behalf are the most underrated tool in your GTM stack.
 
@@ -847,7 +847,7 @@ Return only the 3 lines. Nothing else.
 |------|------|
 | **Apollo.io** | Lead sourcing + contact data |
 | **MillionVerifier** | Email validation before send |
-| **Instantly.ai** | Sending infrastructure + inbox warming |
+| **Smartlead.ai** | Sending infrastructure + inbox warming |
 | **Hypertide.io** | Additional lead enrichment / signals |
 | **Claude Code / Agent** | Orchestration, copy generation, routing logic |
 | **Railway** | Persistent deployment once a motion proves out |
@@ -863,7 +863,7 @@ Return only the 3 lines. Nothing else.
         ↓
 4. Generate BLUF copy (Claude Code + Claygent)
         ↓
-5. Load into Instantly campaign
+5. Load into Smartlead campaign
         ↓
 6. Run 5-7 days, measure reply rate
         ↓
@@ -887,13 +887,13 @@ When a test hits signal, deploy it as a persistent agent.
 
 **Agent `.env` minimums:**
 ```env
-INSTANTLY_API_KEY=
+SMARTLEAD_API_KEY=
 ANTHROPIC_API_KEY=
 APOLLO_API_KEY=
 MILLIONVERIFIER_API_KEY=
 AIRTABLE_API_KEY=
 AIRTABLE_BASE_ID=
-CAMPAIGN_ID=        # Instantly campaign to push leads into
+CAMPAIGN_ID=        # Smartlead campaign to push leads into
 ```
 
 ### High-Intent Lead Scraper Prompts
@@ -1002,7 +1002,7 @@ Run in order, stop when found:
 
 #### Phase 5 — Contact Enrichment & Validation
 
-**Email waterfall:** Apollo → Hunter.io → Prospeo → Findymail → Instantly Verify / ZeroBounce
+**Email waterfall:** Apollo → Hunter.io → Prospeo → Findymail → ZeroBounce / MillionVerifier
 
 **Phone waterfall:** Apollo mobile → Lusha → Datagma → Kaspr
 
@@ -1039,7 +1039,7 @@ Rules: Normalize domains (strip `www.`, `http://`). Merge on email first, Linked
 | Step | Detail |
 |------|--------|
 | CRM sync | Push to HubSpot/Salesforce with dedup check on import |
-| Sequencer load | Instantly/Smartlead/Lemlist — separate campaigns by tier |
+| Sequencer load | Smartlead (primary) — separate campaigns by tier |
 | Conditional logic | A-tier: manual + automated hybrid; B-tier: full auto; C-tier: excluded or drip only |
 | Daily cap | Set sending limits per domain to protect deliverability |
 
@@ -1084,7 +1084,7 @@ input/companies.csv
   → Prospect Profiler (60-second actionable profiles)
   → Hook Writer (120-char personalized openers)
   → Sequence Builder (7-touch, 21-day multi-channel)
-  → output/5-sequences.csv (ready for Instantly/Apollo/Outreach)
+  → output/5-sequences.csv (ready for Smartlead/Apollo/Outreach)
 
 Standalone agents (run anytime):
   → Reply Classifier (7-category intent classification)
@@ -1169,7 +1169,7 @@ Two-column CSV (`field`, `value`):
 
 | Tool | Mapping |
 |------|---------|
-| **Instantly** | `body` → Email Body, `subject` → Subject Line; filter `channel`=Email |
+| **Smartlead** | `body` → Email Body, `subject` → Subject Line; filter `channel`=Email |
 | **Apollo** | `subject` → Subject, `body` → Body, `day` → Send Day |
 | **Outreach.io** | `step_number` → Step Order, `channel` → Step Type, `day` → Day |
 | **LinkedIn steps** | Always manual tasks across all tools |
