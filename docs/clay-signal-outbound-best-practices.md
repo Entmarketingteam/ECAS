@@ -15,6 +15,8 @@
 8. [Templates & Starting Points](#8-templates--starting-points)
 9. [Portfolio & Positioning](#9-portfolio--positioning)
 10. [Tool Stack Reference](#10-tool-stack-reference)
+11. [Sales Philosophy & Call Framework](#11-sales-philosophy--call-framework)
+12. [Operational Playbook: Clay + ENT Stack Integration](#12-operational-playbook-clay--ent-stack-integration)
 
 ---
 
@@ -562,5 +564,184 @@ Per project (3-5 projects total):
 
 ---
 
-*Last updated: 2026-04-02*
-*Source: Grok research synthesis on Clay.com, GTM engineering, and signal-based outbound*
+---
+
+## 11. Sales Philosophy & Call Framework
+
+Core principles for converting signal-driven pipeline into closed deals. These inform how Claygent writes outreach copy, how sequences are structured, and how calls are run once meetings are booked.
+
+### The 3 Laws
+
+1. **It's about them, not you.** Make it about them → win more than you lose. Make it about you → lose more than you win.
+2. **It's them vs. them — you're the referee.** The prospect told you they want this for 20-60 minutes. The pressure is on them to be congruent with what they said. You're not begging.
+3. **If you let them talk, they sell themselves.** If you talk, you bore them. 80/20 rule: they talk 80%, you 20%.
+
+### Discovery & Call Control
+
+| Principle | Application |
+|-----------|------------|
+| Discovery is for **them** to discover about themselves, not for you to interrogate | Ask expansive questions: "Tell me about that?" |
+| Never engage in small talk | Ruins call flow, makes you look fake |
+| Keep the call sales-focused | Always bring back to qualification or disqualification |
+| If prospect asks questions mid-call, defer | "Great question — I'll cover that in a moment" → maintain flow |
+| Call out red flags early | They surface again after pricing. Address disqualifiers upfront. |
+| Find their "why now" or "f*** it" moment | Something that makes now the right time — this is your signal-to-close bridge |
+| Get the cost of inaction | Makes your price look cheap by comparison |
+
+### Closing & Objection Handling
+
+| Principle | Application |
+|-----------|------------|
+| After dropping price → **shut up** | Silence is leverage |
+| Objections are smokescreens | They mask the real concern. Your only job: get the truth. |
+| Whoever justifies themselves is losing | Don't defend — redirect |
+| Be prepared to walk away | Pulling away draws them into your frame |
+| Use negativity to get positivity | "Given how busy you are, is this really the right time?" → they argue FOR it |
+| Price drop ≠ begging | It's them vs. them. They already committed 20-60 min. |
+
+### Offer & Positioning
+
+| Principle | Application |
+|-----------|------------|
+| You can't outsell a bad offer | A bad closer on an amazing offer beats a great closer on a bad one |
+| Simplest offer = easiest close | More moving parts → more confusion → longer decision cycle |
+| Sell outcomes, not features | Sell the final destination, not the journey there |
+| Honesty > sleaze | Honest operators make more money long-term. Harsh truth earns respect. |
+| The client is often wrong | Just because they want something doesn't mean you say yes |
+
+### Mindset
+
+- You don't have to be an extrovert. Introverts (listeners) often make the best closers.
+- Don't be a suck-up. Nobody likes or respects one.
+- When you're up, don't think you're the best. When you're down, don't think you're the worst.
+- Boring basics and fundamentals over slick tricks.
+- Only care about the best outcome for the prospect.
+- Never take it personally.
+
+### How This Maps to Clay/Outbound Systems
+
+| Sales Principle | System Application |
+|----------------|-------------------|
+| "It's about them" | Claygent prompts grounded in THEIR signals, not your features |
+| "Sell outcomes" | Email hooks reference their post-funding challenges, not your product specs |
+| "Cost of inaction" | AI research column calculates what doing nothing costs them |
+| "Find the why now" | Multi-signal scoring IS the "why now" detector |
+| "Simple offer" | One CTA per email. One clear next step. No menus. |
+| "80/20 talk ratio" | Discovery calls post-booking should follow this — outbound sets the stage |
+| "Call out red flags early" | Scoring formulas should DISQUALIFY as aggressively as they qualify |
+| "Objections = smokescreens" | Follow-up sequences address real blockers, not surface objections |
+
+---
+
+## 12. Operational Playbook: Clay + ENT Stack Integration
+
+### How Clay Tables Fit the ENT Agency Stack
+
+```
+Clay (Intelligence Layer)
+  ├── Enrichment + Signals + Scoring
+  ├── Claygent AI Research + Personalization
+  └── Export via webhook/API
+        ↓
+n8n (Orchestration Layer)
+  ├── Webhook receivers from Clay exports
+  ├── Conditional routing (hot/warm/cold)
+  ├── CRM updates + Slack alerts
+  └── Sequencer triggers
+        ↓
+Smartlead (Delivery Layer)        Airtable (CRM Layer)
+  ├── Domain rotation              ├── Contact records
+  ├── Warmup management            ├── Signal history
+  ├── Multi-touch sequences        ├── Campaign tracking
+  └── Reply webhooks → n8n         └── Pipeline stages
+```
+
+### Clay Table Orchestration Patterns
+
+**Pattern 1: Signal Monitor → n8n → Multi-Channel**
+```
+Clay signal fires (job change/funding/intent)
+  → Webhook to n8n
+  → n8n enriches further if needed (Firecrawl, Apollo)
+  → Routes by score:
+      Hot (>80): Smartlead immediate sequence + Slack alert + Airtable "Engaged"
+      Warm (50-80): Smartlead nurture sequence + Airtable "Interested"
+      Cold (<50): Airtable "Monitoring" only
+```
+
+**Pattern 2: Bulk List Build → Score → Segment → Deploy**
+```
+Clay table: ICP seed list → waterfall enrichment → multi-signal scoring
+  → Export scored CSV
+  → n8n imports → segments by tier
+  → Tier 1: personalized Smartlead campaign (AI-written per contact)
+  → Tier 2: templated Smartlead campaign (segment-level personalization)
+  → Tier 3: hold for future signal triggers
+```
+
+**Pattern 3: Reply Intelligence Loop**
+```
+Smartlead reply → webhook → n8n (existing signal workflow)
+  → Haiku classifies (positive/negative/question/ooo)
+  → Positive: update Airtable → Slack → AE handoff
+  → Question: Clay re-enriches contact → AI drafts informed reply
+  → Negative: DNC + learn from objection patterns
+```
+
+### CRM Integration (Airtable as Hub)
+
+Map Clay outputs to Airtable fields in the Agency CRM (`app9fVT4bBMHlCf2C`):
+
+| Clay Output | Airtable Field | Table |
+|-------------|---------------|-------|
+| Signal type + details | `Signal_Type`, `Signal_Details` | Contacts / Leads |
+| Combined score | `Lead_Score` | Contacts / Leads |
+| ABM tier | `ABM_Tier` (Tier 1/2/3) | Brands |
+| Claygent research brief | `AI_Research_Brief` | Contacts / Leads |
+| Personalized hook | `Outreach_Hook` | Contacts / Leads |
+| Funding amount/stage | `Last_Funding`, `Funding_Stage` | Brands |
+| Tech stack | `Tech_Stack` | Brands |
+| Signal timestamp | `Last_Signal_Date` | Contacts / Leads |
+
+### Paid Ads Integration (Future)
+
+Clay + signal scoring can power ad targeting:
+
+| Play | How It Works |
+|------|-------------|
+| **Retargeting hot accounts** | Export Tier 1 ABM accounts from Clay → LinkedIn Matched Audiences or Facebook Custom Audiences → run awareness/credibility ads before or alongside email sequences |
+| **Lookalike expansion** | Upload closed-won customer list from Airtable → Clay enriches with firmographics/technographics → export to ad platforms as seed for lookalikes |
+| **Signal-triggered ad campaigns** | n8n watches for signal clusters → auto-adds matching companies to ad audience lists → coordinated multi-channel (email + ads + LinkedIn) |
+| **Content retargeting** | Web intent visitors who don't convert → push to ad audiences for case study / social proof ads |
+| **Event-based** | Funding announcements or job changes → targeted ads to the buying committee at those companies |
+
+### List Building Accuracy Method (Proven Pattern)
+
+> Solves the #1 outbound problem: bad lists with wrong contacts.
+
+```
+1. Source domains from Disco (or similar) → guaranteed industry match
+2. Hit analyze endpoint → returns ALL titles found at those domains
+3. Feed AI: offer description + ICP criteria (company size, role focus)
+4. AI analyzes all returned titles against ICP context
+5. AI selects decision-makers, removes irrelevant contacts
+6. Output: clean, high-accuracy list of real decision-makers
+```
+
+**Why this works:**
+- Industry match is pre-validated (Disco domains, not guessing)
+- Title analysis uses real database records, not scraped/inferred data
+- AI filtering with ICP + offer context removes false positives
+- No manual list cleaning needed
+
+**How to implement in Clay:**
+- Column 1: Domain input (from Disco export)
+- Column 2: API enrichment → all titles at domain
+- Column 3: Claygent → "Given this offer [X] targeting [ICP], which of these titles are decision-makers? Remove irrelevant contacts."
+- Column 4: Score remaining contacts
+- Export clean list to Smartlead
+
+---
+
+*Last updated: 2026-04-03*
+*Source: Grok research synthesis on Clay.com, GTM engineering, signal-based outbound, and field-tested sales principles*
