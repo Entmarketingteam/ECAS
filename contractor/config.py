@@ -79,26 +79,30 @@ VERTICAL_ICPS = {
 
 # Signal weights for service contractor verticals (ColdIQ multi-signal framework)
 CONTRACTOR_SIGNAL_WEIGHTS = {
-    # Tier 1 - Hot (50-100 pts)
-    "commercial_permit_pulled": 65,        # Target building pulled a permit — active spend
-    "hail_event_large": 80,               # Roofing: hail > 1.5" — replacement wave incoming
-    "hail_event_medium": 50,              # Roofing: hail 0.75-1.5"
-    "franchise_new_territory": 70,        # Jan-Pro/Coverall expanding nearby — existential trigger
-    "competitor_acquisition": 60,         # Rollins buying local competitor — fear trigger
-    "fm_job_change": 75,                  # New FM/Building Manager hired at target account
-    "contract_renewal_window": 55,        # 90-day window before typical annual contract renewal
-    # Tier 2 - Warm (20-49 pts)
-    "fm_job_posting": 40,                 # Company hiring FM = pain with current vendor
-    "negative_review_competitor": 35,     # G2/Yelp bad review of current pest/cleaning vendor
-    "hiring_spree": 35,                   # Growing headcount = more facilities to service
-    "new_location_opened": 45,            # New office/facility = new service contract needed
-    "commercial_building_sold": 40,       # New ownership = new vendor decisions
-    "linkedin_content_engagement": 25,    # Engaged with ContractMotion/relevant content
-    "industry_association_member": 20,    # BSCAI/NPMA member = professional operator
-    # Tier 3 - Cool (5-19 pts)
+    # Tier 1 — Hot (50-100 pts)
+    "commercial_permit_pulled": 65,
+    "hail_event_large": 80,
+    "hail_event_medium": 50,
+    "franchise_new_territory": 70,
+    "competitor_acquisition": 60,
+    "fm_job_change": 75,
+    "contract_renewal_window": 55,
+    "osha_citation": 55,              # NEW — pest/janitorial displacement trigger
+    # Tier 2 — Warm (20-49 pts)
+    "government_contract_win": 45,    # NEW — SAM.gov award signal
+    "commercial_lease_signed": 45,    # NEW — new tenant = new service contracts
+    "new_location_opened": 45,
+    "commercial_building_sold": 40,
+    "rto_announcement": 40,           # NEW — offices reopening = janitorial trigger
+    "fm_job_posting": 40,
+    "industry_association_member": 50, # BUMPED from 20 — membership = direct prospect
+    "negative_review_competitor": 35,
+    "hiring_spree": 35,
+    "linkedin_content_engagement": 25,
+    # Tier 3 — Cool (5-19 pts)
     "company_news": 15,
-    "email_open": 5,
     "website_visit": 10,
+    "email_open": 5,
 }
 
 # NOAA Storm Events API config
