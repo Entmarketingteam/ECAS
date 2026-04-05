@@ -22,6 +22,10 @@ from contractor.signals._airtable import push_signals, signal_exists
 logger = logging.getLogger(__name__)
 
 FIRECRAWL_API_KEY = os.environ.get("FIRECRAWL_API_KEY", "")
+if not FIRECRAWL_API_KEY:
+    logging.getLogger(__name__).warning(
+        "FIRECRAWL_API_KEY not set — association_scraper will fail to scrape NRCA/NPMA"
+    )
 FIRECRAWL_BASE = "https://api.firecrawl.dev/v1"
 
 # States to scrape — matches geo_focus across all three verticals
@@ -50,10 +54,16 @@ def _extract_domain(text: str) -> str:
     """Extract a domain from a markdown link like [example.com](https://example.com)."""
     match = re.search(r'\[([^\]]+)\]\(https?://([^/)]+)', text)
     if match:
-        return match.group(2).lower().strip()
-    # Bare URL
-    match = re.search(r'https?://([^/\s)]+)', text)
-    return match.group(1).lower().strip() if match else ""
+        domain = match.group(2).lower().strip()
+    else:
+        match = re.search(r'https?://([^/\s)]+)', text)
+        domain = match.group(1).lower().strip() if match else ""
+
+    if not domain or "." not in domain:
+        return ""
+    # Filter common redirect/shortlink domains
+    _SKIP = {"bit.ly", "lnkd.in", "t.co", "goo.gl", "ow.ly"}
+    return "" if domain in _SKIP else domain
 
 
 def _make_signal(company_name: str, domain: str, vertical: str, source: str, extra: dict = None) -> dict:
@@ -224,7 +234,9 @@ def run_association_scraper() -> int:
     while True:
         signals, has_next = scrape_issa_page(page)
         all_signals.extend(signals)
-        if not has_next or page > 50:  # Safety cap: 50 pages max
+        if not has_next or page > 50:
+            if page > 50:
+                logger.warning("ISSA pagination hit 50-page safety cap — coverage may be incomplete")
             break
         page += 1
 
