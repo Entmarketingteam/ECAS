@@ -43,6 +43,10 @@ def fetch_apollo_fm_changes() -> list[dict]:
     Query Apollo for people recently hired into FM/Ops roles at target companies.
     Apollo's employment_history tracks job changes — new FM = vendor review window.
     """
+    if not APOLLO_API_KEY:
+        logger.error("APOLLO_API_KEY not set — Apollo FM signals will not flow")
+        return []
+
     try:
         resp = requests.post(
             f"{APOLLO_BASE}/mixed_people/api_search",
@@ -72,7 +76,8 @@ def fetch_apollo_fm_changes() -> list[dict]:
 
         if not company_name:
             continue
-        if signal_exists(domain or company_name, "fm_job_change"):
+        dedup_key = f"{company_name.lower()}:{domain or 'nodomain'}"
+        if signal_exists(dedup_key, "fm_job_change"):
             continue
 
         signals.append({
@@ -104,7 +109,9 @@ def fetch_rss_fm_postings(state: str) -> list[dict]:
     """
     url = GNEWS_FM_RSS.format(state=state.replace(" ", "+"))
     try:
-        feed = feedparser.parse(url)
+        r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        r.raise_for_status()
+        feed = feedparser.parse(r.content)
     except Exception as e:
         logger.warning("RSS FM fetch failed for %s: %s", state, e)
         return []

@@ -118,6 +118,7 @@ MOCK_RSS_FEED_ENTRIES = [
 
 
 class TestFmJobWatcher:
+    @patch("contractor.signals.fm_job_watcher.APOLLO_API_KEY", "test-key")
     @patch("contractor.signals.fm_job_watcher.signal_exists", return_value=False)
     @patch("contractor.signals.fm_job_watcher.requests.post")
     def test_apollo_job_change_produces_signal(self, mock_post, mock_exists):
@@ -134,8 +135,12 @@ class TestFmJobWatcher:
 
     @patch("contractor.signals.fm_job_watcher.signal_exists", return_value=False)
     @patch("contractor.signals.fm_job_watcher.feedparser.parse")
-    def test_rss_job_posting_produces_signal(self, mock_parse, mock_exists):
+    @patch("contractor.signals.fm_job_watcher.requests.get")
+    def test_rss_job_posting_produces_signal(self, mock_requests_get, mock_parse, mock_exists):
         from contractor.signals.fm_job_watcher import fetch_rss_fm_postings
+        mock_requests_get.return_value.status_code = 200
+        mock_requests_get.return_value.raise_for_status = MagicMock()
+        mock_requests_get.return_value.content = b"<rss/>"
         mock_feed = MagicMock()
         mock_feed.entries = MOCK_RSS_FEED_ENTRIES
         mock_parse.return_value = mock_feed
