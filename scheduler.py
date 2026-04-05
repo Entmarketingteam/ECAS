@@ -254,7 +254,8 @@ def job_sector_scoring():
 
 
 def job_enrichment():
-    logger.info("=== JOB: Contact Enrichment ===")
+    """LEGACY — kept for /admin/run/enrichment fallback. New pipeline uses job_enrich_and_enroll()."""
+    logger.info("=== JOB: Contact Enrichment (legacy) ===")
     try:
         from enrichment.clay_enricher import run_enricher
         result = run_enricher(min_heat_score=50.0)
@@ -264,7 +265,8 @@ def job_enrichment():
 
 
 def job_smartlead_enrollment():
-    logger.info("=== JOB: Smartlead Enrollment ===")
+    """LEGACY — kept for /admin/run/smartlead fallback. New pipeline uses job_enrich_and_enroll()."""
+    logger.info("=== JOB: Smartlead Enrollment (legacy) ===")
     try:
         from outreach.smartlead import enroll_airtable_contacts
         result = enroll_airtable_contacts(min_heat_score=50.0)
@@ -276,6 +278,26 @@ def job_smartlead_enrollment():
             )
     except Exception as e:
         logger.error(f"Smartlead enrollment job failed: {e}", exc_info=True)
+
+
+def job_enrich_and_enroll():
+    """
+    Atomic enrichment + enrollment pipeline. Replaces separate enrichment and smartlead jobs.
+    Pre-flight health checks → parallel enrichment → Smartlead enrollment → Airtable sync → Slack summary.
+    Self-healing: retry with backoff, circuit breaker, LLM diagnosis on failure.
+    """
+    logger.info("=== JOB: Enrich & Enroll Pipeline ===")
+    try:
+        from enrichment.pipeline import run_pipeline
+        result = run_pipeline(min_heat=50.0)
+        logger.info(f"Pipeline done: {result}")
+    except Exception as e:
+        logger.error(f"Pipeline job failed: {e}", exc_info=True)
+        try:
+            from enrichment.diagnosis import escalate
+            escalate(e, {"stage": "Scheduler job", "progress": "unknown"})
+        except Exception:
+            pass  # If even diagnosis fails, the error is already logged
 
 
 def job_usaspending_hunt():
@@ -740,16 +762,13 @@ def _check_hot_signal_threshold(projects: list[dict]) -> None:
         if SLACK_ACCESS_TOKEN:
             _send_slack(msg)
 
-        # Immediate Smartlead enrollment
+        # Immediate enrichment + enrollment (fixes bug: old code enrolled without enriching first)
         try:
-            from outreach.smartlead import enroll_airtable_contacts
-            result = enroll_airtable_contacts(
-                min_heat_score=_HOT_SIGNAL_THRESHOLD,
-                company_filter=company,
-            )
-            logger.info(f"[HOT SIGNAL] Smartlead enrollment for {company}: {result}")
+            from enrichment.pipeline import run_pipeline
+            result = run_pipeline(min_heat=0.0, company_filter=company, workers=1)
+            logger.info(f"[HOT SIGNAL] Pipeline for {company}: {result}")
         except Exception as e:
-            logger.warning(f"[HOT SIGNAL] Smartlead enrollment failed for {company}: {e}")
+            logger.warning(f"[HOT SIGNAL] Pipeline failed for {company}: {e}")
 
         _record_hot_alert(company, score)
 
@@ -877,16 +896,13 @@ def job_budget_window_monitor():
             if SLACK_ACCESS_TOKEN:
                 _send_slack(msg)
 
-            # Enroll in Smartlead immediately regardless of score (budget window = max urgency)
+            # Immediate enrichment + enrollment (fixes bug: old code enrolled without enriching first)
             try:
-                from outreach.smartlead import enroll_airtable_contacts
-                result = enroll_airtable_contacts(
-                    min_heat_score=0.0,
-                    company_filter=company,
-                )
-                logger.info(f"[BUDGET WINDOW] Smartlead enrollment for {company}: {result}")
+                from enrichment.pipeline import run_pipeline
+                result = run_pipeline(min_heat=0.0, company_filter=company, workers=1)
+                logger.info(f"[BUDGET WINDOW] Pipeline for {company}: {result}")
             except Exception as e:
-                logger.warning(f"[BUDGET WINDOW] Smartlead enrollment failed for {company}: {e}")
+                logger.warning(f"[BUDGET WINDOW] Pipeline failed for {company}: {e}")
 
             _record_window_alert(company, window_date)
             triggered += 1
@@ -1052,9 +1068,11 @@ def create_scheduler() -> BackgroundScheduler:
     scheduler.add_job(job_claude_extraction, IntervalTrigger(hours=2), id="claude_extraction")
     scheduler.add_job(job_sector_scoring, IntervalTrigger(hours=3), id="sector_scoring")
 
-    # ── Outreach (daily batch — still fine, hot signals bypass this) ─────────
-    scheduler.add_job(job_enrichment, CronTrigger(hour=10, minute=0), id="enrichment")
-    scheduler.add_job(job_smartlead_enrollment, CronTrigger(hour=10, minute=30), id="smartlead")
+    # ── Outreach (atomic pipeline — replaces separate enrichment + enrollment) ─
+    scheduler.add_job(job_enrich_and_enroll, CronTrigger(hour=10, minute=0), id="enrich_and_enroll")
+    # Legacy jobs kept for /admin/run/ fallback but removed from cron:
+    # scheduler.add_job(job_enrichment, CronTrigger(hour=10, minute=0), id="enrichment")
+    # scheduler.add_job(job_smartlead_enrollment, CronTrigger(hour=10, minute=30), id="smartlead")
 
     # ── ICP company population (daily 5am — before enrichment at 10am) ──────
     scheduler.add_job(job_populate_projects, CronTrigger(hour=5, minute=0), id="populate_projects")
@@ -1147,8 +1165,9 @@ def run_job_now(job_id: str) -> dict:
         "pjm_poller": job_pjm_poller,
         "claude_extraction": job_claude_extraction,
         "sector_scoring": job_sector_scoring,
-        "enrichment": job_enrichment,
-        "smartlead": job_smartlead_enrollment,
+        "enrichment": job_enrichment,  # legacy fallback
+        "smartlead": job_smartlead_enrollment,  # legacy fallback
+        "enrich_and_enroll": job_enrich_and_enroll,  # new atomic pipeline
         "weekly_digest": job_weekly_digest,
         "earnings_transcripts": job_earnings_transcripts,
         "hot_signal_check": job_hot_signal_check,

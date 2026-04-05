@@ -230,6 +230,56 @@ def admin_scores():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+class EnrichAndEnrollRequest(BaseModel):
+    min_heat: float = 50.0
+    company_filter: Optional[str] = None
+    dry_run: bool = False
+    titles: Optional[list[str]] = None
+    workers: int = 4
+
+
+@app.post("/api/enrich-and-enroll")
+async def enrich_and_enroll(req: EnrichAndEnrollRequest, background_tasks: BackgroundTasks):
+    """
+    Atomic enrichment + enrollment pipeline.
+    Runs in background — returns immediately with status.
+    Results posted to Slack on completion.
+    """
+    def _run():
+        from enrichment.pipeline import run_pipeline
+        try:
+            result = run_pipeline(
+                min_heat=req.min_heat,
+                company_filter=req.company_filter,
+                dry_run=req.dry_run,
+                titles=req.titles,
+                workers=req.workers,
+            )
+            logger.info(f"[Pipeline] Completed: {result}")
+        except Exception as e:
+            logger.error(f"[Pipeline] Fatal error: {e}", exc_info=True)
+            from enrichment.diagnosis import escalate
+            escalate(e, {"stage": "Pipeline orchestrator", "progress": "unknown"})
+
+    background_tasks.add_task(_run)
+    return {
+        "status": "started",
+        "message": "Pipeline running in background. Results will be posted to Slack.",
+        "params": {
+            "min_heat": req.min_heat,
+            "company_filter": req.company_filter,
+            "dry_run": req.dry_run,
+        },
+    }
+
+
+@app.get("/api/pipeline-health")
+def pipeline_health():
+    """Pre-flight health check — test all external services."""
+    from enrichment.health import pre_flight_check
+    return pre_flight_check()
+
+
 @app.post("/admin/enroll")
 def admin_enroll(req: EnrollLeadRequest):
     """Manually enroll a single lead into Smartlead."""
