@@ -149,3 +149,45 @@ class TestFmJobWatcher:
         assert len(signals) >= 1
         assert_valid_signal(signals[0])
         assert signals[0]["signal_type"] == "fm_job_posting"
+
+
+class TestCompetitorWatcher:
+    @patch("contractor.signals.competitor_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.competitor_watcher.requests.get")
+    @patch("contractor.signals.competitor_watcher.feedparser.parse")
+    def test_franchise_expansion_detected(self, mock_parse, mock_get, mock_exists):
+        import feedparser
+        from contractor.signals.competitor_watcher import fetch_franchise_rss
+        mock_get.return_value.content = b""
+        mock_parse.return_value = feedparser.util.FeedParserDict({
+            "entries": [{
+                "title": "Jan-Pro Cleaning & Disinfecting Opens New Franchise Location in Houston TX",
+                "link": "https://www.businesswire.com/jan-pro-houston",
+                "published": "Sat, 04 Apr 2026 10:00:00 GMT",
+                "summary": "Jan-Pro has opened a new territory serving the Houston metropolitan area.",
+            }]
+        })
+        signals = fetch_franchise_rss("Commercial Janitorial")
+        assert len(signals) >= 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "franchise_new_territory"
+
+    @patch("contractor.signals.competitor_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.competitor_watcher.requests.get")
+    @patch("contractor.signals.competitor_watcher.feedparser.parse")
+    def test_osha_citation_detected(self, mock_parse, mock_get, mock_exists):
+        import feedparser
+        from contractor.signals.competitor_watcher import fetch_osha_rss
+        mock_get.return_value.content = b""
+        mock_parse.return_value = feedparser.util.FeedParserDict({
+            "entries": [{
+                "title": "Austin Pest Control Company Cited by OSHA for Safety Violations",
+                "link": "https://news.example.com/osha-pest",
+                "published": "Sat, 04 Apr 2026 09:00:00 GMT",
+                "summary": "Austin Pest Control was fined $45,000 by OSHA following an inspection.",
+            }]
+        })
+        signals = fetch_osha_rss("Pest Control")
+        assert len(signals) >= 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "osha_citation"
