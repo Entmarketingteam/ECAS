@@ -191,3 +191,47 @@ class TestCompetitorWatcher:
         assert len(signals) >= 1
         assert_valid_signal(signals[0])
         assert signals[0]["signal_type"] == "osha_citation"
+
+
+class TestRtoWatcher:
+    @patch("contractor.signals.rto_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.rto_watcher.requests.get")
+    @patch("contractor.signals.rto_watcher.feedparser.parse")
+    def test_rto_announcement_detected(self, mock_parse, mock_get, mock_exists):
+        mock_get.return_value.content = b""
+        import feedparser
+        from contractor.signals.rto_watcher import fetch_rto_signals
+        mock_parse.return_value = feedparser.util.FeedParserDict({
+            "entries": [{
+                "title": "Dell Technologies Requires Austin Employees to Return to Office Full-Time",
+                "link": "https://news.example.com/dell-rto",
+                "published": "Sat, 04 Apr 2026 09:00:00 GMT",
+                "summary": "Dell has announced a mandatory return-to-office policy starting May 1.",
+            }]
+        })
+        signals = fetch_rto_signals("Austin, TX")
+        assert len(signals) >= 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "rto_announcement"
+        assert signals[0]["vertical"] == "Commercial Janitorial"
+
+    @patch("contractor.signals.rto_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.rto_watcher.requests.get")
+    @patch("contractor.signals.rto_watcher.feedparser.parse")
+    def test_commercial_lease_detected(self, mock_parse, mock_get, mock_exists):
+        mock_get.return_value.content = b""
+        import feedparser
+        from contractor.signals.rto_watcher import fetch_lease_signals
+        mock_parse.return_value = feedparser.util.FeedParserDict({
+            "entries": [{
+                "title": "TechCorp Signs 50,000 SqFt Office Lease in Austin TX",
+                "link": "https://news.example.com/techcorp-lease",
+                "published": "Sat, 04 Apr 2026 10:00:00 GMT",
+                "summary": "TechCorp has signed a long-term commercial lease in downtown Austin.",
+            }]
+        })
+        signals = fetch_lease_signals("Austin, TX")
+        assert len(signals) >= 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "commercial_lease_signed"
+        assert signals[0]["vertical"] == "Commercial Janitorial"
