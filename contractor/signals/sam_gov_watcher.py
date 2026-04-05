@@ -34,7 +34,11 @@ TARGET_STATES = {"TX", "FL", "GA", "NC", "VA", "PA", "OH", "TN", "CO", "KS", "OK
 
 
 def _vertical_for_naics(naics: str) -> str:
-    return NAICS_VERTICAL.get(str(naics), "Commercial Roofing")
+    vertical = NAICS_VERTICAL.get(str(naics))
+    if vertical is None:
+        logger.warning("Unmapped NAICS code %s — defaulting to Commercial Roofing", naics)
+        return "Commercial Roofing"
+    return vertical
 
 
 def fetch_awards_page(offset: int = 0) -> list[dict]:
@@ -85,6 +89,9 @@ def fetch_awards_page(offset: int = 0) -> list[dict]:
 
         # Use notice ID as pseudo-domain for dedup (we don't have real domains yet)
         notice_id = opp.get("noticeId", "")
+        if not notice_id:
+            logger.warning("Skipping signal with empty notice_id — cannot deduplicate")
+            continue
         if signal_exists(notice_id, "government_contract_win"):
             continue
 
