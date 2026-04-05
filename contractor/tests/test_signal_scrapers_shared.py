@@ -86,3 +86,61 @@ class TestPushSignals:
     def test_signal_exists_empty_domain_returns_false(self):
         from contractor.signals._airtable import signal_exists
         assert signal_exists("", "industry_association_member") is False
+
+
+# ─── FM Job Watcher tests ─────────────────────────────────────────────────────
+MOCK_APOLLO_FM_RESPONSE = {
+    "people": [
+        {
+            "id": "apollo123",
+            "first_name": "Sarah",
+            "last_name": "Johnson",
+            "title": "Facilities Manager",
+            "organization": {
+                "name": "Westfield Properties LLC",
+                "website_url": "westfieldproperties.com",
+                "employee_count": 85,
+            },
+            "city": "Austin",
+            "state": "TX",
+        }
+    ]
+}
+
+MOCK_RSS_FEED_ENTRIES = [
+    {
+        "title": "Skyline Corp hiring Facilities Manager in Austin TX",
+        "link": "https://news.google.com/articles/abc123",
+        "published": "Sun, 05 Apr 2026 08:00:00 GMT",
+        "summary": "Skyline Corp announced it is seeking a Facilities Manager for its Austin campus",
+    }
+]
+
+
+class TestFmJobWatcher:
+    @patch("contractor.signals.fm_job_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.fm_job_watcher.requests.post")
+    def test_apollo_job_change_produces_signal(self, mock_post, mock_exists):
+        from contractor.signals.fm_job_watcher import fetch_apollo_fm_changes
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.raise_for_status = MagicMock()
+        mock_post.return_value.json.return_value = MOCK_APOLLO_FM_RESPONSE
+
+        signals = fetch_apollo_fm_changes()
+        assert len(signals) == 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "fm_job_change"
+        assert signals[0]["company_name"] == "Westfield Properties LLC"
+
+    @patch("contractor.signals.fm_job_watcher.signal_exists", return_value=False)
+    @patch("contractor.signals.fm_job_watcher.feedparser.parse")
+    def test_rss_job_posting_produces_signal(self, mock_parse, mock_exists):
+        from contractor.signals.fm_job_watcher import fetch_rss_fm_postings
+        mock_feed = MagicMock()
+        mock_feed.entries = MOCK_RSS_FEED_ENTRIES
+        mock_parse.return_value = mock_feed
+
+        signals = fetch_rss_fm_postings("TX")
+        assert len(signals) >= 1
+        assert_valid_signal(signals[0])
+        assert signals[0]["signal_type"] == "fm_job_posting"
