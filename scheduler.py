@@ -1134,6 +1134,74 @@ def create_scheduler() -> BackgroundScheduler:
         name="Contractor Campaign Health Monitor",
     )
 
+    # ── Contractor signal scrapers ──────────────────────────────────────────────
+    from contractor.signals.association_scraper import run_association_scraper
+    from contractor.signals.sam_gov_watcher import run_sam_gov_watcher
+    from contractor.signals.permit_watcher import run_permit_watcher
+    from contractor.signals.fm_job_watcher import run_fm_job_watcher
+    from contractor.signals.competitor_watcher import run_competitor_watcher
+    from contractor.signals.rto_watcher import run_rto_watcher
+
+    # Association scraper — weekly, Sunday 3am (member lists change slowly)
+    scheduler.add_job(
+        run_association_scraper,
+        CronTrigger(day_of_week="sun", hour=3, minute=0),
+        id="contractor_associations",
+        name="Association Member Directory Scraper",
+        replace_existing=True,
+        misfire_grace_time=600,
+    )
+
+    # SAM.gov — daily 5am
+    scheduler.add_job(
+        run_sam_gov_watcher,
+        CronTrigger(hour=5, minute=0),
+        id="contractor_sam_gov",
+        name="SAM.gov Contract Award Lead Signal",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
+    # Permits — every 12h
+    scheduler.add_job(
+        run_permit_watcher,
+        IntervalTrigger(hours=12, start_date="2000-01-01 02:00:00"),
+        id="contractor_permits",
+        name="Socrata Commercial Permit Watcher",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
+    # FM job watcher — every 8h
+    scheduler.add_job(
+        run_fm_job_watcher,
+        IntervalTrigger(hours=8, start_date="2000-01-01 04:00:00"),
+        id="contractor_fm_jobs",
+        name="FM Job Change + Posting Watcher",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
+    # Competitor / franchise / OSHA — daily 6am
+    scheduler.add_job(
+        run_competitor_watcher,
+        CronTrigger(hour=6, minute=0),
+        id="contractor_competitors",
+        name="Franchise Expansion + OSHA Competitor Watcher",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
+    # RTO + lease — every 12h
+    scheduler.add_job(
+        run_rto_watcher,
+        IntervalTrigger(hours=12, start_date="2000-01-01 05:30:00"),
+        id="contractor_rto",
+        name="RTO + Commercial Lease Signal Watcher",
+        replace_existing=True,
+        misfire_grace_time=300,
+    )
+
     return scheduler
 
 
