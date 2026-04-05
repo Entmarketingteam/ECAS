@@ -116,7 +116,7 @@ def fetch_osha_rss(vertical: str) -> list[dict]:
                 continue
             company_name = company_match.group(1).strip()
 
-            dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + state).lower())
+            dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + state + title[:50]).lower())
             if signal_exists(dedup_key, "osha_citation"):
                 continue
 
