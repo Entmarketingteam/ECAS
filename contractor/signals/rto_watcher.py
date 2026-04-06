@@ -62,7 +62,7 @@ def fetch_rto_signals(market: str) -> list[dict]:
             continue
         company_name = company_match.group(1).strip()
 
-        dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + market).lower())
+        dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + market + title[:50]).lower())
         if signal_exists(dedup_key, "rto_announcement"):
             continue
 
@@ -113,7 +113,7 @@ def fetch_lease_signals(market: str) -> list[dict]:
             continue
         company_name = company_match.group(1).strip()
 
-        dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + market).lower())
+        dedup_key = re.sub(r'[^a-z0-9]', '', (company_name + market + title[:50]).lower())
         if signal_exists(dedup_key, "commercial_lease_signed"):
             continue
 
