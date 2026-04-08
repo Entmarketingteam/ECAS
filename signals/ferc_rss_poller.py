@@ -1,22 +1,25 @@
 """
 signals/ferc_rss_poller.py
-FERC EFTS (Electronic Filing & Tracking System) API poller.
+Federal Register API poller for FERC notices.
 
-FERC eLibrary (elibrary.ferc.gov) is Cloudflare-protected and returns 0 results.
-This replaces it by querying the EFTS search-index JSON API directly — no auth needed,
-returns structured filing metadata including docket number, title, and filing date.
+Replaces the dead FERC EFTS endpoint (efts.ferc.gov no longer resolves).
+Queries the Federal Register API — no auth needed, structured JSON, reliable.
 
-API: https://efts.ferc.gov/LATEST/search-index?q=...&dateRange=custom&startDate=...
-Docs: https://efts.ferc.gov/LATEST/search-index (no formal docs — reverse-engineered from FERC search UI)
+API: https://www.federalregister.gov/api/v1/articles.json
+     ?conditions[agencies][]=federal-energy-regulatory-commission
+Docs: https://www.federalregister.gov/reader-aids/developer-resources/rest-api
 
 Signal logic:
-  - "interconnection agreement" filings → heat_score 20.0 (strongest EPC demand signal)
-  - "construction" + "transmission" filings → heat_score 15.0
-  - "rate case" / "rate schedule" filings → heat_score 12.0
-  - All others → heat_score 8.0
+  - Interconnection agreement / generator interconnection → heat 20
+  - PPA / energy storage interconnection               → heat 18
+  - Transmission construction / upgrade / expansion    → heat 15
+  - Rate case / IRP / integrated resource plan         → heat 12
+  - Hydro license / relicensing                        → heat 10
+  - Administrative / clerical notices                  → skipped
 """
 
 import logging
+import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -27,246 +30,226 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 logger = logging.getLogger(__name__)
 
-EFTS_BASE_URL = "https://efts.ferc.gov/LATEST/search-index"
+FEDERAL_REGISTER_URL = "https://www.federalregister.gov/api/v1/articles.json"
+FERC_AGENCY_SLUG = "federal-energy-regulatory-commission"
 
-# How many days back to look for new filings
 LOOKBACK_DAYS = 7
+PER_PAGE = 50  # max allowed by Federal Register API
 
-# Queries and their associated base heat scores
-# Each tuple: (query_string, base_heat_score, label)
-FERC_QUERIES = [
-    (
-        '"interconnection agreement" OR "generator interconnection" OR "transmission interconnection"',
-        20.0,
-        "Interconnection Agreement",
-    ),
-    (
-        '"construction" "transmission" "upgrade" OR "expansion"',
-        15.0,
-        "Transmission Construction",
-    ),
-    (
-        '"rate case" OR "rate schedule" OR "integrated resource plan" OR "IRP"',
-        12.0,
-        "Rate Case / IRP",
-    ),
-    (
-        '"power purchase agreement" OR "PPA" OR "energy storage" "interconnection"',
-        18.0,
-        "PPA / Storage Interconnection",
-    ),
+# Ordered from highest to lowest priority — first match wins for base score
+SIGNAL_RULES = [
+    (20.0, "Interconnection Agreement", [
+        "interconnection agreement", "generator interconnection",
+        "transmission interconnection", "large generator interconnection",
+        "small generator interconnection",
+    ]),
+    (18.0, "PPA / Storage Interconnection", [
+        "power purchase agreement", " ppa ", "energy storage interconnection",
+        "battery storage", "pumped storage",
+    ]),
+    (15.0, "Transmission Construction", [
+        "transmission line", "transmission project", "transmission upgrade",
+        "transmission expansion", "transmission facility", "new transmission",
+        "overhead line", "underground cable", "substation construction",
+    ]),
+    (12.0, "Rate Case / IRP", [
+        "rate case", "rate schedule", "integrated resource plan", " irp ",
+        "cost of service", "wholesale rate",
+    ]),
+    (10.0, "Hydro License", [
+        "hydroelectric", "hydro license", "relicensing", "water power license",
+    ]),
 ]
 
-# FERC filing categories that are strongest EPC signals
-HIGH_VALUE_CATEGORIES = {
-    "E": "Electric",    # Electric filings — most relevant
-    "G": "Gas",         # Gas pipeline — moderate relevance
+# Bonus terms that boost any matched signal
+BONUS_TERMS = {
+    "billion":      10.0,
+    "765 kv":       8.0,
+    "500 kv":       8.0,
+    "345 kv":       5.0,
+    "hvdc":         8.0,
+    "high voltage": 5.0,
+    "data center":  5.0,
+    "datacenter":   5.0,
+    "hyperscale":   5.0,
+    "nuclear":      5.0,
+    " smr ":        5.0,
+    "solar":        3.0,
+    "wind":         3.0,
+    "gigawatt":     5.0,
+    " gw ":         3.0,
+    " mw ":         2.0,
 }
 
-# Minimum results per query to bother logging as successful
-MIN_RESULTS_TO_LOG = 1
+# Skip purely administrative / clerical notices — no EPC signal value
+SKIP_KEYWORDS = [
+    "comment request", "paperwork reduction", "information collection",
+    "omb review", "notice of filing", "delegation of authority",
+    "sunshine act", "closed meeting", "open meeting",
+]
 
-_HEADERS = {
-    "User-Agent": "ECAS admin@contractmotion.com (signal monitoring)",
-    "Accept": "application/json",
-}
 
-
-def _get_date_range() -> tuple[str, str]:
-    """Return (start_date, end_date) strings in YYYY-MM-DD format."""
+def _get_date_range(lookback_days: int) -> tuple[str, str]:
     end = datetime.utcnow()
-    start = end - timedelta(days=LOOKBACK_DAYS)
+    start = end - timedelta(days=lookback_days)
     return start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d")
 
 
-def _calculate_heat_score(base_score: float, filing: dict) -> float:
-    """
-    Adjust base score based on filing metadata.
-    Filings with dollar amounts or explicit construction language score higher.
-    """
-    score = base_score
-    title = (filing.get("title") or "").lower()
-    description = (filing.get("description") or "").lower()
-    text = title + " " + description
+def _classify(title: str, abstract: str) -> tuple[float, str] | None:
+    """Return (base_heat_score, label) for first matching rule, or None to skip."""
+    text = (title + " " + (abstract or "")).lower()
 
-    # Bonus for large dollar amounts in title/description
-    import re
-    dollar_matches = re.findall(r"\$[\d,.]+ ?(?:billion|million|b\b|m\b)", text, re.IGNORECASE)
-    for m in dollar_matches:
-        if "billion" in m.lower():
-            score += 10.0
-        else:
-            score += 3.0
+    if any(kw in text for kw in SKIP_KEYWORDS):
+        return None
 
-    # Bonus for specific high-value terms
-    if any(kw in text for kw in ["765 kv", "500 kv", "345 kv", "hvdc", "high voltage"]):
-        score += 8.0
-    if any(kw in text for kw in ["datacenter", "data center", "hyperscale", "ai campus"]):
-        score += 5.0
-    if "nuclear" in text or "smr" in text:
-        score += 5.0
+    for base_score, label, keywords in SIGNAL_RULES:
+        if any(kw in text for kw in keywords):
+            return base_score, label
 
+    return None
+
+
+def _boost_score(base: float, title: str, abstract: str) -> float:
+    text = (title + " " + (abstract or "")).lower()
+    score = base
+    for term, bonus in BONUS_TERMS.items():
+        if term in text:
+            score += bonus
+    dollar_hits = re.findall(r"\$[\d,.]+ ?(?:billion|million)", text, re.IGNORECASE)
+    score += len(dollar_hits) * 3.0
     return min(round(score, 1), 100.0)
 
 
-def _extract_company(filing: dict) -> str:
-    """Best-effort: extract company/utility name from FERC filing metadata."""
-    # EFTS returns "applicant" or "companyName" fields on some records
-    for field in ("applicant", "companyName", "company_name", "filer"):
-        val = filing.get(field)
-        if val and isinstance(val, str) and len(val) > 2:
-            return val.strip()
+def _extract_company(title: str, abstract: str) -> str:
+    """
+    FERC notice titles typically start with 'Company Name; Notice of ...'
+    Extract the company from the prefix before the semicolon.
+    """
+    match = re.match(r"^([^;]+);", title)
+    if match:
+        candidate = match.group(1).strip()
+        if not any(w in candidate.lower() for w in ["commission", "ferc", "notice", "order"]):
+            return candidate
 
-    # Fall back to docket prefix (e.g., "ER26-1234" → utility filed with FERC)
-    docket = filing.get("docket_number") or filing.get("docketNumber") or ""
-    if docket:
-        return f"FERC Docket {docket}"
+    if abstract:
+        match = re.search(
+            r"\b([A-Z][a-zA-Z\s&,.]+(?:Inc|LLC|Corp|Company|Authority|Power|Energy|Electric|Utility|Co)\.?)\b",
+            abstract,
+        )
+        if match:
+            return match.group(1).strip()
 
-    return "Unknown Utility (FERC Filing)"
+    return "FERC Filing"
 
 
-def _determine_sector(filing: dict, query_label: str) -> str:
-    text = (
-        (filing.get("title") or "") + " " +
-        (filing.get("description") or "") + " " +
-        query_label
-    ).lower()
-
-    if any(kw in text for kw in ["nuclear", "smr", "uranium", "reactor"]):
+def _determine_sector(title: str, abstract: str) -> str:
+    text = (title + " " + (abstract or "")).lower()
+    if any(kw in text for kw in ["nuclear", "smr", "uranium", "reactor", "atomic"]):
         return "Nuclear & Critical Minerals"
     if any(kw in text for kw in ["defense", "military", "dod", "pentagon"]):
         return "Defense"
+    if any(kw in text for kw in ["natural gas", "lng", "pipeline", "gas transmission"]):
+        return "Natural Gas Infrastructure"
     return "Power & Grid Infrastructure"
 
 
 def fetch_ferc_filings(lookback_days: int = LOOKBACK_DAYS) -> list[dict]:
     """
-    Query FERC EFTS API for recent filings matching EPC-relevant search terms.
+    Query Federal Register API for recent FERC notices.
     Returns list of signal dicts ready for Airtable insertion.
     """
-    start_date, end_date = _get_date_range()
+    start_date, end_date = _get_date_range(lookback_days)
     signals = []
-    seen_dockets = set()  # Deduplicate across queries by docket number
+    seen_docs: set[str] = set()
+    page = 1
 
-    for query, base_score, label in FERC_QUERIES:
-        params = {
-            "q": query,
-            "dateRange": "custom",
-            "startDate": start_date,
-            "endDate": end_date,
-            "sortOrder": "Last Modified Date",
-            "sortDir": "DESC",
-            "rows": 50,  # Max rows per request
-        }
-
+    while True:
         try:
             resp = requests.get(
-                EFTS_BASE_URL,
-                params=params,
-                headers=_HEADERS,
-                timeout=30,
+                FEDERAL_REGISTER_URL,
+                params={
+                    "conditions[agencies][]": FERC_AGENCY_SLUG,
+                    "conditions[publication_date][gte]": start_date,
+                    "conditions[publication_date][lte]": end_date,
+                    "per_page": PER_PAGE,
+                    "page": page,
+                    "order": "newest",
+                    "fields[]": ["title", "publication_date", "abstract", "document_number", "html_url"],
+                },
+                timeout=20,
+            )
+        except requests.exceptions.Timeout:
+            logger.warning("[FERC FR] Timeout on page %d", page)
+            break
+        except Exception as e:
+            logger.warning("[FERC FR] Request error on page %d: %s", page, e)
+            break
+
+        if resp.status_code == 429:
+            logger.warning("[FERC FR] Rate limited — stopping pagination")
+            break
+        if resp.status_code != 200:
+            logger.warning("[FERC FR] HTTP %d: %s", resp.status_code, resp.text[:200])
+            break
+
+        data = resp.json()
+        results = data.get("results", [])
+        if not results:
+            break
+
+        for article in results:
+            doc_num = article.get("document_number", "")
+            if doc_num in seen_docs:
+                continue
+            seen_docs.add(doc_num)
+
+            title    = article.get("title", "")
+            abstract = article.get("abstract") or ""
+            pub_date = article.get("publication_date", end_date)
+            html_url = article.get("html_url", "")
+
+            classification = _classify(title, abstract)
+            if classification is None:
+                continue
+
+            base_score, label = classification
+            heat    = _boost_score(base_score, title, abstract)
+            company = _extract_company(title, abstract)
+            sector  = _determine_sector(title, abstract)
+
+            raw_content = (
+                f"FERC Notice: {title}\n"
+                f"Type: {label} | Published: {pub_date} | Doc: {doc_num}\n"
+                f"{abstract[:800]}"
             )
 
-            if resp.status_code == 429:
-                logger.warning(f"[FERC EFTS] Rate limited on query: {label}")
-                continue
-            if resp.status_code != 200:
-                logger.warning(
-                    f"[FERC EFTS] HTTP {resp.status_code} for query '{label}': "
-                    f"{resp.text[:200]}"
-                )
-                continue
+            signals.append({
+                "signal_type": "ferc_filing",
+                "source": "Federal Register (FERC)",
+                "company_name": company,
+                "sector": sector,
+                "signal_date": pub_date,
+                "raw_content": raw_content,
+                "heat_score": heat,
+                "notes": html_url or f"FERC doc {doc_num} | {label}",
+            })
 
-            data = resp.json()
+        total_pages = data.get("total_pages", 1)
+        if page >= total_pages:
+            break
+        page += 1
 
-            # EFTS returns either {"hits": {"hits": [...]}} or {"response": {"docs": [...]}}
-            # Handle both shapes
-            filings = []
-            if "hits" in data:
-                raw_hits = data["hits"].get("hits", [])
-                filings = [h.get("_source", h) for h in raw_hits]
-            elif "response" in data:
-                filings = data["response"].get("docs", [])
-            elif isinstance(data, list):
-                filings = data
-
-            if not filings:
-                logger.info(f"[FERC EFTS] '{label}': 0 results ({start_date} to {end_date})")
-                continue
-
-            count = 0
-            for filing in filings:
-                docket = (
-                    filing.get("docket_number")
-                    or filing.get("docketNumber")
-                    or filing.get("accession_number")
-                    or ""
-                )
-                # Deduplicate by docket + label to allow same docket across different queries
-                dedup_key = f"{docket}:{label}"
-                if dedup_key in seen_dockets:
-                    continue
-                seen_dockets.add(dedup_key)
-
-                title = filing.get("title") or filing.get("document_title") or f"FERC Filing — {label}"
-                filed_date = (
-                    filing.get("filed_date")
-                    or filing.get("filedDate")
-                    or filing.get("last_modified")
-                    or end_date
-                )
-                # Normalize date to YYYY-MM-DD
-                if isinstance(filed_date, str) and "T" in filed_date:
-                    filed_date = filed_date[:10]
-                elif isinstance(filed_date, str) and len(filed_date) >= 10:
-                    filed_date = filed_date[:10]
-
-                company = _extract_company(filing)
-                sector = _determine_sector(filing, label)
-                heat = _calculate_heat_score(base_score, filing)
-
-                description = filing.get("description") or filing.get("full_text", "")[:500]
-                raw_content = (
-                    f"FERC Filing: {title}\n"
-                    f"Docket: {docket} | Type: {label} | Filed: {filed_date}\n"
-                    f"Filer: {company}\n"
-                    f"{description[:1000]}"
-                )
-
-                link = ""
-                if docket:
-                    # FERC eLibrary direct link (may require browser, but useful as reference)
-                    link = f"https://elibrary.ferc.gov/eLibrary/docID/{docket}"
-
-                signals.append({
-                    "signal_type": "ferc_filing",
-                    "source": "FERC EFTS",
-                    "company_name": company,
-                    "sector": sector,
-                    "signal_date": filed_date,
-                    "raw_content": raw_content,
-                    "heat_score": heat,
-                    "notes": link or f"FERC EFTS query: {label} | Docket: {docket}",
-                })
-                count += 1
-
-            logger.info(f"[FERC EFTS] '{label}': {count} signals ({start_date} to {end_date})")
-
-        except requests.exceptions.Timeout:
-            logger.warning(f"[FERC EFTS] Timeout on query: {label}")
-        except ValueError as e:
-            logger.warning(f"[FERC EFTS] JSON parse error for query '{label}': {e}")
-        except Exception as e:
-            logger.warning(f"[FERC EFTS] Error on query '{label}': {e}")
-
-    logger.info(f"[FERC EFTS] Total: {len(signals)} signals from {lookback_days}-day lookback")
+    logger.info(
+        "[FERC FR] %d signals from %d FERC notices (%s to %s)",
+        len(signals), len(seen_docs), start_date, end_date,
+    )
     return signals
 
 
 def run_poller(push_to_airtable: bool = True) -> dict:
     """
-    Poll FERC EFTS API for new filings.
-    Returns dict with stats.
+    Poll Federal Register for recent FERC notices.
+    Keeps same interface as the original FERC EFTS poller.
     """
     signals = fetch_ferc_filings(lookback_days=LOOKBACK_DAYS)
 
@@ -275,7 +258,6 @@ def run_poller(push_to_airtable: bool = True) -> dict:
         try:
             from storage.airtable import get_client
             at = get_client()
-
             for sig in signals:
                 try:
                     at.insert_signal(
@@ -290,15 +272,14 @@ def run_poller(push_to_airtable: bool = True) -> dict:
                     )
                     signals_pushed += 1
                 except Exception as e:
-                    logger.warning(f"[FERC EFTS] Airtable insert failed: {e}")
-
+                    logger.warning("[FERC FR] Airtable insert failed: %s", e)
         except Exception as e:
-            logger.error(f"[FERC EFTS] Airtable client error: {e}")
+            logger.error("[FERC FR] Airtable client error: %s", e)
 
     return {
         "ferc_filings_found": len(signals),
         "signals_pushed": signals_pushed,
-        "queries_run": len(FERC_QUERIES),
+        "queries_run": 1,
         "lookback_days": LOOKBACK_DAYS,
     }
 
