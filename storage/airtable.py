@@ -198,7 +198,7 @@ class AirtableClient:
                 f"Signal already exists — skipping insert: {signal_type} | "
                 f"{company_name} | {signal_date_only} | id={existing_id}"
             )
-            return existing_id
+            return None  # duplicate — nothing inserted
         # ── Insert ─────────────────────────────────────────────────────────────
         airtable_source = SOURCE_MAP.get(signal_type, "manual")
         captured_at = _to_airtable_datetime(signal_date)

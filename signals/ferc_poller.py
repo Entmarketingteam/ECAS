@@ -188,7 +188,7 @@ def run_poller(push_to_airtable: bool = True) -> dict:
 
             for sig in signals:
                 try:
-                    at.insert_signal(
+                    rid = at.insert_signal(
                         signal_type=sig["signal_type"],
                         source=sig["source"],
                         company_name=sig["company_name"],
@@ -198,7 +198,8 @@ def run_poller(push_to_airtable: bool = True) -> dict:
                         heat_score=sig["heat_score"],
                         notes=sig["notes"],
                     )
-                    signals_pushed += 1
+                    if rid:
+                        signals_pushed += 1
                 except Exception as e:
                     logger.warning(f"[EIA] Airtable insert failed: {e}")
 

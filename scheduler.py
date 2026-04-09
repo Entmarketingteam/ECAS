@@ -1044,10 +1044,9 @@ def create_scheduler() -> BackgroundScheduler:
     # Staggered start offsets prevent API thundering herd on the same minute.
     scheduler.add_job(job_politician_trades, IntervalTrigger(hours=4, start_date="2000-01-01 00:00:00"), id="politician_trades")
     scheduler.add_job(job_government_contracts, IntervalTrigger(hours=4, start_date="2000-01-01 01:20:00"), id="gov_contracts")
-    scheduler.add_job(job_ferc_poller, IntervalTrigger(hours=4, start_date="2000-01-01 02:40:00"), id="ferc_poller")
-    # PJM territory capacity — every 12h (EIA data refreshes ~monthly, but frequent
-    # queries catch any data corrections + keeps the job in the active signal loop)
-    scheduler.add_job(job_pjm_poller, IntervalTrigger(hours=12, start_date="2000-01-01 03:20:00"), id="pjm_poller")
+    # EIA capacity data refreshes monthly — run weekly to catch new data without wasted queries
+    scheduler.add_job(job_ferc_poller, IntervalTrigger(weeks=1, start_date="2000-01-01 02:40:00"), id="ferc_poller")
+    scheduler.add_job(job_pjm_poller, IntervalTrigger(weeks=1, start_date="2000-01-01 03:20:00"), id="pjm_poller")
 
     # ── RSS every 6 hours ────────────────────────────────────────────────────
     scheduler.add_job(job_rss_feeds, IntervalTrigger(hours=6), id="rss_feeds")

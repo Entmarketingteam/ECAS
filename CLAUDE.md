@@ -4,7 +4,7 @@
 Signal-driven enterprise contract acquisition for mid-tier power/grid EPCs ($20M–$300M).
 Positioning: "We get you on the short-list before the RFP drops."
 
-## Status: LIVE — Signal Engine Running, FERC/PJM Broken (2026-03-13)
+## Status: LIVE — All Signal Sources Running (2026-04-09)
 - 51 companies in projects, 118 contacts, 60 enrolled in Smartlead campaign
 - Brand: **ContractMotion.com** ✅ purchased 2026-03-10
 - Smartlead sequence expanded to 6 emails (Day 0/4/9/15/22/30) ✅ 2026-03-13
@@ -55,12 +55,9 @@ signals → Claude extraction → sector scoring → ICP hunt (Apollo orgs) → 
 | RSS feeds | `rss_feeds` | ✅ WORKING | Running every 6h |
 | SEC 13F | `sec_13f` | ✅ WORKING | Weekly Mon 7am |
 | Earnings transcripts | `earnings_transcripts` | ✅ WORKING | Weekly Tue 6am (FMP API) |
-| FERC eLibrary | `ferc_poller` | ❌ BROKEN | Cloudflare-protected SPA — always returns HTML, 0 filings collected |
-| PJM interconnection queue | (none) | ❌ MISSING | URL changed (404), no working poller |
-| ERCOT interconnection queue | (none) | ❌ MISSING | API inaccessible |
-
-**Fix needed:** Replace `ferc_poller` with EIA API (`api.eia.gov` — free, just needs API key) + PJM Dataminer2.
-FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboarding.
+| FERC Federal Register | `ferc_rss` | ✅ WORKING | Federal Register API — ~3 filings/week, every 6h |
+| EIA Capacity Additions | `ferc_poller` | ✅ WORKING | EIA API (`api.eia.gov`) — 655 signals/run, weekly |
+| PJM territory capacity | `pjm_poller` | ✅ WORKING | EIA API filtered to PJM states, weekly |
 
 ## Known Gotchas ⚠️
 - **Apollo:** Use `/mixed_people/api_search` NOT `/people/search` (deprecated)
@@ -102,7 +99,7 @@ FERC/PJM/ERCOT are the core of the pitch — priority fix before client onboardi
 ## Remaining GTM Steps
 - [x] Register domain — ContractMotion.com ✅ purchased 2026-03-10
 - [x] Expand Smartlead sequence to 6 emails ✅ 2026-03-13
-- [ ] **PRIORITY: Fix FERC poller** — replace with EIA API (`api.eia.gov`) + PJM/ERCOT alternatives
+- [x] **Fix FERC poller** — replaced with EIA API (`api.eia.gov`) + Federal Register FERC RSS ✅ 2026-04-09
 - [x] **Sending domains purchased** — 5 domains, 4 inboxes exist on 2 domains ✅
 - [ ] **Start Smartlead warmup** — generate app passwords (Google Account → Security → App passwords), store in Doppler (`ecas/dev`), run `doppler run --project ecas --config dev -- python3 tools/smartlead_warmup_setup.py`
   - Doppler keys needed: `INBOX_ETHAN_AICONTRACTMOTION_PASS`, `INBOX_ETHAN_ATCHLEY_AICONTRACTMOTION_PASS`, `INBOX_KARLEE_AICONTRACTMOTION_PASS`, `INBOX_ETHAN_CONTRACTMOTIONAI_PASS`
