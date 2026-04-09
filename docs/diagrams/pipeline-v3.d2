@@ -1,0 +1,423 @@
+direction: right
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 1
+    pad: 50
+  }
+}
+
+title: ECAS — Enterprise Contract Acquisition System {
+  near: top-center
+  shape: text
+  style.font-size: 32
+  style.bold: true
+  style.font-color: "#0f172a"
+}
+
+# ─────────────────────────────────────────────────
+# MAIN PIPELINE (left → right)
+# ─────────────────────────────────────────────────
+
+triggers: TRIGGERS\n& SCHEDULER {
+  shape: rectangle
+  style: {
+    fill: "#1e293b"
+    stroke: "#475569"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  apy: APScheduler\n13 Cron Jobs {
+    style.fill: "#334155"
+    style.font-color: white
+    style.font-size: 13
+  }
+  cron: Daily 10am UTC {
+    style.fill: "#334155"
+    style.font-color: white
+    style.font-size: 13
+  }
+  api: POST /api/enrich-and-enroll {
+    style.fill: "#334155"
+    style.font-color: white
+    style.font-size: 13
+  }
+  hot: Hot Signal > 55 {
+    style.fill: "#334155"
+    style.font-color: white
+    style.font-size: 13
+  }
+}
+
+signals: SIGNAL SOURCES {
+  shape: rectangle
+  style: {
+    fill: "#1e3a8a"
+    stroke: "#1d4ed8"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  usa: USASpending.gov\n662 contracts/run {
+    shape: cylinder
+    style.fill: "#1d4ed8"
+    style.font-color: white
+    style.font-size: 12
+  }
+  trades: Politician\nStock Trades {
+    shape: cylinder
+    style.fill: "#1d4ed8"
+    style.font-color: white
+    style.font-size: 12
+  }
+  rss: RSS Feeds\nevery 6h {
+    shape: cylinder
+    style.fill: "#1d4ed8"
+    style.font-color: white
+    style.font-size: 12
+  }
+  sec: SEC 13F\nWeekly {
+    shape: cylinder
+    style.fill: "#1d4ed8"
+    style.font-color: white
+    style.font-size: 12
+  }
+  fmp: Earnings Calls\nFMP API {
+    shape: cylinder
+    style.fill: "#1d4ed8"
+    style.font-color: white
+    style.font-size: 12
+  }
+  ferc: FERC/PJM\n⚠️ Broken {
+    shape: cylinder
+    style.fill: "#7f1d1d"
+    style.font-color: "#fca5a5"
+    style.font-size: 12
+    style.stroke-dash: 5
+  }
+}
+
+ai: AI EXTRACTION\n+ SCORING {
+  shape: rectangle
+  style: {
+    fill: "#1c1917"
+    stroke: "#d97706"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  extract: Claude Haiku\nSignal Extract {
+    shape: hexagon
+    style.fill: "#d97706"
+    style.font-color: white
+    style.bold: true
+    style.font-size: 13
+  }
+  score: Sector Score\n+ ICP Fit {
+    style.fill: "#78350f"
+    style.font-color: white
+    style.font-size: 13
+  }
+  sectors: Power · Data Center\nWater · Industrial\nDefense · Drone DFR {
+    style.fill: "#292524"
+    style.font-color: "#d97706"
+    style.font-size: 12
+  }
+  extract -> score -> sectors
+}
+
+enrichment: ENRICHMENT\n4 Parallel Workers {
+  shape: rectangle
+  style: {
+    fill: "#0c4a6e"
+    stroke: "#0284c7"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  apollo_org: Apollo.io\nOrg Search {
+    shape: cylinder
+    style.fill: "#0369a1"
+    style.font-color: white
+    style.font-size: 12
+  }
+  apollo_ppl: Apollo.io\nPeople Search {
+    shape: cylinder
+    style.fill: "#0369a1"
+    style.font-color: white
+    style.font-size: 12
+  }
+  apollo_rev: Apollo.io\nBulk Reveal {
+    shape: cylinder
+    style.fill: "#0369a1"
+    style.font-color: white
+    style.font-size: 12
+  }
+  email_q: Email found? {
+    shape: diamond
+    style.fill: "#fbbf24"
+    style.font-color: "#0f172a"
+    style.bold: true
+    style.font-size: 12
+  }
+  findymail_fb: Findymail\nFallback {
+    shape: cylinder
+    style.fill: "#0ea5e9"
+    style.font-color: white
+    style.font-size: 12
+  }
+  verify: Findymail\nVerify ✓ {
+    shape: cylinder
+    style.fill: "#0ea5e9"
+    style.font-color: white
+    style.font-size: 12
+  }
+  apollo_org -> apollo_ppl -> apollo_rev -> email_q
+  email_q -> verify: "Yes"
+  email_q -> findymail_fb: "No"
+  findymail_fb -> verify
+}
+
+smartlead: SMARTLEAD\nDELIVERY {
+  shape: rectangle
+  style: {
+    fill: "#042f4e"
+    stroke: "#0891b2"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  dedup: Dedup\nCheck {
+    shape: diamond
+    style.fill: "#fbbf24"
+    style.font-color: "#0f172a"
+    style.bold: true
+    style.font-size: 12
+  }
+  enroll: Enroll\nContact {
+    style.fill: "#0284c7"
+    style.font-color: white
+    style.font-size: 12
+  }
+  rate: Rate Limit\n0.5s wait {
+    style.fill: "#075985"
+    style.font-color: white
+    style.font-size: 12
+  }
+  camps: 6 Campaigns\n3005694 Power · 3040599 DC\n3040600 Water · 3040601 Ind\n3095136 Defense · 3103531 DFR {
+    shape: oval
+    style.fill: "#075985"
+    style.font-color: "#7dd3fc"
+    style.font-size: 11
+  }
+  dedup -> enroll: "New"
+  enroll -> rate -> camps
+}
+
+slack_notify: Slack {
+  shape: cloud
+  style: {
+    fill: "#4a154b"
+    stroke: "#7c3aed"
+    font-color: white
+    stroke-width: 3
+    bold: true
+    font-size: 16
+  }
+  summary: Run summary\n+ stats {
+    style.fill: "#6b21a8"
+    style.font-color: white
+    style.font-size: 12
+  }
+}
+
+# ─────────────────────────────────────────────────
+# AIRTABLE — data store (below main flow)
+# ─────────────────────────────────────────────────
+
+airtable: Airtable CRM · appoi8SzEJY8in57x {
+  shape: cylinder
+  style: {
+    fill: "#064e3b"
+    stroke: "#10b981"
+    font-color: white
+    stroke-width: 3
+    bold: true
+    font-size: 15
+  }
+  t1: signals_raw {
+    style.fill: "#065f46"
+    style.font-color: white
+    style.font-size: 12
+  }
+  t2: projects {
+    style.fill: "#065f46"
+    style.font-color: white
+    style.font-size: 12
+  }
+  t3: contacts {
+    style.fill: "#065f46"
+    style.font-color: white
+    style.font-size: 12
+  }
+  t4: deals {
+    style.fill: "#065f46"
+    style.font-color: white
+    style.font-size: 12
+  }
+}
+
+# ─────────────────────────────────────────────────
+# SELF-HEALING — fault tolerance layer
+# ─────────────────────────────────────────────────
+
+selfheal: SELF-HEALING LAYER {
+  shape: rectangle
+  style: {
+    fill: "#450a0a"
+    stroke: "#ef4444"
+    font-color: white
+    stroke-width: 2
+    border-radius: 10
+    bold: true
+    font-size: 16
+  }
+  classify: Classify\nHTTP Error {
+    shape: diamond
+    style.fill: "#fca5a5"
+    style.font-color: "#0f172a"
+    style.bold: true
+    style.font-size: 12
+  }
+  r429: 429 → Wait\n+ Retry {
+    style.fill: "#b91c1c"
+    style.font-color: white
+    style.font-size: 12
+  }
+  r5xx: 5xx → Backoff\n2→4→8→16s {
+    style.fill: "#b91c1c"
+    style.font-color: white
+    style.font-size: 12
+  }
+  r401: 401 Auth\nAlert + STOP {
+    style.fill: "#7f1d1d"
+    style.font-color: "#fca5a5"
+    style.font-size: 12
+  }
+  r402: 402 Credits\nAlert + STOP {
+    style.fill: "#7f1d1d"
+    style.font-color: "#fca5a5"
+    style.font-size: 12
+  }
+  breaker: Circuit Breaker\n5 fails → block 5min {
+    shape: circle
+    style.fill: "#fca5a5"
+    style.font-color: "#0f172a"
+    style.bold: true
+    style.font-size: 12
+  }
+  haiku: Claude Haiku\nAI Diagnosis {
+    shape: hexagon
+    style.fill: "#d97706"
+    style.font-color: white
+    style.bold: true
+    style.font-size: 13
+  }
+  classify -> r429
+  classify -> r5xx
+  classify -> r401
+  classify -> r402
+  r429 -> breaker
+  r5xx -> breaker
+  breaker -> haiku
+  r401 -> haiku
+  r402 -> haiku
+}
+
+slack_alert: Slack\nEscalation {
+  shape: cloud
+  style: {
+    fill: "#7f1d1d"
+    stroke: "#ef4444"
+    font-color: "#fca5a5"
+    stroke-width: 3
+    bold: true
+    font-size: 14
+  }
+}
+
+infra: |md
+  **Railway** · $5-20/mo · FastAPI + APScheduler · 13 jobs · 4 parallel enrichment workers · 364 contacts enrolled · ecas-scraper-production.up.railway.app
+| {
+  near: bottom-center
+  style.font-size: 14
+  style.font-color: "#64748b"
+}
+
+# ─────────────────────────────────────────────────
+# CONNECTIONS
+# ─────────────────────────────────────────────────
+
+triggers -> signals: Schedule fires {
+  style.stroke: "#3b82f6"
+  style.stroke-width: 3
+  style.bold: true
+}
+signals -> ai {
+  style.stroke: "#6366f1"
+  style.stroke-width: 2
+}
+ai -> enrichment: "ICP candidates" {
+  style.stroke: "#d97706"
+  style.stroke-width: 2
+}
+enrichment -> smartlead: "Verified emails" {
+  style.stroke: "#0ea5e9"
+  style.stroke-width: 2
+}
+smartlead -> slack_notify {
+  style.stroke: "#a855f7"
+  style.stroke-width: 2
+}
+
+enrichment -> airtable: "Upsert\ncontacts + projects" {
+  style.stroke: "#10b981"
+  style.stroke-width: 2
+}
+smartlead -> airtable: "Set in_sequence" {
+  style.stroke: "#10b981"
+  style.stroke-dash: 4
+  style.stroke-width: 2
+}
+
+enrichment -> selfheal: "On failure" {
+  style.stroke: "#ef4444"
+  style.stroke-dash: 5
+  style.stroke-width: 2
+}
+smartlead -> selfheal: "On failure" {
+  style.stroke: "#ef4444"
+  style.stroke-dash: 5
+  style.stroke-width: 2
+}
+selfheal.haiku -> slack_alert: "Diagnosis\n+ retry cmd" {
+  style.stroke: "#ef4444"
+  style.stroke-width: 2
+}
+selfheal -> enrichment: "Recovered →\nretry" {
+  style.stroke: "#10b981"
+  style.stroke-dash: 5
+  style.stroke-width: 2
+}
