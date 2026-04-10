@@ -18,9 +18,9 @@ Positioning: "We get you on the short-list before the RFP drops."
 - **Dockerfile:** `python:3.11-slim` + `PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`
 
 ## Airtable
-- **Base:** `appoi8SzEJY8in57x`
+- **Base:** `appoi8SzEJY8in57x` — **ContractMotion CRM**
 - `signals_raw` = `tblAFJnXToLTKeaNU`
-- `projects` = `tbloen0rEkHttejnC`
+- `projects` = `tbloen0rEkHttejnC` — `days_in_stage` formula field added ✅
 - `contacts` = `tblPBvTBuhwlS8AnS`
 - `deals` = `tbl2ZkD20cf6zMxJj`
 
