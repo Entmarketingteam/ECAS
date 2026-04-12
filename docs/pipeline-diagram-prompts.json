@@ -1,0 +1,164 @@
+{
+  "ideogram": {
+    "prompt": "Technical system architecture diagram, dark navy background (#0A1628), clean modern infographic style, professional SaaS documentation",
+    "style": "Design",
+    "aspect_ratio": "16:9",
+    "negative_prompt": "photographs, people, realistic, blurry text, handwritten, 3D render",
+    "composition": {
+      "layout": "horizontal pipeline, left to right, 6 connected stages",
+      "background": "dark navy (#0A1628) with subtle dot grid pattern",
+      "typography": "white sans-serif (Inter or SF Pro style), clean readable labels",
+      "connectors": "thin glowing lines between stages, subtle arrow heads, data flow direction left to right"
+    },
+    "stages": [
+      {
+        "position": 1,
+        "label": "TRIGGERS",
+        "color": "#4A90D9",
+        "icon": "clock / lightning bolt",
+        "shape": "rounded rectangle with 5 small entry point boxes above it",
+        "details": [
+          "Daily Cron (10am UTC)",
+          "Hot Signal (score > 55)",
+          "Budget Window (unlock date)",
+          "Manual API Call",
+          "Admin CLI"
+        ]
+      },
+      {
+        "position": 2,
+        "label": "PRE-FLIGHT",
+        "color": "#27AE60",
+        "icon": "shield with checkmark",
+        "shape": "rounded rectangle with 5 small probe boxes inside in a row",
+        "details": [
+          "Apollo API ✓",
+          "Findymail API ✓",
+          "Smartlead API ✓",
+          "Airtable API ✓",
+          "Env Vars ✓"
+        ],
+        "annotation": "All 5 checks run in parallel"
+      },
+      {
+        "position": 3,
+        "label": "ENRICHMENT",
+        "color": "#8E44AD",
+        "icon": "magnifying glass with data nodes",
+        "shape": "largest box, contains a mini flowchart inside showing the waterfall",
+        "details": [
+          "Apollo Org Search → org_id",
+          "Apollo People Search → candidates",
+          "Apollo Bulk Match → reveal emails",
+          "Findymail Fallback → fill gaps",
+          "Findymail Verify → gate (valid only)"
+        ],
+        "annotation": "4 companies processed in parallel, waterfall is sequential per company"
+      },
+      {
+        "position": 4,
+        "label": "DELIVERY",
+        "color": "#9B59B6",
+        "icon": "rocket / send arrow",
+        "shape": "rounded rectangle with routing table inside",
+        "details": [
+          "Sector → Campaign Routing:",
+          "Power & Grid → Campaign 3005694",
+          "Data Center → Campaign 3040599",
+          "Water → Campaign 3040600",
+          "Industrial → Campaign 3040601",
+          "Defense → Campaign 3095136",
+          "Drone/DFR → Campaign 3103531"
+        ],
+        "annotation": "Sequential with 0.5s delay, cached dedup"
+      },
+      {
+        "position": 5,
+        "label": "SYNC",
+        "color": "#1ABC9C",
+        "icon": "database with sync arrows",
+        "shape": "rounded rectangle with two sub-boxes",
+        "details": [
+          "Airtable: upsert contact, set status = in_sequence, link to project",
+          "Slack: post summary to #ecas-signals with counts + campaign breakdown"
+        ]
+      },
+      {
+        "position": 6,
+        "label": "SELF-HEAL",
+        "color": "#E74C3C",
+        "icon": "wrench with circular arrow / brain icon",
+        "shape": "rounded rectangle with retry loop diagram below it",
+        "details": [
+          "Retry Engine: classify error by HTTP status code",
+          "429 → wait + retry | 401 → alert + stop | 500 → backoff + retry",
+          "Circuit Breaker: 5 failures → block 5 min → half-open test",
+          "Claude Haiku: reads error + context → root cause + suggested fix",
+          "Slack Escalation: full diagnosis with manual retry command"
+        ],
+        "annotation": "Dotted lines connect back to stages 3, 4, 5 showing retry coverage"
+      }
+    ],
+    "bottom_section": {
+      "label": "RETRY FLOW",
+      "description": "Below the main pipeline, show a horizontal sequence: API Call Fails → Classify (429/401/500/402/timeout) → Strategy (wait/stop/backoff) → Retry or Escalate → Circuit Breaker (open after 5 fails) → Claude AI Diagnosis → Slack Alert",
+      "visual": "Red-orange gradient bar with icons at each step, circular arrows showing the loop"
+    },
+    "stats_bar": {
+      "position": "bottom right corner",
+      "items": [
+        "Railway: $5-20/mo flat",
+        "Zero orchestration cost",
+        "4 companies parallel",
+        "Claude diagnosis: ~$0.01/call"
+      ]
+    }
+  },
+  "adobe_firefly": {
+    "prompt": "Technical system architecture diagram on dark navy background. Professional SaaS infographic with 6 color-coded stages flowing horizontally left to right connected by glowing lines. Stage 1 TRIGGERS in blue (#4A90D9) with clock icon showing 5 entry points. Stage 2 PRE-FLIGHT in green (#27AE60) with shield icon showing 5 parallel health probes with checkmarks. Stage 3 ENRICHMENT in purple (#8E44AD) with magnifying glass showing a 5-step API waterfall flow with branching paths for fallback. Stage 4 DELIVERY in violet (#9B59B6) with rocket icon showing a sector to campaign routing table with 6 mappings. Stage 5 SYNC in teal (#1ABC9C) with database icon showing Airtable and Slack sync. Stage 6 SELF-HEAL in red (#E74C3C) with wrench and brain icon showing retry loop with exponential backoff visualization 2s 4s 8s 16s and circuit breaker open-closed states. Below the main pipeline a horizontal retry flow bar in red-orange showing error classification and Claude AI diagnosis. Clean flat design rounded corners subtle gradients white sans-serif text labels. No photographs no people.",
+    "style": "Graphic",
+    "aspect_ratio": "16:9",
+    "content_type": "Art",
+    "negative_prompt": "photo, realistic, 3D, people, blurry"
+  },
+  "midjourney_v6": {
+    "prompt": "Technical system architecture diagram, dark navy background, modern SaaS infographic. Six color-coded stages flow left to right: TRIGGERS (blue #4A90D9, clock icon, 5 entry points) → PRE-FLIGHT (green #27AE60, shield icon, 5 parallel health checks) → ENRICHMENT (purple #8E44AD, magnifying glass, 5-step API waterfall with fallback branches) → DELIVERY (violet #9B59B6, rocket icon, sector routing table) → SYNC (teal #1ABC9C, database icon, Airtable + Slack) → SELF-HEAL (red #E74C3C, wrench + brain, retry loop with circuit breaker). Below: retry flow bar showing exponential backoff 2s→4s→8s→16s and Claude AI diagnosis. Connected by thin glowing lines. Clean flat design, rounded corners, white sans-serif text, professional documentation style --ar 16:9 --style raw --no photo realistic people 3d",
+    "parameters": "--ar 16:9 --style raw --no photo realistic people 3d"
+  },
+  "diagram_description_for_any_tool": {
+    "title": "ECAS Self-Healing Enrichment Pipeline",
+    "subtitle": "Apollo → Findymail → Smartlead → Airtable with retry, circuit breaker, and AI diagnosis",
+    "layout": "Horizontal left-to-right pipeline with 6 stages",
+    "color_scheme": {
+      "background": "#0A1628 (dark navy)",
+      "stage_1_triggers": "#4A90D9 (blue)",
+      "stage_2_preflight": "#27AE60 (green)",
+      "stage_3_enrichment": "#8E44AD (purple)",
+      "stage_4_delivery": "#9B59B6 (violet)",
+      "stage_5_sync": "#1ABC9C (teal)",
+      "stage_6_selfheal": "#E74C3C (red)",
+      "text": "#FFFFFF (white)",
+      "connectors": "#FFFFFF40 (white 25% opacity)",
+      "grid": "#FFFFFF10 (white 6% opacity dot grid)"
+    },
+    "stages_summary": {
+      "1_TRIGGERS": "5 ways to start: cron, hot signal, budget window, API, CLI",
+      "2_PREFLIGHT": "5 parallel health probes: Apollo, Findymail, Smartlead, Airtable, env vars → healthy/degraded/blocked",
+      "3_ENRICHMENT": "Apollo 3-step waterfall (org→people→reveal) + Findymail fallback + verify gate. 4 companies in parallel.",
+      "4_DELIVERY": "Sector→campaign routing (6 sectors, 6 campaigns). Sequential enrollment with cached dedup.",
+      "5_SYNC": "Airtable upsert (outreach_status=in_sequence) + Slack summary to #ecas-signals",
+      "6_SELFHEAL": "Retry engine (error classification by HTTP status) + circuit breaker (5 fails→block 5min) + Claude Haiku diagnosis → Slack escalation"
+    },
+    "key_numbers": {
+      "parallel_workers": 4,
+      "retry_max": 3,
+      "circuit_breaker_threshold": 5,
+      "circuit_breaker_cooldown": "5 minutes",
+      "backoff_sequence": "2s → 4s → 8s → 16s",
+      "smartlead_delay": "0.5s between enrollments",
+      "compute_cost": "$5-20/mo flat (Railway)",
+      "diagnosis_cost": "~$0.01/call (Claude Haiku)",
+      "orchestration_cost": "$0"
+    }
+  }
+}
