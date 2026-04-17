@@ -323,3 +323,57 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# ─── Industry Factory: Scoring Modes ─────────────────────────────────────────
+# Added 2026-04-16. Extends existing scoring with mode-based logic.
+
+from typing import Optional
+
+
+def score_company_by_mode(
+    mode: str,
+    heat_score: float,
+    tech_stack=None,
+    prioritize_when_missing: Optional[list[str]] = None,
+) -> float:
+    """Score a company based on industry's scoring_mode.
+
+    Modes:
+      - positive: heat_score only (existing EPC logic)
+      - negative_tech_stack: boost for missing software in prioritized categories
+      - hybrid: average of positive and negative
+    """
+    prioritize_when_missing = prioritize_when_missing or []
+    mode = (mode or "positive").lower()
+
+    if mode == "positive":
+        return float(heat_score)
+
+    if mode in ("negative_tech_stack", "hybrid"):
+        negative = _negative_tech_stack_score(
+            heat_score=heat_score,
+            tech_stack=tech_stack,
+            prioritize_when_missing=prioritize_when_missing,
+        )
+        if mode == "negative_tech_stack":
+            return negative
+        return round((float(heat_score) + negative) / 2, 2)
+
+    raise ValueError(f"Unknown scoring_mode: {mode!r}")
+
+
+def _negative_tech_stack_score(
+    heat_score: float,
+    tech_stack,
+    prioritize_when_missing: list[str],
+) -> float:
+    """Higher score when company is missing expected software."""
+    if tech_stack is None or not getattr(tech_stack, "has_category", None):
+        return float(heat_score)
+    boost = 0
+    for cat in prioritize_when_missing:
+        has = tech_stack.has_category.get(cat, True)
+        if not has:
+            boost += 20
+    return float(min(heat_score + boost, 100.0))
