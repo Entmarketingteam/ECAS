@@ -1,0 +1,34 @@
+slug: data_center
+display_name: "Data Center & AI Infrastructure"
+track: contract_motion
+campaign_id: "3040599"
+revenue_range_m: [20, 300]
+naics: ["236220", "237130", "238210", "518210", "541513"]
+titles:
+  - VP Operations
+  - VP Business Development
+  - Director of Operations
+  - President
+  - CEO
+  - Owner
+  - COO
+  - VP Preconstruction
+  - Director of Business Development
+states: [VA, TX, NC, GA, FL, MD, PA]
+apollo_keywords:
+  - data center contractor
+  - critical facility contractor
+  - data center epc
+  - mission critical contractor
+  - electrical contractor data center
+  - power infrastructure contractor
+  - substation contractor
+  - electrical construction
+directory_seeds: []
+directory_auto_discovery: true
+scoring_mode: positive
+min_heat: 50.0
+signal_ttl_days: 90
+budget_cap_per_run: 25
+landing_page_url: https://contractmotion-site-production.up.railway.app/data-center
+sender_pool: contractmotion
