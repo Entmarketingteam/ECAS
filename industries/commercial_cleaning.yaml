@@ -1,0 +1,36 @@
+slug: commercial_cleaning
+display_name: "Commercial Cleaning & Janitorial"
+track: ai_automation
+campaign_id: "PENDING_SMARTLEAD_CAMPAIGN_CREATION"
+revenue_range_m: [2, 25]
+naics: ["561720", "561740"]
+titles:
+  - Owner
+  - President
+  - General Manager
+  - Operations Manager
+  - Director of Operations
+states: [TX, FL, GA, NC, VA, AZ, TN, SC, CA, NY, IL, OH]
+apollo_keywords:
+  - commercial cleaning company
+  - janitorial services
+  - building service contractor
+  - commercial janitorial
+  - office cleaning company
+  - facility cleaning contractor
+directory_seeds:
+  - https://www.issa.com/
+  - https://www.bscai.org/
+directory_auto_discovery: true
+scoring_mode: negative_tech_stack
+expected_stack_if_mature:
+  fsm: [ServiceTitan, Jobber, HousecallPro, FieldEdge, CleanTelligent, Swept]
+  crm: [HubSpot, Salesforce, Zoho, Pipedrive]
+  sms: [Twilio, Podium, Textline]
+  marketing_automation: [Mailchimp, ActiveCampaign]
+prioritize_when_missing: [fsm, sms]
+min_heat: 30.0
+signal_ttl_days: 120
+budget_cap_per_run: 50
+landing_page_url: https://entagency.co/ai-automation/commercial-cleaning
+sender_pool: ai_automation

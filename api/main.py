@@ -529,3 +529,32 @@ async def generate_sequence(req: GenerateSequenceRequest):
     except Exception as e:
         logger.error(f"[API] generate-sequence failed for {req.sector}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ── Industry Factory endpoints (added 2026-04-16) ───────────────────────────
+
+@app.post("/admin/run/industry/{slug}")
+async def run_industry_endpoint(slug: str, live: bool = False):
+    """Execute the Industry Factory pipeline for a given industry slug."""
+    from signals.industry_runner import run_industry
+    try:
+        result = run_industry(slug, dry_run=not live)
+        return {"ok": True, "result": result}
+    except FileNotFoundError as e:
+        return {"ok": False, "error": f"Unknown industry: {e}"}
+    except Exception as e:
+        logger.exception("Industry run failed")
+        return {"ok": False, "error": str(e)}
+
+
+@app.get("/admin/dashboard")
+async def admin_dashboard():
+    from ops.health_dashboard import build_dashboard_payload
+    return build_dashboard_payload()
+
+
+@app.get("/admin/dashboard.html")
+async def admin_dashboard_html():
+    from fastapi.responses import HTMLResponse
+    from ops.health_dashboard import build_dashboard_payload, render_html
+    return HTMLResponse(render_html(build_dashboard_payload()))

@@ -1,0 +1,11 @@
+slug: test_industry
+display_name: "Test Industry"
+track: contract_motion
+campaign_id: "9999999"
+revenue_range_m: [10, 100]
+naics: ["237130"]
+titles: [Owner, CEO]
+states: [TX, VA]
+apollo_keywords: [test contractor]
+scoring_mode: positive
+min_heat: 40.0
