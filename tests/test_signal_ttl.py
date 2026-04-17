@@ -21,4 +21,4 @@ def test_sweeps_projects_older_than_ttl():
         result = sweep_stale_projects(ttl_days=120)
 
     assert result["swept"] == 1
-    mock_at.update_record.assert_called_once()
+    mock_at._patch.assert_called_once()

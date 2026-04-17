@@ -30,7 +30,7 @@ def sweep_stale_projects(ttl_days: int = 90) -> dict:
         except (ValueError, AttributeError):
             continue
         if last_dt.replace(tzinfo=None) < cutoff:
-            at.update_record("projects", p["id"], {"stage": "Archived"})
+            at._patch("projects", p["id"], {"stage": "Archived"})
             swept += 1
     logger.info("[SignalTTL] Swept %d stale projects", swept)
     return {"swept": swept, "cutoff": cutoff.isoformat()}
