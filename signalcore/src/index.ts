@@ -11,6 +11,7 @@ import { EventAgent } from './agents/eventAgent.js';
 import { RFPAgent, RFPFetcher } from './agents/rfpAgent.js';
 import { RedditAgent, RedditFetcher, HttpRedditFetcher } from './agents/redditAgent.js';
 import { Coordinator } from './coordinator.js';
+import { computeInfraPlan, formatInfraPlan, InfraConfig } from './infraSizing.js';
 
 export interface RunOptions {
   inputPath?: string;
@@ -21,6 +22,7 @@ export interface RunOptions {
   socialFetcher?: SocialFetcher;
   rfpFetcher?: RFPFetcher;
   redditFetcher?: RedditFetcher;
+  infraOverrides?: Partial<InfraConfig>;
 }
 
 export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
@@ -160,6 +162,13 @@ export async function run(opts: RunOptions = {}): Promise<EnrichedLead[]> {
     console.log(`SignalCore: Found ${rfps.length} matching RFPs`);
     writeJson(path.join(outputDir, 'rfps.json'), rfps);
   }
+
+  // Infrastructure sizing
+  const infraPlan = computeInfraPlan(enriched, opts.infraOverrides);
+  writeJson(path.join(outputDir, 'infra_plan.json'), infraPlan);
+  const infraReport = formatInfraPlan(infraPlan);
+  fs.writeFileSync(path.join(outputDir, 'infra_plan.txt'), infraReport, 'utf-8');
+  console.log(`\n${infraReport}`);
 
   return enriched;
 }
