@@ -15,6 +15,13 @@ from collections import defaultdict
 
 import os
 PAT = os.environ.get("AIRTABLE_API_KEY", "")
+
+# ZIP market enrichment (gracefully skipped if Supabase not configured)
+try:
+    from enrichment.zip_enricher import score_market_strength
+    ZIP_ENRICHMENT_ENABLED = bool(os.environ.get("SUPABASE_URL"))
+except ImportError:
+    ZIP_ENRICHMENT_ENABLED = False
 BASE_ID = "appoi8SzEJY8in57x"
 PROJECTS_TABLE = "tbloen0rEkHttejnC"
 CONTACTS_TABLE = "tblPBvTBuhwlS8AnS"
@@ -73,9 +80,27 @@ def icp_fit_score(icp):
     if i == "weak":     return 5
     return 10  # unknown
 
+def market_score_bonus(zip_code: str) -> tuple[int, str, float | None]:
+    """
+    Return (bonus_pts 0-20, market_tier, raw_score) from ZIP market strength.
+    Strong market = +20pts, Moderate = +10pts, Weak/unknown = +0pts.
+    """
+    if not ZIP_ENRICHMENT_ENABLED or not zip_code:
+        return 0, "unknown", None
+    try:
+        result = score_market_strength(str(zip_code).strip())
+        score = result.get("market_score")
+        tier  = result.get("market_tier", "unknown")
+        if score is None:
+            return 0, "unknown", None
+        bonus = 20 if tier == "strong" else (10 if tier == "moderate" else 0)
+        return bonus, tier, score
+    except Exception:
+        return 0, "unknown", None
+
 def priority_label(total):
-    if total >= 75: return "High"
-    if total >= 50: return "Medium"
+    if total >= 85: return "High"
+    if total >= 60: return "Medium"
     return "Low"
 
 # ─── Title seniority tier ──────────────────────────────────────────────────────
@@ -159,6 +184,7 @@ def main():
                 pass
         rec["_emp"]    = notes.get("employee_count", 0) or 0
         rec["_sector"] = notes.get("sector", "") or ""
+        rec["_zip"]    = notes.get("zip_code", "") or ""
 
     # ── Step 2: Calculate scores ────────────────────────────────
     print("\n[2/4] Calculating composite priority scores...")
@@ -175,7 +201,8 @@ def main():
         cs = company_size_score(emp)
         ss = sector_score(sector)
         ic = icp_fit_score(icp)
-        total = cs + ss + ic
+        mb, market_tier, market_raw = market_score_bonus(rec["_zip"])
+        total = cs + ss + ic + mb
         label = priority_label(total)
 
         score_details.append({
@@ -184,17 +211,22 @@ def main():
             "emp": emp,
             "sector": sector,
             "icp": icp,
+            "zip": rec["_zip"],
             "company_size_score": cs,
             "sector_score": ss,
             "icp_score": ic,
+            "market_bonus": mb,
+            "market_tier": market_tier,
+            "market_raw": market_raw,
             "total": total,
             "priority": label
         })
 
-        project_updates.append({
-            "id": rec["id"],
-            "fields": {"priority": label}
-        })
+        update_fields = {"priority": label}
+        if market_raw is not None:
+            update_fields["market_score"] = round(market_raw, 1)
+            update_fields["market_tier"]  = market_tier
+        project_updates.append({"id": rec["id"], "fields": update_fields})
 
     # ── Step 3: Patch project priority fields ───────────────────
     print(f"\n[3/4] Patching priority field on {len(project_updates)} project records...")
