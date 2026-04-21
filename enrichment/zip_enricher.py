@@ -77,7 +77,7 @@ def get_zip_health(zip_code: str) -> dict:
         "zip": f"eq.{z}",
         "order": "year.desc",
         "limit": "1",
-        "select": "obesity,diabetes,smoking,depression,high_blood_pressure,health_uninsured",
+        "select": "obesity,diabetes,smoking,depression,high_blood_pressure,no_healthcare_access,heart_disease,stroke,asthma,no_checkup,physical_inactivity",
     })
     return rows[0] if rows else {}
 
@@ -242,7 +242,7 @@ def enrich_lead(company_name: str, zip_code: str) -> dict:
         result["health_signals"] = {
             "obesity_pct":     health.get("obesity"),
             "smoking_pct":     health.get("smoking"),
-            "uninsured_pct":   health.get("health_uninsured"),
+            "uninsured_pct":   health.get("no_healthcare_access"),
         }
 
     return result
