@@ -638,6 +638,28 @@ def job_congress_appropriations():
         logger.error(f"Congress appropriations job failed: {e}", exc_info=True)
 
 
+def job_gmaps_scraper():
+    """Weekly: scrape Google Maps for EPC contractors across all US zips."""
+    logger.info("=== JOB: Google Maps Scraper ===")
+    try:
+        from signals.gmaps_scraper import run_scraper
+        result = run_scraper()
+        logger.info(f"[GMapsScraper] Completed: {result}")
+    except Exception as e:
+        logger.error(f"[GMapsScraper] Job failed: {e}", exc_info=True)
+
+
+def job_blitz_enricher():
+    """Daily: enrich pending Google Maps companies with decision-maker contacts."""
+    logger.info("=== JOB: Blitz Enricher ===")
+    try:
+        from enrichment.blitz_enricher import run_enricher
+        result = run_enricher(batch_size=100)
+        logger.info(f"[BlitzEnricher] Completed: {result}")
+    except Exception as e:
+        logger.error(f"[BlitzEnricher] Job failed: {e}", exc_info=True)
+
+
 # ── Hot signal threshold ───────────────────────────────────────────────────────
 
 _HOT_SIGNAL_THRESHOLD = 55.0
@@ -1199,6 +1221,24 @@ def create_scheduler() -> BackgroundScheduler:
         name="RTO + Commercial Lease Signal Watcher",
         replace_existing=True,
         misfire_grace_time=300,
+    )
+
+    # Google Maps discovery — weekly Sunday at 2am UTC
+    scheduler.add_job(
+        job_gmaps_scraper,
+        trigger=CronTrigger(day_of_week="sun", hour=2, minute=0),
+        id="gmaps_scraper",
+        name="Google Maps EPC Scraper",
+        replace_existing=True,
+    )
+
+    # Blitz enricher — daily at 8am UTC
+    scheduler.add_job(
+        job_blitz_enricher,
+        trigger=CronTrigger(hour=8, minute=0),
+        id="blitz_enricher",
+        name="Blitz/Prospeo Contact Enricher",
+        replace_existing=True,
     )
 
     return scheduler
