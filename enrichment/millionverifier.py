@@ -1,10 +1,7 @@
 """
 enrichment/millionverifier.py
-Email validation via MillionVerifier API.
-
-Returns True for "good" emails, False for "bad".
-"risky" emails (catch-all, unknown) are accepted by default — set
-REJECT_RISKY=True via env var to tighten quality gates.
+Email validation — Findymail first (key already in Doppler), MillionVerifier fallback.
+Returns (is_valid: bool, quality: str) where quality is 'good', 'risky', or 'bad'.
 """
 
 import logging
@@ -15,24 +12,39 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from config import MILLIONVERIFIER_API_KEY
+from config import FINDYMAIL_API_KEY, MILLIONVERIFIER_API_KEY
 
 logger = logging.getLogger(__name__)
 
+FINDYMAIL_BASE = "https://app.findymail.com/api"
 REJECT_RISKY = os.environ.get("REJECT_RISKY", "false").lower() == "true"
 
 
-def verify_email(email: str) -> tuple[bool, str]:
-    """
-    Validate an email address.
+def _verify_findymail(email: str) -> tuple[bool, str] | None:
+    if not FINDYMAIL_API_KEY:
+        return None
+    try:
+        r = requests.post(
+            f"{FINDYMAIL_BASE}/verify",
+            headers={"Authorization": f"Bearer {FINDYMAIL_API_KEY}", "Content-Type": "application/json"},
+            json={"email": email},
+            timeout=15,
+        )
+        if r.status_code != 200:
+            return None
+        status = r.json().get("status", "unknown").lower()
+        if status == "valid":
+            return True, "good"
+        if status in ("invalid", "disposable", "spamtrap"):
+            return False, "bad"
+        return not REJECT_RISKY, "risky"
+    except Exception:
+        return None
 
-    Returns:
-        (is_valid, quality) where quality is 'good', 'risky', or 'bad'
-    """
+
+def _verify_millionverifier(email: str) -> tuple[bool, str] | None:
     if not MILLIONVERIFIER_API_KEY:
-        logger.debug("[MillionVerifier] No API key — passing email through as risky")
-        return True, "risky"
-
+        return None
     try:
         r = requests.get(
             "https://api.millionverifier.com/api/v3/",
@@ -40,27 +52,32 @@ def verify_email(email: str) -> tuple[bool, str]:
             timeout=10,
         )
         if r.status_code != 200:
-            logger.warning(f"[MillionVerifier] {r.status_code} for {email} — treating as risky")
-            return True, "risky"
-
+            return None
         data = r.json()
         quality = data.get("quality", "risky").lower()
         result_code = data.get("result", "")
-
         if quality == "good":
             return True, "good"
         if quality == "bad" or result_code in ("invalid", "disposable", "spamtrap"):
             return False, "bad"
-        # risky / catch-all / unknown
         return not REJECT_RISKY, "risky"
+    except Exception:
+        return None
 
-    except Exception as e:
-        logger.debug(f"[MillionVerifier] error for {email}: {e} — treating as risky")
-        return True, "risky"
+
+def verify_email(email: str) -> tuple[bool, str]:
+    """
+    Validate an email. Tries Findymail first (already in Doppler), then MillionVerifier.
+    Returns (is_valid, quality) — quality is 'good', 'risky', or 'bad'.
+    """
+    result = _verify_findymail(email) or _verify_millionverifier(email)
+    if result:
+        return result
+    logger.debug(f"[EmailVerify] No validator key set — passing {email} as risky")
+    return True, "risky"
 
 
 if __name__ == "__main__":
-    import sys
     logging.basicConfig(level=logging.INFO)
     test_email = sys.argv[1] if len(sys.argv) > 1 else "test@example.com"
     valid, quality = verify_email(test_email)
