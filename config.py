@@ -46,6 +46,32 @@ SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     "Drone & Public Safety Technology":      "3103531",
 }
 FINDYMAIL_API_KEY = os.environ.get("FINDYMAIL_API_KEY", "")
+
+# Google Maps / RapidAPI
+RAPIDAPI_KEY = os.environ.get("RAPIDAPI_KEY", "")
+
+# Blitz — domain → decision-maker contacts
+BLITZ_API_KEY = os.environ.get("BLITZ_API_KEY", "")
+BLITZ_BASE_URL = os.environ.get("BLITZ_BASE_URL", "https://api.useblitz.com")
+
+# Prospeo — domain search fallback
+PROSPEO_API_KEY = os.environ.get("PROSPEO_API_KEY", "")
+
+# MillionVerifier — email validation
+MILLIONVERIFIER_API_KEY = os.environ.get("MILLIONVERIFIER_API_KEY", "")
+
+# Google Maps target queries mapped to ECAS sectors
+GMAPS_QUERIES: list[dict] = [
+    {"query": "electrical contractor",       "sector": "Power & Grid Infrastructure"},
+    {"query": "solar contractor",            "sector": "Power & Grid Infrastructure"},
+    {"query": "data center construction",    "sector": "Data Center & AI Infrastructure"},
+    {"query": "general contractor",          "sector": "Industrial & Manufacturing Facilities"},
+    {"query": "mechanical contractor",       "sector": "Industrial & Manufacturing Facilities"},
+    {"query": "water treatment contractor",  "sector": "Water & Wastewater Infrastructure"},
+    {"query": "engineering firm",            "sector": "Power & Grid Infrastructure"},
+    {"query": "construction company",        "sector": "Industrial & Manufacturing Facilities"},
+]
+
 SLACK_ACCESS_TOKEN = os.environ.get("SLACK_ACCESS_TOKEN", "")
 SLACK_CHANNEL = os.environ.get("SLACK_CHANNEL", "#ecas-signals")
 # EIA Open Data API — free, register at https://www.eia.gov/opendata/register.php
