@@ -81,4 +81,4 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     test_email = sys.argv[1] if len(sys.argv) > 1 else "test@example.com"
     valid, quality = verify_email(test_email)
-    print(f"{test_email} → valid={valid}, quality={quality}")
+    print(f"{test_email} -> valid={valid}, quality={quality}")
