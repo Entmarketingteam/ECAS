@@ -17,6 +17,7 @@ import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import APOLLO_API_KEY, FINDYMAIL_API_KEY, ICP
+from enrichment.millionverifier import verify_email as _mv_verify
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +153,9 @@ def _findymail_verify(email: str) -> bool:
     Blocks invalid, catch-all, and disposable addresses from entering Airtable.
     """
     if not FINDYMAIL_API_KEY or not email:
-        return True  # no key → don't block, pass through
+        # No Findymail key — fall back to MillionVerifier
+        is_valid, _ = _mv_verify(email)
+        return is_valid
     try:
         resp = requests.post(
             f"{FINDYMAIL_BASE}/verify",
@@ -169,7 +172,9 @@ def _findymail_verify(email: str) -> bool:
             return is_valid
     except requests.RequestException as e:
         logger.debug(f"[Findymail] Verify error for {email}: {e}")
-    return True  # network error → don't block
+    # Findymail network error — fall back to MillionVerifier
+    is_valid, _ = _mv_verify(email)
+    return is_valid
 
 
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
