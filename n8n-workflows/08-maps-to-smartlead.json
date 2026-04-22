@@ -1,0 +1,175 @@
+{
+  "name": "08 — Maps Discovery → Smartlead Enrollment",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{"field": "weeks", "triggerAtDay": [1], "triggerAtHour": 9}]
+        }
+      },
+      "id": "weekly-cron",
+      "name": "Weekly Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env[\"SUPABASE_URL\"]}}/rest/v1/gmaps_contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"},
+            {"name": "Authorization", "value": "=Bearer {{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"}
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {"name": "enrolled_at", "value": "is.null"},
+            {"name": "email_quality", "value": "eq.good"},
+            {"name": "select", "value": "id,place_id,company_name,website_domain,first_name,last_name,title,email,linkedin_url"},
+            {"name": "limit", "value": "100"},
+            {"name": "order", "value": "created_at.asc"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-unenrolled",
+      "name": "Get Unenrolled Contacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict"},
+          "conditions": [{"leftValue": "={{$json.length}}", "rightValue": 0, "operator": {"type": "number", "operation": "gt"}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-has-contacts",
+      "name": "IF Has Contacts",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {"batchSize": 1, "options": {}},
+      "id": "split-batches",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [1000, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{$env[\"SUPABASE_URL\"]}}/rest/v1/gmaps_companies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"},
+            {"name": "Authorization", "value": "=Bearer {{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"}
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {"name": "place_id", "value": "=eq.{{$json.place_id}}"},
+            {"name": "select", "value": "sector"}
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-sector",
+      "name": "Get Company Sector",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://server.smartlead.ai/api/v1/campaigns/{{ $('Get Company Sector').item.json[0].sector === 'Power & Grid Infrastructure' ? '3005694' : $('Get Company Sector').item.json[0].sector === 'Data Center & AI Infrastructure' ? '3040599' : $('Get Company Sector').item.json[0].sector === 'Water & Wastewater Infrastructure' ? '3040600' : '3040601' }}/leads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "Content-Type", "value": "application/json"}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"api_key\": \"{{$env[\\\"SMARTLEAD_API_KEY\\\"]}}\", \"lead_list\": [{\"email\": \"{{$('Split Into Batches').item.json.email}}\", \"first_name\": \"{{$('Split Into Batches').item.json.first_name}}\", \"last_name\": \"{{$('Split Into Batches').item.json.last_name}}\", \"company_name\": \"{{$('Split Into Batches').item.json.company_name}}\", \"website\": \"{{$('Split Into Batches').item.json.website_domain}}\", \"custom_fields\": {\"title\": \"{{$('Split Into Batches').item.json.title}}\", \"source\": \"google_maps\"}}]}",
+        "options": {}
+      },
+      "id": "enroll-smartlead",
+      "name": "Enroll in Smartlead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 200]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{$env[\"SUPABASE_URL\"]}}/rest/v1/gmaps_contacts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {"name": "apikey", "value": "={{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"},
+            {"name": "Authorization", "value": "=Bearer {{$env[\"SUPABASE_SERVICE_ROLE_KEY\"]}}"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Prefer", "value": "return=minimal"}
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{"name": "id", "value": "=eq.{{$('Split Into Batches').item.json.id}}"}]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"enrolled_at\": \"{{new Date().toISOString()}}\"}",
+        "options": {}
+      },
+      "id": "mark-enrolled",
+      "name": "Mark Enrolled in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1750, 200]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "message",
+        "operation": "post",
+        "channel": "#ecas-signals",
+        "text": "=:satellite: *ContractMotion Maps Enrollment*\n{{$('Get Unenrolled Contacts').item.json.length}} contacts queued from Google Maps discovery this week.",
+        "otherOptions": {}
+      },
+      "id": "slack-summary",
+      "name": "Slack Summary",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [1000, 450]
+    }
+  ],
+  "connections": {
+    "Weekly Cron": {"main": [[{"node": "Get Unenrolled Contacts", "type": "main", "index": 0}]]},
+    "Get Unenrolled Contacts": {"main": [[{"node": "IF Has Contacts", "type": "main", "index": 0}]]},
+    "IF Has Contacts": {
+      "main": [
+        [{"node": "Split Into Batches", "type": "main", "index": 0}],
+        [{"node": "Slack Summary", "type": "main", "index": 0}]
+      ]
+    },
+    "Split Into Batches": {"main": [[{"node": "Get Company Sector", "type": "main", "index": 0}]]},
+    "Get Company Sector": {"main": [[{"node": "Enroll in Smartlead", "type": "main", "index": 0}]]},
+    "Enroll in Smartlead": {"main": [[{"node": "Mark Enrolled in Supabase", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1"},
+  "tags": []
+}
