@@ -1,9 +1,9 @@
-import os
 #!/opt/homebrew/bin/python3.13
 """
 Enroll pending_review ECAS contacts into Smartlead campaigns based on project sector.
 """
 
+import os
 import json
 import time
 import urllib.request
@@ -12,7 +12,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
 
 AIRTABLE_KEY = os.environ["AIRTABLE_API_KEY"]
-SMARTLEAD_KEY = "17a34ec2-b253-45a8-9f0c-707333b745ad_3eex9gg"
+SMARTLEAD_KEY = os.environ.get("SMARTLEAD_API_KEY", "")
+if not SMARTLEAD_KEY:
+    raise ValueError("SMARTLEAD_API_KEY not set")
 BASE_ID = "appoi8SzEJY8in57x"
 CONTACTS_TABLE = "tblPBvTBuhwlS8AnS"
 PROJECTS_TABLE = "tbloen0rEkHttejnC"
