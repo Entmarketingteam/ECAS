@@ -1,0 +1,35 @@
+slug: commercial_roofing
+display_name: "Commercial Roofing"
+track: ai_automation
+campaign_id: "PENDING_SMARTLEAD_CAMPAIGN_CREATION"
+revenue_range_m: [2, 25]
+naics: ["238160"]
+titles:
+  - Owner
+  - President
+  - General Manager
+  - Operations Manager
+  - Vice President
+states: [TX, FL, GA, NC, VA, AZ, TN, SC]
+apollo_keywords:
+  - commercial roofing contractor
+  - flat roof contractor
+  - industrial roofing
+  - commercial re-roofing
+  - tpo roofing contractor
+  - epdm roofing contractor
+directory_seeds:
+  - https://www.nrca.net/nrca-members
+directory_auto_discovery: true
+scoring_mode: negative_tech_stack
+expected_stack_if_mature:
+  fsm: [ServiceTitan, Jobber, HousecallPro, FieldEdge, Buildertrend, JobNimbus]
+  crm: [HubSpot, Salesforce, Zoho, Pipedrive, Copper]
+  sms: [Twilio, Podium, Textline, ClickSend]
+  marketing_automation: [Mailchimp, ActiveCampaign, ConvertKit, HubSpot]
+prioritize_when_missing: [fsm, sms]
+min_heat: 30.0
+signal_ttl_days: 120
+budget_cap_per_run: 40
+landing_page_url: https://entagency.co/ai-automation/commercial-roofing
+sender_pool: ai_automation

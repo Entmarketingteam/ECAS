@@ -5,3 +5,4 @@ __pycache__/
 .DS_Store
 jones-road-beauty-brand-intel.md
 .superpowers/
+database/*.db

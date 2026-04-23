@@ -1113,6 +1113,32 @@ def create_scheduler() -> BackgroundScheduler:
     # Budget window monitor: every hour so Day 1 alert fires within 60 min.
     scheduler.add_job(job_budget_window_monitor, IntervalTrigger(hours=1), id="budget_window_monitor")
 
+    # ── Industry Factory: Guardrail cron jobs (added 2026-04-16) ─────────────
+    def job_campaign_guard():
+        try:
+            from ops.campaign_guard import check_and_pause_underperformers
+            check_and_pause_underperformers()
+        except Exception as e:
+            logger.error("[Scheduler] campaign_guard failed: %s", e)
+
+    def job_oauth_refresh():
+        try:
+            from ops.oauth_refresh import refresh_google_oauth_tokens
+            refresh_google_oauth_tokens()
+        except Exception as e:
+            logger.error("[Scheduler] oauth_refresh failed: %s", e)
+
+    def job_signal_ttl():
+        try:
+            from enrichment.signal_ttl import sweep_stale_projects
+            sweep_stale_projects(ttl_days=90)
+        except Exception as e:
+            logger.error("[Scheduler] signal_ttl failed: %s", e)
+
+    scheduler.add_job(job_campaign_guard, CronTrigger(hour=6, minute=30), id="campaign_guard")
+    scheduler.add_job(job_oauth_refresh, CronTrigger(hour=5, minute=30), id="oauth_refresh")
+    scheduler.add_job(job_signal_ttl, CronTrigger(day_of_week="mon", hour=4, minute=0), id="signal_ttl")
+
     # ── New signal sources (added 2026-03-30) ─────────────────────────────────
     # SAM.gov + Federal Register: every 12h (staggered)
     scheduler.add_job(job_sam_gov_opportunities, IntervalTrigger(hours=12, start_date="2000-01-01 04:00:00"), id="sam_gov")
