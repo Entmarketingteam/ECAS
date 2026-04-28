@@ -2,7 +2,7 @@
 ## Campaign: Defense Facility & Infrastructure EPC Outreach 2026
 ### Status: TEMPLATE — Load into Smartlead before activating
 
-Sending cadence: Day 0 → Day 3 → Day 7 → Day 14
+Sending cadence: Day 0 → Day 3 → Day 7 → Day 14 → Day 22 → Day 30
 
 ---
 
@@ -116,6 +116,44 @@ If there's a contract vehicle, base, or prime relationship you've been trying to
 Either way: the defense facility and infrastructure spend cycle we're tracking right now is the largest since post-9/11 GWOT construction. C-UAS installations alone are creating a 3-year runway of electrical and facility work across domestic bases. The contractors on pre-approved vendor lists when those task orders release will be the ones who were visible 12 months before.
 
 Worth keeping in mind whenever the timing is right.
+
+[Your Name]
+
+---
+
+## Email 5 — Day 22
+**Subject:** 2 pre-RFP shortlist positions. 180 days. Guaranteed.
+
+**Body:**
+
+{FirstName},
+
+One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in the defense facility and infrastructure sector within 180 days of onboarding — or we keep working at no charge until we hit it.
+
+That guarantee exists because we are not generating leads. We are tracking a funded pipeline — MILCON appropriations, FPDS contract awards, and C-UAS installation records that already exist in federal procurement data but have not reached formal solicitation yet.
+
+The pool of qualified defense facility EPCs is smaller than it looks. The contractors getting on pre-approved vendor lists are not out-competing anyone — they are simply showing up when the contracting officer is building the list.
+
+Worth 20 minutes to see if {Company} qualifies?
+
+[Your Name]
+
+---
+
+## Email 6 — Day 30
+**Subject:** closing the file on this
+
+**Body:**
+
+{FirstName},
+
+Last note from me.
+
+If defense facility and infrastructure positioning ever becomes relevant for {Company}, I am easy to find. I will leave you this: MILCON appropriations for FY2025–FY2026 are the largest two-year defense construction allocation in two decades. C-UAS installation mandates across domestic bases are creating a 3-year runway of electrical and facility work. The contracts behind both are being awarded now — before most of the associated solicitations exist.
+
+The contractors on pre-qualified vendor lists when those task orders drop will be the ones who were visible to contracting officers 12 months before.
+
+Worth keeping in mind.
 
 [Your Name]
 

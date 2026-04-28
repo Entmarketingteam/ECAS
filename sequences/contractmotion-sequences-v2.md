@@ -36,7 +36,7 @@ Cadence: Day 0 / 4 / 9 / 15 / 22 / 30
 **Email 1 — Day 0**
 Subject: `138kV rebuild going to RFP — {{company_name}} territory`
 
-Dominion filed interconnection paperwork on a 138kV transmission rebuild in Northern Virginia last week. Estimated procurement window: Q3 this year. It's not public yet.
+Dominion filed interconnection paperwork on a 138kV transmission rebuild in Northern Virginia — estimated procurement window Q3 this year. Not public yet.
 
 We track FERC filings, utility rate cases, and PJM queue movement 12-18 months ahead of formal procurement. Thought it was worth flagging for {{company_name}}.
 
@@ -88,7 +88,7 @@ That is not a BD problem. It is an intelligence problem — knowing which projec
 ---
 
 **Email 5 — Day 22**
-Subject: `2 pre-RFP shortlist positions. 180 days. Guaranteed.`
+Subject: `2 pre-RFP shortlist positions in PJM corridor. 180 days. Guaranteed.`
 
 One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in your sector within 180 days of onboarding — or we continue working at no charge until we hit it.
 
@@ -119,7 +119,7 @@ Worth keeping in mind whenever the timing is right.
 **Email 1 — Day 0**
 Subject: `480MW data center campus — permit filed, no RFP yet`
 
-A hyperscaler filed a conditional use permit for a 480MW data center campus in Loudoun County last week. Electrical procurement typically opens 10-14 months after permit filing. The bid package does not exist yet.
+A hyperscaler filed a conditional use permit for a large-scale data center campus in the Northern Virginia corridor. Electrical procurement typically opens 10-14 months after permit filing. The bid package does not exist yet.
 
 We track permit applications, interconnection filings, and utility capacity requests across the hyperscaler and co-lo corridor. Flagging it for {{company_name}}.
 
@@ -134,7 +134,7 @@ The EPCs winning data center electrical work at hyperscalers are not the ones wh
 
 By the time a data center bid package hits the market, the preferred list is already set. The open bid process is a formality — it satisfies procurement policy, but the winner was decided months earlier.
 
-ContractMotion tracks permit filings, interconnection capacity requests, and utility coordination letters so {{company_name}} is in that conversation before the project is announced.
+The window between permit filing and bid package is where the preferred list is built. We track that window for {{company_name}}.
 
 Worth a look at what is active in your market right now?
 
@@ -147,7 +147,7 @@ Subject: `what shifted for one data center EPC in Northern Virginia`
 
 A mid-size electrical EPC focused on data center work was landing projects fine — mostly repeat business, occasional competitive bids — but could not break into the hyperscaler tier. Too much competition, no relationships.
 
-They started tracking permit applications and interconnection filings in the Northern Virginia corridor. Within one quarter, they had intro calls with construction managers at two hyperscalers based on projects that were not public yet. One converted to a pre-qualification. The other is still in motion.
+They started tracking permit applications and interconnection filings in the Northern Virginia corridor. Within one quarter, they had intro calls with construction managers at two hyperscalers based on projects that were not public yet. One converted to a pre-qualification. The second is in preferred contractor discussions with the construction manager — expected to finalize Q3.
 
 The opening was not the RFP. It was the permit filing — 14 months earlier.
 
@@ -173,7 +173,7 @@ Happy to pull the active project list for your target corridors.
 ---
 
 **Email 5 — Day 22**
-Subject: `2 pre-RFP shortlist positions. 180 days. Guaranteed.`
+Subject: `2 hyperscaler pre-quals. 180 days. Or we keep working.`
 
 One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in the Data Center and AI infrastructure sector within 180 days of onboarding — or we keep working at no charge until we hit it.
 
@@ -186,7 +186,7 @@ Worth 20 minutes to see if {{company_name}} qualifies?
 ---
 
 **Email 6 — Day 30**
-Subject: `last note — leaving a resource`
+Subject: `closing the file on this`
 
 Closing this out — do not want to become noise.
 
@@ -204,7 +204,7 @@ Good luck out there.
 **Email 1 — Day 0**
 Subject: `$42M SRF loan approved — project going to bid in 9 months`
 
-EPA approved a $42M State Revolving Fund loan for a regional wastewater treatment expansion in your state last week. Based on the SRF timeline, procurement typically opens 9-12 months after loan approval. The bid package does not exist yet.
+EPA approved a $42M State Revolving Fund loan for a regional wastewater treatment expansion in {{state}}. Based on the SRF timeline, procurement typically opens 9-12 months after loan approval. The bid package does not exist yet.
 
 We track SRF approvals, EPA awards, and PUC filings to surface funded water and wastewater projects before they go to market. Flagging this one for {{company_name}}.
 
@@ -245,7 +245,7 @@ Subject: `funded water projects in your states that have not gone to bid yet`
 
 The Infrastructure Investment and Jobs Act allocated $55B to water infrastructure through 2026. As of Q1 2026, SRF programs across US states have approved funding for thousands of municipal water and wastewater projects — most of which have not yet entered formal procurement.
 
-Of the contracts behind those funded projects, most will go to open competitive bid. But a meaningful share will be awarded through preferred contractor negotiations, engineering firm relationships, or sole-source agreements with contractors already in conversation with the municipality.
+Of the contracts behind those funded projects, roughly 60% will go to open competitive bid. The other 40% will be awarded through preferred contractor negotiations, engineering firm relationships, or sole-source agreements with contractors already in conversation with the municipality.
 
 If {{company_name}} pipeline starts at the public bid notice, you are missing the pre-procurement window entirely. ContractMotion tracks SRF approvals, EPA awards, and PUC filings to surface those projects before procurement opens.
 
@@ -256,7 +256,7 @@ Happy to pull the funded project list for your target states.
 ---
 
 **Email 5 — Day 22**
-Subject: `2 pre-RFP shortlist positions. 180 days. Guaranteed.`
+Subject: `2 pre-procurement conversations. 180 days. Guaranteed.`
 
 One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in the water and wastewater sector within 180 days of onboarding — or we keep working at no charge until we hit it.
 
@@ -269,7 +269,7 @@ Worth 20 minutes to see if {{company_name}} qualifies?
 ---
 
 **Email 6 — Day 30**
-Subject: `last note — leaving a resource`
+Subject: `closing the file on this`
 
 Closing this out — do not want to become noise.
 
@@ -287,7 +287,7 @@ Good luck out there.
 **Email 1 — Day 0**
 Subject: `CHIPS Act fab expansion — air permit filed, no EPC selected yet`
 
-A semiconductor manufacturer filed an air permit for a fab expansion in Arizona last week. CHIPS Act funding was confirmed in January. EPC selection typically happens 12-18 months after permit filing. The project is not in procurement yet.
+A semiconductor manufacturer filed an air permit for a fab expansion in Arizona. CHIPS Act funding was confirmed in Q4 2025. EPC selection typically happens 12-18 months after permit filing. The project is not in procurement yet.
 
 We track CHIPS grants, EPA air permits, and industrial facility permit applications to surface projects before they go to market. Flagging this one for {{company_name}}.
 
@@ -311,7 +311,7 @@ That is the window ContractMotion tracks for {{company_name}}. Worth seeing what
 **Email 3 — Day 9**
 Subject: `what shifted for one industrial EPC chasing CHIPS projects`
 
-A mid-size industrial EPC was qualified for CHIPS Act and advanced manufacturing work — strong resume, right NAICS codes — but could not get in front of the right owners engineers before the preferred contractors were already set.
+A mid-size industrial EPC was qualified for CHIPS Act and advanced manufacturing work — strong resume, right NAICS codes — but could not get in front of the right owner's engineer before the preferred contractors were already set.
 
 They started tracking EPA air permits and CHIPS grant announcements in their target geographies before projects went to formal procurement. Within two quarters, they had pre-qualification conversations at two projects that were not publicly announced yet. One converted. The other is still developing.
 
@@ -328,7 +328,7 @@ Subject: `industrial projects in your sector not yet in procurement`
 
 CHIPS Act, IRA manufacturing incentives, and DOE industrial grants are funding a multi-year wave of advanced manufacturing facility construction. As of Q1 2026, over 200 semiconductor, EV battery, and critical materials facilities have received federal funding commitments — most of which have not yet entered formal EPC procurement.
 
-Of the contracts behind those projects, most will go through competitive selection. But the firms invited to the table are those the owner engineer already knows — often from pre-permit conversations that happened 12-18 months before the bid package was written.
+Of the contracts behind those projects, roughly 25% will go to open competitive bid. The other 75% will be awarded to firms the owner engineer already knows — often from pre-permit conversations that happened 12-18 months before the bid package was written.
 
 If {{company_name}} pipeline starts at the RFQ stage, you are entering projects where the preferred list is already forming. ContractMotion tracks EPA permits, CHIPS grants, and FERC filings to surface projects at the pre-procurement stage.
 
@@ -339,7 +339,7 @@ Happy to pull the active project list for your sector and target states.
 ---
 
 **Email 5 — Day 22**
-Subject: `2 pre-RFP shortlist positions. 180 days. Guaranteed.`
+Subject: `2 pre-RFP positions. CHIPS/IRA pipeline. 180 days. Guaranteed.`
 
 One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in the industrial and manufacturing sector within 180 days of onboarding — or we keep working at no charge until we hit it.
 
@@ -352,11 +352,11 @@ Worth 20 minutes to see if {{company_name}} qualifies?
 ---
 
 **Email 6 — Day 30**
-Subject: `last note — leaving a resource`
+Subject: `closing the file on this`
 
 Closing this out — do not want to become noise.
 
-If pre-procurement positioning in the industrial and manufacturing sector ever becomes relevant for {{company_name}}, I am easy to find. I will leave you this: the CHIPS Act and IRA manufacturing buildout is creating a 5-year runway of industrial EPC work — and most of the procurement decisions are being made before the bid packages are written. The contractors who are visible at the permit stage are the ones building the owner relationships that lead to decade-long preferred contractor status.
+If pre-procurement positioning in the industrial and manufacturing sector ever becomes relevant for {{company_name}}, I am easy to find. I will leave you this: $400B in facility construction through 2030 under CHIPS and IRA. As of Q1 2026, fewer than 15% of EPC contracts in the semiconductor and advanced manufacturing corridor have gone to open bid — the other 85% are being negotiated now, before the bid packages are written.
 
 Good luck out there.
 

@@ -2,7 +2,7 @@
 ## Campaign: Nuclear & Critical Minerals Infrastructure EPC Outreach 2026
 ### Status: TEMPLATE — Load into Smartlead before activating
 
-Sending cadence: Day 0 → Day 3 → Day 7 → Day 14
+Sending cadence: Day 0 → Day 3 → Day 7 → Day 14 → Day 22 → Day 30
 
 ---
 
@@ -113,6 +113,44 @@ If the nuclear and heavy industrial pipeline is healthy and you're winning the p
 If there's a site, developer, or contract vehicle you've been trying to crack and haven't — that's where we tend to be useful.
 
 Either way: the SMR and critical minerals buildout is the largest new heavy industrial construction cycle since the 1970s nuclear build. Microsoft, Oracle, Amazon, and Google are all under contract or in advanced negotiations for nuclear power. The site prep and infrastructure work that follows those PPAs is already in motion. The contractors on approved vendor lists when those projects break ground will be the ones who were visible 12 months before.
+
+Worth keeping in mind whenever the timing is right.
+
+[Your Name]
+
+---
+
+## Email 5 — Day 22
+**Subject:** 2 pre-RFP shortlist positions. 180 days. Guaranteed.
+
+**Body:**
+
+{FirstName},
+
+One thing I have not mentioned: ContractMotion guarantees 2 pre-RFP shortlist positions in the nuclear and heavy industrial sector within 180 days of onboarding — or we keep working at no charge until we hit it.
+
+That guarantee exists because we are tracking a specific, documented pipeline — DOE loan awards, NRC construction permit applications, and SMR site selection filings that already exist in public records. The active site list is short. The pool of qualified contractors is also short. The developers doing vendor selection are not choosing from a long list — they are reaching out to firms they already know.
+
+That shortlist is being built right now, before any of these projects formally go to market.
+
+Worth 20 minutes to see if {Company} qualifies?
+
+[Your Name]
+
+---
+
+## Email 6 — Day 30
+**Subject:** last note — leaving a resource
+
+**Body:**
+
+{FirstName},
+
+Last note from me.
+
+If pre-procurement positioning in the nuclear and heavy industrial sector ever becomes relevant for {Company}, I am easy to find. I will leave you this: there are more active SMR construction permit applications before the NRC right now than at any point since the 1970s nuclear build. The critical minerals processing pipeline behind the energy transition has more funded sites in pre-development than in any prior decade.
+
+The contractors who establish preferred vendor relationships with these developers over the next 15 years will be the ones who showed up when the sites were still being selected — not when the RFPs dropped.
 
 Worth keeping in mind whenever the timing is right.
 
