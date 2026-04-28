@@ -87,8 +87,11 @@ HEADERS = {
 REQUEST_DELAY = 1.2  # seconds between requests — polite scraping
 
 # USASpending NAICS codes
-WATER_NAICS = ["237110", "237120", "238220", "541330", "562213", "562219", "221310"]
-DC_NAICS    = ["236220", "238210", "238210", "541330", "517311", "518210"]
+WATER_NAICS      = ["237110", "237120", "238220", "541330", "562213", "562219", "221310"]
+DC_NAICS         = ["236220", "238210", "541330", "517311", "518210"]
+POWER_NAICS      = ["237130", "237990", "238210", "221121", "221122", "221113", "221114"]
+INDUSTRIAL_NAICS = ["236210", "237990", "238220", "238910", "541330", "325110", "324110"]
+DEFENSE_NAICS    = ["237990", "236210", "541330", "541712", "541715", "562910", "336414"]
 
 # States to hit for water/wastewater (largest SRF pipelines)
 WATER_STATES = ["TX", "FL", "CA", "OH", "NC", "VA", "GA", "PA", "NY", "IL",
@@ -97,6 +100,18 @@ WATER_STATES = ["TX", "FL", "CA", "OH", "NC", "VA", "GA", "PA", "NY", "IL",
 # States with active data center construction
 DC_STATES = ["VA", "TX", "AZ", "OH", "GA", "IL", "NY", "NJ", "OR", "NV",
              "WA", "NC", "FL", "PA", "CA"]
+
+# States with heavy power grid construction
+POWER_STATES = ["TX", "CA", "FL", "NY", "OH", "PA", "VA", "GA", "NC", "AZ",
+                "IL", "MI", "WA", "CO", "NJ", "MN", "WI", "IN", "TN", "NM"]
+
+# Heavy industrial corridor states
+INDUSTRIAL_STATES = ["TX", "LA", "OH", "PA", "IN", "AL", "GA", "SC", "NC",
+                     "MI", "WI", "AZ", "CA", "NY", "WV", "KY", "MO", "IA"]
+
+# DOE/DOD complex states
+DEFENSE_STATES = ["VA", "MD", "TX", "CA", "NM", "TN", "WA", "SC", "GA",
+                  "AL", "FL", "ID", "CO", "OH", "PA", "NY", "AZ", "KY"]
 
 
 # ── SQLite dedup ──────────────────────────────────────────────────────────────
@@ -519,12 +534,21 @@ def scrape_usaspending(conn: sqlite3.Connection, sector: str = "both") -> list[d
     logger.info("[USASpending] Pulling EPC contract recipients...")
 
     searches = []
-    if sector in ("both", "water"):
+    if sector in ("both", "all", "water"):
         for naics in WATER_NAICS:
             searches.append((naics, "Water & Wastewater"))
-    if sector in ("both", "dc"):
+    if sector in ("both", "all", "dc"):
         for naics in DC_NAICS:
             searches.append((naics, "Data Center & AI Infrastructure"))
+    if sector in ("all", "power"):
+        for naics in POWER_NAICS:
+            searches.append((naics, "Power & Grid Infrastructure"))
+    if sector in ("all", "industrial"):
+        for naics in INDUSTRIAL_NAICS:
+            searches.append((naics, "Industrial & Manufacturing Facilities"))
+    if sector in ("all", "defense"):
+        for naics in DEFENSE_NAICS:
+            searches.append((naics, "Defense & Nuclear Infrastructure"))
 
     for naics_code, vertical in searches:
         time.sleep(REQUEST_DELAY)
@@ -559,7 +583,8 @@ def scrape_usaspending(conn: sqlite3.Connection, sector: str = "both") -> list[d
                 city = rec.get("Place of Performance City Name", "")
                 amount = rec.get("Award Amount", 0)
                 if name and len(name) > 3:
-                    key = f"usaspending_{naics_code}::{name.lower()[:60]}"
+                    sector_tag = vertical[:8].lower().replace(" ", "_").replace("&", "")
+                    key = f"usaspending_{naics_code}_{sector_tag}::{name.lower()[:60]}"
                     if not _is_seen(conn, key):
                         lead = _make_lead(
                             name, "", f"USASpending-NAICS-{naics_code}", vertical,
@@ -945,10 +970,16 @@ def scrape_sam_gov_entities(conn: sqlite3.Connection, sector: str = "both") -> l
     sam_key = os.environ.get("SAM_GOV_API_KEY", "")
 
     naics_sets = []
-    if sector in ("both", "water"):
+    if sector in ("both", "all", "water"):
         naics_sets.extend([(n, "Water & Wastewater") for n in WATER_NAICS[:4]])
-    if sector in ("both", "dc"):
+    if sector in ("both", "all", "dc"):
         naics_sets.extend([(n, "Data Center & AI Infrastructure") for n in DC_NAICS[:3]])
+    if sector in ("all", "power"):
+        naics_sets.extend([(n, "Power & Grid Infrastructure") for n in POWER_NAICS[:4]])
+    if sector in ("all", "industrial"):
+        naics_sets.extend([(n, "Industrial & Manufacturing Facilities") for n in INDUSTRIAL_NAICS[:4]])
+    if sector in ("all", "defense"):
+        naics_sets.extend([(n, "Defense & Nuclear Infrastructure") for n in DEFENSE_NAICS[:4]])
 
     for naics_code, vertical in naics_sets:
         time.sleep(REQUEST_DELAY)
@@ -983,7 +1014,8 @@ def scrape_sam_gov_entities(conn: sqlite3.Connection, sector: str = "both") -> l
                 city = (core.get("physicalAddress", {}) or {}).get("city", "")
                 cage = reg.get("cageCode", "")
                 if name and len(name) > 3:
-                    key = f"samgov_{naics_code}::{name.lower()[:60]}"
+                    sector_tag = vertical[:8].lower().replace(" ", "_").replace("&", "")
+                    key = f"samgov_{naics_code}_{sector_tag}::{name.lower()[:60]}"
                     if not _is_seen(conn, key):
                         lead = _make_lead(
                             name, "",
@@ -1284,23 +1316,982 @@ def scrape_building_permits(conn: sqlite3.Connection) -> list[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# POWER & GRID SECTOR SCRAPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def scrape_nema(conn: sqlite3.Connection) -> list[dict]:
+    """
+    NEMA (National Electrical Manufacturers Association) member directory.
+    ~325 member companies — all building electrical infrastructure.
+    URL: https://www.nema.org/membership/member-directory
+    """
+    leads = []
+    logger.info("[NEMA] Scraping member directory...")
+
+    urls = [
+        "https://www.nema.org/membership/member-directory",
+        "https://www.nema.org/about/membership/member-companies",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        # Try multiple selector patterns
+        for selector in [".member-card", ".member-listing", ".company-name",
+                         "[class*='member']", "li a", "td a"]:
+            items = soup.select(selector)
+            if len(items) > 10:
+                for item in items:
+                    name = item.get_text(strip=True)
+                    if len(name) > 5 and len(name) < 120:
+                        href = item.get("href", "")
+                        domain = _extract_domain(href) if href.startswith("http") else ""
+                        key = f"nema::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, domain, "NEMA-Member-Directory",
+                                "Power & Grid Infrastructure",
+                                raw={"url": href},
+                            ))
+                            _mark_seen(conn, key)
+                break
+
+        if leads:
+            break
+
+    # Fallback: MapYourShow exhibitor list for NEMA EV & Energy conference
+    if not leads:
+        time.sleep(REQUEST_DELAY)
+        r = _get("https://www.mapyourshow.com/8_0/exhview/index.cfm?show=nema")
+        if r:
+            soup = BeautifulSoup(r.text, "html.parser")
+            for tag in soup.find_all(class_=re.compile(r"exhibitor|company|booth")):
+                name = tag.get_text(strip=True)
+                if 5 < len(name) < 120:
+                    key = f"nema_show::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "NEMA-Exhibitor",
+                            "Power & Grid Infrastructure",
+                        ))
+                        _mark_seen(conn, key)
+
+    logger.info("[NEMA] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_ferc_eia_projects(conn: sqlite3.Connection) -> list[dict]:
+    """
+    Pull active power generation projects from EIA generator queue data.
+    Uses EIA API (free, no key needed for public data) to find companies
+    with new generators entering service — these are the EPCs' clients and
+    the EPCs themselves on larger utility-scale projects.
+    """
+    leads = []
+    logger.info("[FERC/EIA] Pulling active generation project applicants...")
+
+    # EIA generator capacity additions — operating generators added recently
+    eia_url = "https://api.eia.gov/v2/electricity/operating-generator-capacity/data/"
+    eia_key = os.environ.get("EIA_API_KEY", "")
+
+    params = {
+        "frequency": "monthly",
+        "data[0]": "nameplate-capacity-mw",
+        "facets[status][]": "OP",
+        "facets[energy_source_code][]": ["SUN", "WND", "NG", "NUC", "WAT", "MWH"],
+        "start": "2024-01",
+        "sort[0][column]": "nameplate-capacity-mw",
+        "sort[0][direction]": "desc",
+        "offset": 0,
+        "length": 5000,
+    }
+    if eia_key:
+        params["api_key"] = eia_key
+
+    time.sleep(REQUEST_DELAY)
+    r = _get(eia_url, params=params)
+    if r:
+        try:
+            data = r.json().get("response", {}).get("data", [])
+            for row in data:
+                name = row.get("entityName", "") or row.get("plant_name", "")
+                state = row.get("stateDescription", row.get("state", ""))[:2] if row.get("stateDescription", row.get("state", "")) else ""
+                mw = row.get("nameplate-capacity-mw", 0)
+                if name and float(mw or 0) >= 10:
+                    key = f"eia_gen::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "EIA-Generator-Capacity",
+                            "Power & Grid Infrastructure",
+                            state=state,
+                            raw={"capacity_mw": mw, "source": row.get("energy_source_code", "")},
+                        ))
+                        _mark_seen(conn, key)
+        except Exception as e:
+            logger.warning("[FERC/EIA] Parse failed: %s", e)
+
+    # FERC eLibrary RSS — active project filings
+    time.sleep(REQUEST_DELAY)
+    ferc_rss = "https://www.ferc.gov/news-events/news/news-releases/rss.xml"
+    r2 = _get(ferc_rss)
+    if r2:
+        try:
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(r2.text)
+            for item in root.findall(".//item"):
+                title = (item.findtext("title") or "").strip()
+                desc = (item.findtext("description") or "").strip()
+                link = (item.findtext("link") or "").strip()
+                # Extract company name from FERC filing titles like "Company X — Application"
+                m = re.match(r"^([A-Z][^—\-|]+?)\s*(?:—|-|\|)", title)
+                if m:
+                    name = m.group(1).strip()
+                    if 5 < len(name) < 100:
+                        key = f"ferc_rss::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "FERC-RSS-Filing",
+                                "Power & Grid Infrastructure",
+                                raw={"title": title, "link": link},
+                            ))
+                            _mark_seen(conn, key)
+        except Exception as e:
+            logger.warning("[FERC/EIA] RSS parse failed: %s", e)
+
+    logger.info("[FERC/EIA] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_agc_power(conn: sqlite3.Connection) -> list[dict]:
+    """
+    AGC (Associated General Contractors) Power & Energy division members.
+    URL: https://www.agc.org
+    """
+    leads = []
+    logger.info("[AGC Power] Scraping power contractor members...")
+
+    # AGC member search — filter to power NAICS
+    urls = [
+        "https://www.agc.org/learn/construction-data/find-a-member",
+        "https://www.agc.org/member-directory",
+        "https://www.agc.org/about/membership/find-a-member",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if r and len(r.text) > 2000:
+            soup = BeautifulSoup(r.text, "html.parser")
+            for tag in soup.find_all(class_=re.compile(r"member|company|contractor")):
+                name = tag.get_text(strip=True)
+                if 5 < len(name) < 100 and any(kw in name.lower() for kw in
+                        ["electric", "power", "energy", "grid", "utility",
+                         "construction", "engineering", "EPC", "substation"]):
+                    key = f"agc_power::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "AGC-Power-Member",
+                            "Power & Grid Infrastructure",
+                        ))
+                        _mark_seen(conn, key)
+            if leads:
+                break
+
+    # Fallback: POWERCON / ELECTRI International contractor lists
+    if not leads:
+        time.sleep(REQUEST_DELAY)
+        r = _get("https://www.electri.org/about/contractor-members/")
+        if r:
+            soup = BeautifulSoup(r.text, "html.parser")
+            for tag in soup.find_all(["li", "p", "td"]):
+                name = tag.get_text(strip=True)
+                if 5 < len(name) < 100:
+                    key = f"electri::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "ELECTRI-Contractor-Member",
+                            "Power & Grid Infrastructure",
+                        ))
+                        _mark_seen(conn, key)
+
+    logger.info("[AGC Power] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_enr_power(conn: sqlite3.Connection) -> list[dict]:
+    """
+    ENR Top Specialty Contractors — Power/Energy category.
+    Pre-vetted, revenue-qualified power EPCs.
+    """
+    leads = []
+    logger.info("[ENR Power] Scraping ENR top power contractors...")
+
+    enr_urls = [
+        "https://www.enr.com/toplists/2024-Top-600-Specialty-Contractors-Power",
+        "https://www.enr.com/toplists/2023-Top-600-Specialty-Contractors-Power",
+        "https://www.enr.com/toplists/2024-Top-400-Contractors",
+    ]
+
+    for url in enr_urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        for selector in ["[class*='contractor']", "[class*='company']",
+                         "td:first-child", ".ranklist-row td"]:
+            items = soup.select(selector)
+            for item in items:
+                name = item.get_text(strip=True)
+                if 5 < len(name) < 100 and not name.isdigit():
+                    key = f"enr_power::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "ENR-Top-Power-Contractors",
+                            "Power & Grid Infrastructure",
+                            raw={"source_url": url},
+                        ))
+                        _mark_seen(conn, key)
+
+        if leads:
+            break
+
+    logger.info("[ENR Power] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_ercot_queue(conn: sqlite3.Connection) -> list[dict]:
+    """
+    ERCOT (Texas grid) interconnection queue — active projects.
+    Developers with projects in queue need EPC contractors.
+    URL: https://www.ercot.com/gridinfo/resource
+    """
+    leads = []
+    logger.info("[ERCOT Queue] Scraping Texas interconnection queue...")
+
+    # ERCOT publishes quarterly GIS reports — discover current URL from the resource page
+    queue_urls = []
+    time.sleep(REQUEST_DELAY)
+    index_r = _get("https://www.ercot.com/gridinfo/resource")
+    if index_r:
+        index_soup = BeautifulSoup(index_r.text, "html.parser")
+        for a in index_soup.find_all("a", href=True):
+            href = a["href"]
+            if "GIS_Report" in href and href.endswith(".xlsx"):
+                full_url = href if href.startswith("http") else f"https://www.ercot.com{href}"
+                queue_urls.append(full_url)
+                if len(queue_urls) >= 2:
+                    break
+    # Hardcoded recent fallbacks
+    if not queue_urls:
+        queue_urls = [
+            "https://www.ercot.com/files/docs/2025/01/10/GIS_Report_January_2025.xlsx",
+            "https://www.ercot.com/files/docs/2024/10/10/GIS_Report_October_2024.xlsx",
+        ]
+
+    for url in queue_urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if r and r.content:
+            try:
+                import io
+                try:
+                    import openpyxl
+                    wb = openpyxl.load_workbook(io.BytesIO(r.content), read_only=True)
+                    ws = wb.active
+                    for row in ws.iter_rows(min_row=2, values_only=True):
+                        if row and len(row) > 3:
+                            # ERCOT GIS reports have company name in col 3 or 4
+                            name = str(row[3] or row[2] or "").strip()
+                            state = "TX"
+                            if name and 5 < len(name) < 120:
+                                key = f"ercot_queue::{name.lower()[:60]}"
+                                if not _is_seen(conn, key):
+                                    leads.append(_make_lead(
+                                        name, "", "ERCOT-Interconnection-Queue",
+                                        "Power & Grid Infrastructure",
+                                        state=state,
+                                        raw={"queue_row": list(row[:6])},
+                                    ))
+                                    _mark_seen(conn, key)
+                except ImportError:
+                    pass
+            except Exception as e:
+                logger.debug("[ERCOT] Excel parse failed: %s", e)
+            if leads:
+                break
+
+    # Fallback: ERCOT resource page HTML
+    if not leads:
+        time.sleep(REQUEST_DELAY)
+        r = _get("https://www.ercot.com/gridinfo/resource")
+        if r:
+            soup = BeautifulSoup(r.text, "html.parser")
+            for link in soup.find_all("a", href=True):
+                href = link["href"]
+                if "GIS" in href or "queue" in href.lower():
+                    logger.info("[ERCOT] Found queue file: %s", href)
+                    break
+
+    logger.info("[ERCOT Queue] Done: %d new leads", len(leads))
+    return leads
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INDUSTRIAL & MANUFACTURING SECTOR SCRAPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def scrape_smacna(conn: sqlite3.Connection) -> list[dict]:
+    """
+    SMACNA (Sheet Metal and Air Conditioning Contractors National Association).
+    ~1,500 member companies doing HVAC + sheet metal for industrial facilities.
+    URL: https://www.smacna.org/membership/find-a-contractor
+    """
+    leads = []
+    logger.info("[SMACNA] Scraping member contractor directory...")
+
+    # SMACNA has a searchable directory via their website
+    base_urls = [
+        "https://www.smacna.org/membership/find-a-contractor",
+        "https://www.smacna.org/membership/contractor-search",
+        "https://smacna.org/find-a-member",
+    ]
+
+    for url in base_urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r or len(r.text) < 2000:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        for selector in [".contractor-card", ".member-result", ".company",
+                         "[class*='contractor']", "[class*='member']"]:
+            items = soup.select(selector)
+            if len(items) > 5:
+                for item in items:
+                    name = item.get_text(strip=True).split("\n")[0]
+                    if 5 < len(name) < 120:
+                        key = f"smacna::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "SMACNA-Member-Directory",
+                                "Industrial & Manufacturing Facilities",
+                            ))
+                            _mark_seen(conn, key)
+                break
+        if leads:
+            break
+
+    # Fallback: SMACNA chapter list → chapter URLs → chapter member pages
+    if not leads:
+        time.sleep(REQUEST_DELAY)
+        r = _get("https://www.smacna.org/membership/local-associations")
+        if r:
+            soup = BeautifulSoup(r.text, "html.parser")
+            chapter_links = [a["href"] for a in soup.find_all("a", href=True)
+                             if "smacna" in a["href"].lower() and "chapter" in a.get_text().lower()]
+            for chapter_url in chapter_links[:5]:
+                time.sleep(REQUEST_DELAY)
+                r2 = _get(chapter_url)
+                if r2:
+                    soup2 = BeautifulSoup(r2.text, "html.parser")
+                    for tag in soup2.find_all(["li", "td", "p"]):
+                        name = tag.get_text(strip=True)
+                        if 5 < len(name) < 100:
+                            key = f"smacna_ch::{name.lower()[:60]}"
+                            if not _is_seen(conn, key):
+                                leads.append(_make_lead(
+                                    name, "", "SMACNA-Chapter-Member",
+                                    "Industrial & Manufacturing Facilities",
+                                ))
+                                _mark_seen(conn, key)
+
+    logger.info("[SMACNA] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_abc_contractors(conn: sqlite3.Connection) -> list[dict]:
+    """
+    ABC (Associated Builders and Contractors) merit-shop industrial contractor members.
+    21,000+ members across 67 chapters. Pulls Excellence in Construction award winners
+    (public list) + chapter member pages where available.
+    """
+    leads = []
+    logger.info("[ABC] Scraping contractor members...")
+
+    # ABC Excellence in Construction winners (public list, updated annually)
+    eic_urls = [
+        "https://www.abc.org/News-Media/News-Releases/entryid/19000/abc-announces-excellence-in-construction-award-winners",
+        "https://www.abc.org/News-Media/Awards/Excellence-in-Construction",
+        "https://abc.org/EIC",
+    ]
+
+    for url in eic_urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tag in soup.find_all(["li", "td", "h3", "h4", "strong"]):
+            name = tag.get_text(strip=True)
+            if 5 < len(name) < 100 and not any(x in name.lower() for x in
+                    ["award", "winner", "category", "project", "excellence"]):
+                key = f"abc_eic::{name.lower()[:60]}"
+                if not _is_seen(conn, key):
+                    leads.append(_make_lead(
+                        name, "", "ABC-Excellence-in-Construction",
+                        "Industrial & Manufacturing Facilities",
+                    ))
+                    _mark_seen(conn, key)
+        if leads:
+            break
+
+    # ABC chapter member directories (TX, FL, GA, NC, OH chapters)
+    chapter_states = {
+        "TX": ("Texas", "https://texasabc.org/members/"),
+        "FL": ("Florida", "https://abcflorida.org/membership/member-directory/"),
+        "GA": ("Georgia", "https://abcga.org/membership/member-directory/"),
+        "NC": ("Carolinas", "https://abccarolinas.org/membership/"),
+        "OH": ("Ohio", "https://abcohio.net/membership/members/"),
+    }
+
+    for state_code, (state_label, url) in chapter_states.items():
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r or len(r.text) < 1000:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        for selector in [".member-name", ".company-name", "[class*='member']",
+                         "td:first-child", "li"]:
+            items = soup.select(selector)
+            if len(items) > 5:
+                for item in items:
+                    name = item.get_text(strip=True)
+                    if 5 < len(name) < 100:
+                        key = f"abc_{state_code.lower()}::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", f"ABC-{state_label}-Chapter",
+                                "Industrial & Manufacturing Facilities",
+                                state=state_code,
+                            ))
+                            _mark_seen(conn, key)
+                break
+
+    logger.info("[ABC] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_nfpa_contractors(conn: sqlite3.Connection) -> list[dict]:
+    """
+    NFPA (National Fire Protection Association) corporate member companies.
+    Fire protection contractors are critical path on every industrial build.
+    """
+    leads = []
+    logger.info("[NFPA] Scraping corporate member companies...")
+
+    urls = [
+        "https://www.nfpa.org/Membership/Member-Sections-and-Networks",
+        "https://www.nfpa.org/Public-Education/Find-a-Pro",
+        "https://www.nfpa.org/about/contact/member-directory",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        for selector in [".member-item", ".company", "[class*='member']",
+                         "[class*='sponsor']", ".corporate"]:
+            items = soup.select(selector)
+            if len(items) > 5:
+                for item in items:
+                    name = item.get_text(strip=True)
+                    if 5 < len(name) < 120:
+                        key = f"nfpa::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "NFPA-Corporate-Member",
+                                "Industrial & Manufacturing Facilities",
+                            ))
+                            _mark_seen(conn, key)
+                break
+        if leads:
+            break
+
+    # Fallback: NFPA Conference & Expo exhibitor list (annual, public)
+    if not leads:
+        time.sleep(REQUEST_DELAY)
+        r = _get("https://www.nfpa.org/Conference-and-Expo/Exhibitors")
+        if r:
+            soup = BeautifulSoup(r.text, "html.parser")
+            for tag in soup.find_all(class_=re.compile(r"exhibitor|company|booth|sponsor")):
+                name = tag.get_text(strip=True)
+                if 5 < len(name) < 100:
+                    key = f"nfpa_expo::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "NFPA-Conference-Exhibitor",
+                            "Industrial & Manufacturing Facilities",
+                        ))
+                        _mark_seen(conn, key)
+
+    logger.info("[NFPA] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_aiche_corporate(conn: sqlite3.Connection) -> list[dict]:
+    """
+    AIChE (American Institute of Chemical Engineers) corporate members.
+    Chemical/process engineering firms = chemical plant EPCs.
+    """
+    leads = []
+    logger.info("[AIChE] Scraping corporate member companies...")
+
+    urls = [
+        "https://www.aiche.org/giving/corporate-engagement",
+        "https://www.aiche.org/community/sites/divisions/engineering-construction-contracts",
+        "https://www.aiche.org/conferences/aiche-annual-meeting/2024/sponsor",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        for selector in [".sponsor", ".company", ".corporate-member",
+                         "[class*='sponsor']", "[class*='member']", "li"]:
+            items = soup.select(selector)
+            if len(items) > 3:
+                for item in items:
+                    name = item.get_text(strip=True)
+                    if 5 < len(name) < 120:
+                        key = f"aiche::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "AIChE-Corporate-Member",
+                                "Industrial & Manufacturing Facilities",
+                            ))
+                            _mark_seen(conn, key)
+                break
+        if leads:
+            break
+
+    # AICHE CCPS (Process Safety) Sponsoring Companies — pure industrial EPC list
+    time.sleep(REQUEST_DELAY)
+    r = _get("https://www.aiche.org/ccps/membership/sponsoring-companies")
+    if r:
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tag in soup.find_all(["li", "p", "td", "div"]):
+            name = tag.get_text(strip=True)
+            if 5 < len(name) < 100 and len(name.split()) <= 8:
+                key = f"aiche_ccps::{name.lower()[:60]}"
+                if not _is_seen(conn, key):
+                    leads.append(_make_lead(
+                        name, "", "AIChE-CCPS-Sponsor",
+                        "Industrial & Manufacturing Facilities",
+                    ))
+                    _mark_seen(conn, key)
+
+    logger.info("[AIChE] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_tceq_permits(conn: sqlite3.Connection) -> list[dict]:
+    """
+    Texas TCEQ (Commission on Environmental Quality) industrial air permits.
+    Industrial air permit filed = facility being built = EPC contracted.
+    Focuses on major construction permits (NSR, Title V) in Texas.
+    """
+    leads = []
+    logger.info("[TCEQ] Scraping Texas industrial facility permits...")
+
+    # TCEQ STEERS public records — new permit applications
+    urls = [
+        "https://www15.tceq.texas.gov/crpub/index.cfm?fuseaction=regent.fetchRecentRecords",
+        "https://www.tceq.texas.gov/permitting/air/airpermits.html",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+        # TCEQ permit pages list applicant company names
+        for tag in soup.find_all(["td", "li", "p"]):
+            name = tag.get_text(strip=True)
+            if (5 < len(name) < 100 and
+                    any(kw in name.lower() for kw in
+                        ["inc", "llc", "corp", "company", "industries",
+                         "manufacturing", "chemical", "plant", "refining"])):
+                key = f"tceq::{name.lower()[:60]}"
+                if not _is_seen(conn, key):
+                    leads.append(_make_lead(
+                        name, "", "TCEQ-Air-Permit",
+                        "Industrial & Manufacturing Facilities",
+                        state="TX",
+                    ))
+                    _mark_seen(conn, key)
+        if leads:
+            break
+
+    # USASpending industrial contracts in Texas + Louisiana (highest industrial density)
+    for state in ["TX", "LA"]:
+        time.sleep(REQUEST_DELAY)
+        payload = {
+            "filters": {
+                "time_period": [{"start_date": "2023-01-01", "end_date": "2026-01-01"}],
+                "award_type_codes": ["A", "B", "C", "D"],
+                "naics_codes": ["236210", "237990"],
+                "place_of_performance_locations": [{"country": "USA", "state": state}],
+            },
+            "fields": ["Recipient Name", "Award Amount",
+                       "Place of Performance State Code", "Place of Performance City Name"],
+            "sort": "Award Amount",
+            "order": "desc",
+            "limit": 100,
+        }
+        r = _post("https://api.usaspending.gov/api/v2/search/spending_by_award/", json=payload)
+        if r:
+            try:
+                for rec in r.json().get("results", []):
+                    name = rec.get("Recipient Name", "")
+                    if name and len(name) > 3:
+                        key = f"tceq_spend_{state}::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", f"USASpending-Industrial-{state}",
+                                "Industrial & Manufacturing Facilities",
+                                state=state,
+                            ))
+                            _mark_seen(conn, key)
+            except Exception as e:
+                logger.debug("[TCEQ] USASpending %s parse failed: %s", state, e)
+
+    logger.info("[TCEQ] Done: %d new leads", len(leads))
+    return leads
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DEFENSE & NUCLEAR SECTOR SCRAPERS
+# ─────────────────────────────────────────────────────────────────────────────
+
+def scrape_doe_contractors(conn: sqlite3.Connection) -> list[dict]:
+    """
+    DOE (Department of Energy) M&O and prime contractors.
+    These are the highest-value defense/nuclear EPC clients and often
+    are themselves large EPCs subcontracting infrastructure work.
+    URL: https://www.energy.gov/management/office-management/operational-management/contractor-information
+    """
+    leads = []
+    logger.info("[DOE] Scraping DOE contractor registry...")
+
+    doi_urls = [
+        "https://www.energy.gov/em/contractor-information",
+        "https://www.energy.gov/em/doe-environmental-management-contractors",
+        "https://www.energy.gov/management/federal-personnel/acquisition-and-project-management/contractor-workforce-analysis",
+        "https://www.energy.gov/em",
+    ]
+
+    for url in doi_urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        for selector in ["table td", "li", ".contractor-name", ".field-item",
+                         "[class*='contractor']", "p"]:
+            items = soup.select(selector)
+            found = 0
+            for item in items:
+                name = item.get_text(strip=True)
+                if (5 < len(name) < 120 and
+                        any(kw in name.lower() for kw in
+                            ["inc", "llc", "corp", "company", "group", "contractor",
+                             "bechtel", "fluor", "aecom", "jacobs", "leidos",
+                             "holtec", "westinghouse", "management"])):
+                    key = f"doe::{name.lower()[:60]}"
+                    if not _is_seen(conn, key):
+                        leads.append(_make_lead(
+                            name, "", "DOE-Contractor-Registry",
+                            "Defense & Nuclear Infrastructure",
+                            raw={"source_url": url},
+                        ))
+                        _mark_seen(conn, key)
+                        found += 1
+            if found > 3:
+                break
+
+        if leads:
+            break
+
+    # USASpending — nuclear + defense facility construction NAICS codes
+    for naics_code in ["237990", "236210", "541330"]:
+        time.sleep(REQUEST_DELAY)
+        payload = {
+            "filters": {
+                "time_period": [{"start_date": "2022-01-01", "end_date": "2026-01-01"}],
+                "award_type_codes": ["A", "B", "C", "D"],
+                "naics_codes": [naics_code],
+                "place_of_performance_locations": [
+                    {"country": "USA", "state": s} for s in DEFENSE_STATES[:8]
+                ],
+            },
+            "fields": ["Recipient Name", "Award Amount",
+                       "Place of Performance State Code", "Place of Performance City Name"],
+            "sort": "Award Amount",
+            "order": "desc",
+            "limit": 100,
+        }
+        r = _post("https://api.usaspending.gov/api/v2/search/spending_by_award/", json=payload)
+        if r:
+            try:
+                for rec in r.json().get("results", []):
+                    name = rec.get("Recipient Name", "")
+                    state = rec.get("Place of Performance State Code", "")
+                    amount = rec.get("Award Amount", 0)
+                    if name and len(name) > 3:
+                        key = f"doe_spend_{naics_code}::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", f"USASpending-Defense-NAICS-{naics_code}",
+                                "Defense & Nuclear Infrastructure",
+                                state=state,
+                                raw={"award_total": amount, "naics": naics_code},
+                            ))
+                            _mark_seen(conn, key)
+            except Exception as e:
+                logger.warning("[DOE] USASpending NAICS %s parse failed: %s", naics_code, e)
+
+    logger.info("[DOE] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_nrc_licensees(conn: sqlite3.Connection) -> list[dict]:
+    """
+    NRC (Nuclear Regulatory Commission) licensed reactor operators and facility owners.
+    These companies need EPC work for life extension, decommissioning, and SMR builds.
+    URL: https://www.nrc.gov/info-finder/reactors/
+    """
+    leads = []
+    logger.info("[NRC] Scraping licensed nuclear facility operators...")
+
+    urls = [
+        "https://www.nrc.gov/info-finder/reactors/index",
+        "https://www.nrc.gov/reactors/operating/list-power-reactor-units.html",
+        "https://www.nrc.gov/reactors/operating.html",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=45)
+            r.raise_for_status()
+        except Exception as e:
+            logger.warning("GET %s failed: %s", url, e)
+            r = None
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        # NRC page has a table of reactors with licensee company in each row
+        for row in soup.find_all("tr"):
+            cells = row.find_all(["td", "th"])
+            if len(cells) >= 3:
+                # Licensee is typically in cells[1] or cells[2]
+                for cell in cells[1:4]:
+                    name = cell.get_text(strip=True)
+                    if (5 < len(name) < 100 and
+                            not name.lower() in {"unit", "state", "location", "status", "type"}):
+                        key = f"nrc::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "NRC-Reactor-Licensee",
+                                "Defense & Nuclear Infrastructure",
+                                raw={"source_url": url},
+                            ))
+                            _mark_seen(conn, key)
+                        break
+
+        if leads:
+            break
+
+    # NRC materials licensees (research reactors, fuel facilities)
+    time.sleep(REQUEST_DELAY)
+    r = _get("https://www.nrc.gov/info-finder/materials/")
+    if r:
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tag in soup.find_all(class_=re.compile(r"licensee|facility|company")):
+            name = tag.get_text(strip=True)
+            if 5 < len(name) < 100:
+                key = f"nrc_mat::{name.lower()[:60]}"
+                if not _is_seen(conn, key):
+                    leads.append(_make_lead(
+                        name, "", "NRC-Materials-Licensee",
+                        "Defense & Nuclear Infrastructure",
+                    ))
+                    _mark_seen(conn, key)
+
+    logger.info("[NRC] Done: %d new leads", len(leads))
+    return leads
+
+
+def scrape_same_members(conn: sqlite3.Connection) -> list[dict]:
+    """
+    SAME (Society of American Military Engineers) corporate sustaining members.
+    A/E firms with cleared personnel doing defense facility work.
+    URL: https://www.same.org
+    """
+    leads = []
+    logger.info("[SAME] Scraping military engineer corporate members...")
+
+    urls = [
+        "https://www.same.org/membership/sustaining-members",
+        "https://www.same.org/about/corporate-members",
+        "https://www.same.org/about/sustaining-members",
+        "https://www.same.org/membership",
+    ]
+
+    for url in urls:
+        time.sleep(REQUEST_DELAY)
+        r = _get(url)
+        if not r:
+            continue
+        soup = BeautifulSoup(r.text, "html.parser")
+
+        for selector in [".corporate-member", ".member-card", ".company",
+                         "[class*='member']", "li", "td"]:
+            items = soup.select(selector)
+            if len(items) > 5:
+                for item in items:
+                    name = item.get_text(strip=True)
+                    word_count = len(name.split())
+                    # Filter out nav items: must look like a company name (1-6 words, no verbs/nav noise)
+                    if (5 < len(name) < 100 and 1 <= word_count <= 6 and
+                            not any(kw in name.lower() for kw in
+                                    ["donate", "membership", "events", "awards", "scholarships",
+                                     "login", "register", "contact", "news", "about", "click",
+                                     "foundation", "fellows", "officers", "registry", "sponsorship",
+                                     "opportunities", "program", "download", "webinar", "celebration"])):
+                        key = f"same::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", "SAME-Corporate-Member",
+                                "Defense & Nuclear Infrastructure",
+                            ))
+                            _mark_seen(conn, key)
+                break
+
+        if leads:
+            break
+
+    # Fallback: SAME Joint Engineer Training Conference (JETC) exhibitor list
+    if not leads:
+        for year in ["2025", "2024", "2023"]:
+            time.sleep(REQUEST_DELAY)
+            r = _get(f"https://www.same.org/joint-engineer-training-conference/jetc-{year}/exhibitors")
+            if r:
+                soup = BeautifulSoup(r.text, "html.parser")
+                for tag in soup.find_all(class_=re.compile(r"exhibitor|company|sponsor")):
+                    name = tag.get_text(strip=True)
+                    if 5 < len(name) < 100:
+                        key = f"same_jetc_{year}::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", f"SAME-JETC-{year}-Exhibitor",
+                                "Defense & Nuclear Infrastructure",
+                            ))
+                            _mark_seen(conn, key)
+                if leads:
+                    break
+
+    # USASpending DOD facility construction — base construction + engineering NAICS
+    for naics_code in ["236210", "237990", "541330"]:
+        time.sleep(REQUEST_DELAY)
+        payload = {
+            "filters": {
+                "time_period": [{"start_date": "2022-01-01", "end_date": "2026-01-01"}],
+                "award_type_codes": ["A", "B", "C", "D"],
+                "naics_codes": [naics_code],
+                "place_of_performance_locations": [
+                    {"country": "USA", "state": s} for s in DEFENSE_STATES[:8]
+                ],
+            },
+            "fields": ["Recipient Name", "Award Amount",
+                       "Place of Performance State Code", "Place of Performance City Name"],
+            "sort": "Award Amount",
+            "order": "desc",
+            "limit": 100,
+        }
+        r = _post("https://api.usaspending.gov/api/v2/search/spending_by_award/", json=payload)
+        if r:
+            try:
+                for rec in r.json().get("results", []):
+                    name = rec.get("Recipient Name", "")
+                    state = rec.get("Place of Performance State Code", "")
+                    amount = rec.get("Award Amount", 0)
+                    if name and len(name) > 3:
+                        key = f"dod_spend_{naics_code}::{name.lower()[:60]}"
+                        if not _is_seen(conn, key):
+                            leads.append(_make_lead(
+                                name, "", f"USASpending-DOD-Facility-{naics_code}",
+                                "Defense & Nuclear Infrastructure",
+                                state=state,
+                                raw={"award_total": amount, "naics": naics_code},
+                            ))
+                            _mark_seen(conn, key)
+            except Exception as e:
+                logger.warning("[SAME] USASpending DOD NAICS %s parse failed: %s", naics_code, e)
+
+    logger.info("[SAME] Done: %d new leads", len(leads))
+    return leads
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # ORCHESTRATOR
 # ─────────────────────────────────────────────────────────────────────────────
 
 SOURCE_MAP = {
-    "weftec":        ("water", scrape_weftec),
-    "awwa":          ("water", scrape_awwa),
-    "cwsrf":         ("water", scrape_cwsrf),
-    "acec":          ("water", scrape_acec),
-    "afcom":         ("dc",    scrape_afcom),
-    "7x24":          ("dc",    scrape_7x24),
-    "bicsi":         ("dc",    scrape_bicsi),
-    "neca":          ("dc",    scrape_neca),
-    "permits":       ("dc",    scrape_building_permits),
-    "state_licenses":("both",  scrape_state_licenses),
-    "enr":           ("both",  scrape_enr),
-    "usaspending":   ("both",  scrape_usaspending),
-    "sam":           ("both",  scrape_sam_gov_entities),
+    # ── Water & Wastewater ──────────────────────────────────────────────────
+    "weftec":        ("water",      scrape_weftec),
+    "awwa":          ("water",      scrape_awwa),
+    "cwsrf":         ("water",      scrape_cwsrf),
+    "acec":          ("water",      scrape_acec),
+    # ── Data Center & AI Infrastructure ────────────────────────────────────
+    "afcom":         ("dc",         scrape_afcom),
+    "7x24":          ("dc",         scrape_7x24),
+    "bicsi":         ("dc",         scrape_bicsi),
+    "neca":          ("dc",         scrape_neca),
+    "permits":       ("dc",         scrape_building_permits),
+    # ── Power & Grid Infrastructure ─────────────────────────────────────────
+    "nema":          ("power",      scrape_nema),
+    "ferc_eia":      ("power",      scrape_ferc_eia_projects),
+    "agc_power":     ("power",      scrape_agc_power),
+    "enr_power":     ("power",      scrape_enr_power),
+    "ercot":         ("power",      scrape_ercot_queue),
+    # ── Industrial & Manufacturing Facilities ───────────────────────────────
+    "smacna":        ("industrial", scrape_smacna),
+    "abc":           ("industrial", scrape_abc_contractors),
+    "nfpa":          ("industrial", scrape_nfpa_contractors),
+    "aiche":         ("industrial", scrape_aiche_corporate),
+    "tceq":          ("industrial", scrape_tceq_permits),
+    # ── Defense & Nuclear Infrastructure ────────────────────────────────────
+    "doe":           ("defense",    scrape_doe_contractors),
+    "nrc":           ("defense",    scrape_nrc_licensees),
+    "same":          ("defense",    scrape_same_members),
+    # ── Cross-sector ────────────────────────────────────────────────────────
+    "state_licenses":("both",       scrape_state_licenses),
+    "enr":           ("both",       scrape_enr),
+    "usaspending":   ("both",       scrape_usaspending),
+    "sam":           ("both",       scrape_sam_gov_entities),
 }
 
 
@@ -1321,7 +2312,7 @@ def run(
             logger.warning("Unknown source: %s", name)
             continue
         src_sector, fn = SOURCE_MAP[name]
-        if sector == "both" or src_sector in (sector, "both"):
+        if sector in ("both", "all") or src_sector in (sector, "both", "all"):
             filtered.append((name, src_sector, fn))
 
     logger.info("Running %d sources: %s", len(filtered), [f[0] for f in filtered])
@@ -1377,8 +2368,10 @@ def main():
         help=f"Sources to run: {', '.join(SOURCE_MAP.keys())}",
     )
     parser.add_argument(
-        "--sector", choices=["water", "dc", "both"], default="both",
-        help="Sector filter",
+        "--sector",
+        choices=["water", "dc", "power", "industrial", "defense", "both", "all"],
+        default="both",
+        help="Sector filter (both=water+dc legacy; all=every sector)",
     )
     parser.add_argument("--dry-run", action="store_true", help="Print results, don't save")
     args = parser.parse_args()
