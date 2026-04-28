@@ -21,6 +21,9 @@ apscheduler>=3.10.0
 # AI
 anthropic>=0.40.0
 
+# PDF parsing
+pdfminer.six
+
 # Utilities
 python-dotenv
 
