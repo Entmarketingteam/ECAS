@@ -100,7 +100,9 @@ def verify_contact(record: dict) -> dict:
     # Check email domain matches company domain
     email_domain = email.split("@")[-1].lower() if "@" in email else ""
     if company_domain and email_domain:
-        if email_domain != company_domain.lstrip("www."):
+        import re as _re
+        normalized_domain = _re.sub(r"^www\.", "", company_domain.lower())
+        if email_domain != normalized_domain:
             result["email_domain_match"] = False
             result["email_flag"] = f"DOMAIN_MISMATCH: email={email_domain} company={company_domain}"
 
@@ -263,12 +265,13 @@ def run_pipeline(
 
         if all_signals:
             verified_signals = verify_signals_batch(all_signals)
-            # Reassign verified signals back to records
+            # Clear existing signals on each record before reassigning verified versions
+            for record in records:
+                record["signals"] = []
             for sig in verified_signals:
                 idx = sig.pop("_record_idx", None)
                 if idx is not None:
-                    records[idx].setdefault("signals", [])
-                    # Update the signal in the record
+                    records[idx]["signals"].append(sig)
             live_count = sum(1 for s in verified_signals
                              if s.get("verification", {}).get("status") == SignalStatus.LIVE)
             results["stage_counts"]["signals_verified"] = len(verified_signals)

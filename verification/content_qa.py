@@ -267,9 +267,10 @@ def qa_content(pkg: ContentPackage) -> ContentPackage:
     claims = extract_claims(pkg.generated_text)
     ungrounded = []
 
+    verified_facts_only = [f for f in pkg.facts if f.verified]
     for claim_obj in claims:
         claim_text = claim_obj.get("claim", "")
-        grounded, source = verify_claim_against_facts(claim_text, pkg.facts)
+        grounded, source = verify_claim_against_facts(claim_text, verified_facts_only)
         if not grounded:
             ungrounded.append(claim_text)
             logger.warning("Ungrounded claim in %s content: '%s'", pkg.company_name, claim_text)

@@ -276,10 +276,10 @@ def resolve_entity_parallel(company_name: str, all_company_names: list[str],
         f_sam = ex.submit(lookup_sam_gov, company_name)
         f_spend = ex.submit(lookup_usaspending, company_name)
         f_domain = ex.submit(discover_domain, company_name) if not domain_hint else None
-
-    sam_result = f_sam.result()
-    spending_result = f_spend.result()
-    domain, verified = (domain_hint, True) if domain_hint else (f_domain.result() if f_domain else ("", False))
+        # Resolve inside the context so futures are guaranteed complete
+        sam_result = f_sam.result()
+        spending_result = f_spend.result()
+        domain, verified = (domain_hint, True) if domain_hint else (f_domain.result() if f_domain else ("", False))
 
     if sam_result:
         if levenshtein(sam_result["legal_name"].lower(), company_name.lower()) <= 5:
@@ -413,10 +413,18 @@ def resolve_batch(
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as ex:
         futures = {ex.submit(_resolve_one, (i, c)): i for i, c in enumerate(companies)}
         for future in concurrent.futures.as_completed(futures):
+            record_idx = futures[future]
             try:
                 idx, result = future.result()
                 results[idx] = result
             except Exception as e:
-                logger.error("Resolution failed for record %d: %s", futures[future], e)
+                logger.error("Resolution failed for record %d: %s", record_idx, e)
+                # Route to HOLD rather than silently drop — ensures lead stays in audit trail
+                cs = ConfidenceScore(
+                    company_name=companies[record_idx].get(name_field, "UNKNOWN"),
+                )
+                cs.score = 0
+                cs.flags.append(f"RESOLUTION_EXCEPTION: {e}")
+                results[record_idx] = (companies[record_idx], cs)
 
     return [r for r in results if r is not None]
