@@ -215,6 +215,7 @@ def run_pipeline(
     content_type: Optional[str] = None,
     stages: list[str] = None,
     dry_run: bool = False,
+    output_prefix: str = "",
 ) -> dict:
     """
     Full verification pipeline. Stages: entity, signal, contact, content, route.
@@ -366,18 +367,22 @@ def run_pipeline(
 
     # Save results
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    verified_dir = Path(__file__).parent / "verified_output"
+    verified_dir.mkdir(parents=True, exist_ok=True)
     if not dry_run:
         for route_name in ["auto", "review", "hold"]:
             route_records = results[route_name]
             if not route_records:
                 continue
-            fname = OUTPUT_DIR / f"verified_{route_name}_{today}.csv"
-            if route_records:
-                with open(fname, "w", newline="", encoding="utf-8") as f:
-                    writer = csv.DictWriter(f, fieldnames=route_records[0].keys())
-                    writer.writeheader()
-                    writer.writerows(route_records)
-                logger.info("Saved %s: %s", route_name.upper(), fname)
+            if output_prefix:
+                fname = verified_dir / f"{output_prefix}_{route_name}.csv"
+            else:
+                fname = OUTPUT_DIR / f"verified_{route_name}_{today}.csv"
+            with open(fname, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=route_records[0].keys())
+                writer.writeheader()
+                writer.writerows(route_records)
+            logger.info("Saved %s: %s", route_name.upper(), fname)
 
         # Save to Supabase review queue
         _save_review_queue(results["review"] + results["hold"])
@@ -437,6 +442,7 @@ def main():
     parser.add_argument("--batch-size", type=int, default=50, help="Records per batch")
     parser.add_argument("--dry-run", action="store_true", help="Run all checks but don't send or save")
     parser.add_argument("--offset", type=int, default=0, help="Start from this row offset")
+    parser.add_argument("--output-prefix", default="", help="Prefix for output CSV filenames (used by parallel runner)")
     args = parser.parse_args()
 
     # Load CSV
@@ -452,6 +458,7 @@ def main():
         content_type=args.content_type,
         stages=args.stage,
         dry_run=args.dry_run,
+        output_prefix=args.output_prefix,
     )
 
     print(f"\n{'DRY RUN — ' if args.dry_run else ''}Pipeline complete.")
