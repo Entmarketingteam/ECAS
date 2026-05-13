@@ -1,15 +1,11 @@
 {
   "name": "ECAS — 01 FERC Signal Poller",
+  "_note": "Updated 2026-05-13: replaced dead FERC EFTS (efts.ferc.gov) with Federal Register API (no auth, reliable). Workflow ID: g4g5Eom2pQV8ybHR",
   "nodes": [
     {
       "parameters": {
         "rule": {
-          "interval": [
-            {
-              "field": "hours",
-              "hoursInterval": 6
-            }
-          ]
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
         }
       },
       "id": "cron-ferc",
@@ -20,48 +16,52 @@
     },
     {
       "parameters": {
-        "url": "=https://efts.ferc.gov/EFTS-Java/search?q=substation+transmission&states=VA,TX&dateRange=custom&startDate={{$now.minus({days:1}).toFormat('yyyy-MM-dd')}}&endDate={{$now.toFormat('yyyy-MM-dd')}}",
-        "options": {
-          "timeout": 30000
-        }
+        "jsCode": "// Fetch recent FERC notices from Federal Register API and classify as EPC signals.\n// No API key required. Replaces the dead FERC EFTS (efts.ferc.gov) endpoint.\n// Federal Register API docs: https://www.federalregister.gov/reader-aids/developer-resources/rest-api\n\nconst LOOKBACK_DAYS = 7;\nconst PER_PAGE = 50;\nconst BASE_URL = 'https://www.federalregister.gov/api/v1/articles.json';\n\nconst SIGNAL_RULES = [\n  { score: 20, label: 'Interconnection Agreement', keywords: [\n    'interconnection agreement', 'generator interconnection',\n    'transmission interconnection', 'large generator interconnection',\n    'small generator interconnection'\n  ]},\n  { score: 18, label: 'PPA / Storage Interconnection', keywords: [\n    'power purchase agreement', ' ppa ', 'energy storage interconnection',\n    'battery storage', 'pumped storage'\n  ]},\n  { score: 15, label: 'Transmission Construction', keywords: [\n    'transmission line', 'transmission project', 'transmission upgrade',\n    'transmission expansion', 'transmission facility', 'new transmission',\n    'overhead line', 'underground cable', 'substation construction'\n  ]},\n  { score: 12, label: 'Rate Case / IRP', keywords: [\n    'rate case', 'rate schedule', 'integrated resource plan', ' irp ',\n    'cost of service', 'wholesale rate'\n  ]},\n  { score: 10, label: 'Hydro License', keywords: [\n    'hydroelectric', 'hydro license', 'relicensing', 'water power license'\n  ]}\n];\n\nconst BONUS_TERMS = {\n  'billion': 10, '765 kv': 8, '500 kv': 8, '345 kv': 5,\n  'hvdc': 8, 'high voltage': 5, 'data center': 5, 'datacenter': 5,\n  'hyperscale': 5, 'nuclear': 5, ' smr ': 5, 'solar': 3,\n  'wind': 3, 'gigawatt': 5, ' gw ': 3, ' mw ': 2\n};\n\nconst SKIP_KEYWORDS = [\n  'comment request', 'paperwork reduction', 'information collection',\n  'omb review', 'notice of filing', 'delegation of authority',\n  'sunshine act', 'closed meeting', 'open meeting'\n];\n\nfunction classify(title, abstract) {\n  const text = (title + ' ' + (abstract || '')).toLowerCase();\n  if (SKIP_KEYWORDS.some(kw => text.includes(kw))) return null;\n  for (const rule of SIGNAL_RULES) {\n    if (rule.keywords.some(kw => text.includes(kw))) {\n      return { score: rule.score, label: rule.label };\n    }\n  }\n  return null;\n}\n\nfunction boostScore(base, title, abstract) {\n  const text = (title + ' ' + (abstract || '')).toLowerCase();\n  let score = base;\n  for (const [term, bonus] of Object.entries(BONUS_TERMS)) {\n    if (text.includes(term)) score += bonus;\n  }\n  const dollarHits = (text.match(/\\$[\\d,.]+\\s?(?:billion|million)/gi) || []).length;\n  score += dollarHits * 3;\n  return Math.min(Math.round(score * 10) / 10, 100);\n}\n\nfunction extractCompany(title, abstract) {\n  const semiMatch = title.match(/^([^;]+);/);\n  if (semiMatch) {\n    const candidate = semiMatch[1].trim();\n    if (!['commission', 'ferc', 'notice', 'order'].some(w => candidate.toLowerCase().includes(w))) {\n      return candidate;\n    }\n  }\n  if (abstract) {\n    const m = abstract.match(/\\b([A-Z][a-zA-Z\\s&,.]+(?:Inc|LLC|Corp|Company|Authority|Power|Energy|Electric|Utility|Co)\\.?)\\b/);\n    if (m) return m[1].trim();\n  }\n  return 'FERC Filing';\n}\n\nfunction determineSector(title, abstract) {\n  const text = (title + ' ' + (abstract || '')).toLowerCase();\n  if (['nuclear', 'smr', 'uranium', 'reactor', 'atomic'].some(kw => text.includes(kw))) return 'Nuclear & Critical Minerals';\n  if (['defense', 'military', 'dod', 'pentagon'].some(kw => text.includes(kw))) return 'Defense';\n  if (['natural gas', 'lng', 'pipeline', 'gas transmission'].some(kw => text.includes(kw))) return 'Natural Gas Infrastructure';\n  return 'Power & Grid Infrastructure';\n}\n\nconst now = new Date();\nconst startDate = new Date(now - LOOKBACK_DAYS * 86400000);\nconst fmt = d => d.toISOString().slice(0, 10);\n\nconst signals = [];\nconst seenDocs = new Set();\nlet page = 1;\nlet totalPages = 1;\n\ndo {\n  const url = BASE_URL + '?conditions%5Bagencies%5D%5B%5D=federal-energy-regulatory-commission'\n    + '&conditions%5Bpublication_date%5D%5Bgte%5D=' + fmt(startDate)\n    + '&conditions%5Bpublication_date%5D%5Blte%5D=' + fmt(now)\n    + '&per_page=' + PER_PAGE + '&page=' + page\n    + '&order=newest&fields%5B%5D=title&fields%5B%5D=publication_date'\n    + '&fields%5B%5D=abstract&fields%5B%5D=document_number&fields%5B%5D=html_url';\n  const resp = await this.helpers.httpRequest({ url, method: 'GET' });\n  const results = resp.results || [];\n  totalPages = resp.total_pages || 1;\n\n  for (const article of results) {\n    const docNum = article.document_number || '';\n    if (seenDocs.has(docNum)) continue;\n    seenDocs.add(docNum);\n    const title = article.title || '';\n    const abstract = article.abstract || '';\n    const pubDate = article.publication_date || fmt(now);\n    const htmlUrl = article.html_url || '';\n    const cls = classify(title, abstract);\n    if (!cls) continue;\n    const heat = boostScore(cls.score, title, abstract);\n    signals.push({\n      signal_type: 'ferc_filing',\n      source: 'ferc_efts',\n      company_name: extractCompany(title, abstract),\n      sector: determineSector(title, abstract),\n      signal_date: pubDate,\n      raw_text: 'FERC Notice: ' + title + '\\nType: ' + cls.label + ' | Published: ' + pubDate + ' | Doc: ' + docNum + '\\n' + abstract.slice(0, 800),\n      heat_score: heat,\n      url: htmlUrl,\n      notes: cls.label + ' | Doc: ' + docNum,\n      captured_at: new Date().toISOString()\n    });\n  }\n  page++;\n} while (page <= Math.min(totalPages, 3));\n\nconsole.log('[FERC FR] ' + signals.length + ' signals from ' + seenDocs.size + ' articles');\nif (!signals.length) return [{ json: { _skip: true, count: 0 } }];\nreturn signals.map(s => ({ json: s }));"
       },
-      "id": "http-ferc",
-      "name": "Fetch FERC EFTS Filings",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "id": "code-fetch-classify",
+      "name": "Fetch & Classify FERC Notices",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [460, 300]
     },
     {
       "parameters": {
-        "jsCode": "// Parse FERC EFTS response and extract filings\nconst response = $input.first().json;\n\n// EFTS returns { hits: { hits: [...], total: N } }\nconst hits = response?.hits?.hits || response?.results || [];\n\nif (!hits.length) {\n  console.log('No FERC filings found for date range');\n  return [];\n}\n\nconst filings = hits.map(hit => {\n  const src = hit._source || hit;\n  const docket = src.docket_number || src.docketNumber || src.docket || '';\n  const title = src.document_name || src.documentName || src.title || src.description || '';\n  const filer = src.filer_name || src.filerName || src.organization || '';\n  const date = src.filed_date || src.filedDate || src.date_received || '';\n  const url = src.download_url || src.downloadUrl ||\n    (docket ? `https://www.ferc.gov/docs-filing/elibrary.asp?act=load&query=${docket}` : '');\n\n  const rawText = [\n    title,\n    filer ? `Filer: ${filer}` : '',\n    docket ? `Docket: ${docket}` : '',\n    date ? `Filed: ${date}` : '',\n  ].filter(Boolean).join(' | ');\n\n  return {\n    source: 'ferc_efts',\n    url: url,\n    raw_text: rawText,\n    captured_at: new Date().toISOString(),\n    processed: false,\n  };\n});\n\nconsole.log(`Parsed ${filings.length} FERC filings`);\nreturn filings.map(f => ({ json: f }));"
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{
+            "id": "skip-check",
+            "leftValue": "={{ $json._skip }}",
+            "rightValue": true,
+            "operator": { "type": "boolean", "operation": "notEquals" }
+          }],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "code-parse-ferc",
-      "name": "Parse FERC Filings",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "filter-skip",
+      "name": "Skip If No Signals",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.1,
       "position": [680, 300]
     },
     {
       "parameters": {
         "operation": "create",
-        "baseId": {
-          "__rl": true,
-          "value": "appoi8SzEJY8in57x",
-          "mode": "id"
-        },
-        "tableId": {
-          "__rl": true,
-          "value": "signals_raw",
-          "mode": "name"
-        },
+        "baseId": { "__rl": true, "value": "appoi8SzEJY8in57x", "mode": "id" },
+        "tableId": { "__rl": true, "value": "tblAFJnXToLTKeaNU", "mode": "id" },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
+            "signal_type": "={{ $json.signal_type }}",
             "source": "={{ $json.source }}",
+            "company_name": "={{ $json.company_name }}",
+            "sector": "={{ $json.sector }}",
             "url": "={{ $json.url }}",
             "raw_text": "={{ $json.raw_text }}",
             "captured_at": "={{ $json.captured_at }}",
-            "processed": "={{ $json.processed }}"
+            "confidence_score": "={{ $json.heat_score }}",
+            "notes": "={{ $json.notes }}",
+            "processed": false
           }
         },
         "options": {}
@@ -71,70 +71,35 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
       "position": [900, 300],
-      "credentials": {
-        "airtableTokenApi": {
-          "id": "dAoeOLbTnBUK1gTy",
-          "name": "Airtable"
-        }
-      }
+      "credentials": { "airtableTokenApi": { "id": "dAoeOLbTnBUK1gTy", "name": "Airtable" } }
     },
     {
       "parameters": {
         "channel": "#ecas-ops",
-        "text": "=:rotating_light: *FERC Signal Poller Error*\n\nThe FERC EFTS poller failed at {{ $now.toISO() }}.\n\n*Error:* {{ $json.message || $json.error || 'Unknown error' }}\n\nCheck the n8n execution log for details.",
+        "text": "=:rotating_light: *FERC Signal Poller Error*\n\nFailed at {{ $now.toISO() }}.\n\n*Error:* {{ $json.message || $json.error || 'Unknown error' }}\n\nCheck n8n execution log.",
         "otherOptions": {}
       },
       "id": "slack-error-ferc",
       "name": "Slack Error Alert",
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.1,
-      "position": [900, 500],
-      "credentials": {
-        "slackApi": {
-          "id": "EMdoV2Sq9neZV1Tn",
-          "name": "Slack"
-        }
-      }
+      "position": [680, 500],
+      "credentials": { "slackApi": { "id": "EMdoV2Sq9neZV1Tn", "name": "Slack" } }
     }
   ],
   "connections": {
     "Every 6 Hours": {
-      "main": [
-        [
-          { "node": "Fetch FERC EFTS Filings", "type": "main", "index": 0 }
-        ]
-      ]
+      "main": [[{ "node": "Fetch & Classify FERC Notices", "type": "main", "index": 0 }]]
     },
-    "Fetch FERC EFTS Filings": {
-      "main": [
-        [
-          { "node": "Parse FERC Filings", "type": "main", "index": 0 }
-        ]
-      ],
-      "error": [
-        [
-          { "node": "Slack Error Alert", "type": "main", "index": 0 }
-        ]
-      ]
+    "Fetch & Classify FERC Notices": {
+      "main": [[{ "node": "Skip If No Signals", "type": "main", "index": 0 }]],
+      "error": [[{ "node": "Slack Error Alert", "type": "main", "index": 0 }]]
     },
-    "Parse FERC Filings": {
-      "main": [
-        [
-          { "node": "Create Airtable Signal", "type": "main", "index": 0 }
-        ]
-      ],
-      "error": [
-        [
-          { "node": "Slack Error Alert", "type": "main", "index": 0 }
-        ]
-      ]
+    "Skip If No Signals": {
+      "main": [[{ "node": "Create Airtable Signal", "type": "main", "index": 0 }]]
     },
     "Create Airtable Signal": {
-      "error": [
-        [
-          { "node": "Slack Error Alert", "type": "main", "index": 0 }
-        ]
-      ]
+      "error": [[{ "node": "Slack Error Alert", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
@@ -143,9 +108,5 @@
     "callerPolicy": "workflowsFromSameOwner",
     "errorWorkflow": ""
   },
-  "staticData": null,
-  "tags": ["ecas", "signals"],
-  "triggerCount": 0,
-  "updatedAt": "2026-03-03T00:00:00.000Z",
-  "versionId": "1"
+  "staticData": null
 }
