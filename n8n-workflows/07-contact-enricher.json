@@ -78,7 +78,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.apollo.io/api/v1/people/search",
+        "url": "https://api.apollo.io/api/v1/mixed_people/search",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
@@ -87,7 +87,7 @@
               "value": "={{ $env.APOLLO_API_KEY }}"
             },
             {
-              "name": "titles",
+              "name": "person_titles",
               "value": "=[\"Director of Preconstruction\", \"VP Operations\", \"Project Executive\", \"Estimating Manager\", \"Director of Business Development\", \"VP Business Development\"]"
             },
             {
@@ -116,7 +116,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Flatten Apollo results and attach parent context\nconst apolloResp = $input.first().json;\nconst companyCtx = $('Derive Company Domains').first().json;\n\nconst people = apolloResp?.people || apolloResp?.contacts || [];\n\nconst withEmail = people.filter(p => p.email && p.email !== 'email_not_unlocked@domain.com');\n\nconsole.log(`Apollo returned ${people.length} people, ${withEmail.length} with email`);\n\nreturn withEmail.map(p => ({\n  json: {\n    // Apollo fields\n    first_name: p.first_name || '',\n    last_name: p.last_name || '',\n    email: p.email || '',\n    title: p.title || '',\n    company_name: p.organization_name || companyCtx.name,\n    linkedin_url: p.linkedin_url || '',\n    city: p.city || '',\n    state: p.state || '',\n    phone: p.phone_numbers?.[0]?.raw_number || '',\n    // Context from parent nodes\n    company_role: companyCtx.role,\n    company_domain: companyCtx.domain,\n    project_record_id: companyCtx.project_record_id,\n    project_name: companyCtx.project_name,\n    project_state: companyCtx.project_state,\n    apollo_id: p.id || '',\n  }\n}));"
+        "jsCode": "// Flatten Apollo results and attach parent context\nconst apolloResp = $input.first().json;\nconst companyCtx = $('Derive Company Domains').first().json;\n\nconst people = apolloResp?.people || apolloResp?.contacts || [];\n\nconst withEmail = people.filter(p => p.email && p.email !== 'email_not_unlocked@domain.com');\n\nconsole.log(`Apollo returned ${people.length} people, ${withEmail.length} with email`);\n\nreturn withEmail.map(p => ({\n  json: {\n    // Apollo fields\n    first_name: p.first_name || '',\n    last_name: p.last_name || '',\n    email: p.email || '',\n    title: p.title || '',\n    company_name: p.organization_name || companyCtx.name,\n    linkedin_url: p.linkedin_url || '',\n    city: p.city || '',\n    state: p.state || '',\n    phone: p.phone_numbers?.[0]?.raw_number || '',\n    headline: p.headline || '',\n    // Context from parent nodes\n    company_role: companyCtx.role,\n    company_domain: companyCtx.domain,\n    project_record_id: companyCtx.project_record_id,\n    project_name: companyCtx.project_name,\n    project_state: companyCtx.project_state,\n    apollo_id: p.id || '',\n  }\n}));"
       },
       "id": "code-flatten-apollo",
       "name": "Flatten Apollo Results",
@@ -126,76 +126,53 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": false,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "id": "has-linkedin",
-              "leftValue": "={{ $json.linkedin_url }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "notEmpty"
-              }
-            }
-          ],
-          "combinator": "and"
-        }
-      },
-      "id": "if-has-linkedin",
-      "name": "Has LinkedIn URL?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [1340, 400]
-    },
-    {
-      "parameters": {
-        "url": "=https://nubela.co/proxycurl/api/v2/linkedin?url={{ encodeURIComponent($json.linkedin_url) }}&use_cache=if-present",
+        "method": "POST",
+        "url": "https://app.findymail.com/api/verify",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
-              "value": "=Bearer {{ $env.PROXYCURL_API_KEY }}"
+              "value": "=Bearer {{ $env.FINDYMAIL_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
             }
           ]
         },
         "options": {
-          "timeout": 20000
-        }
-      },
-      "id": "http-proxycurl",
-      "name": "Proxycurl: Enrich LinkedIn",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1560, 280]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Merge Proxycurl enrichment back onto the contact\nconst contact = $('Flatten Apollo Results').first().json;\nconst proxycurl = $input.first().json;\n\nreturn [{\n  json: {\n    ...contact,\n    // Overwrite/supplement with Proxycurl data where available\n    headline: proxycurl?.headline || '',\n    summary: proxycurl?.summary || '',\n    follower_count: proxycurl?.follower_count || null,\n    connections: proxycurl?.connections || null,\n    profile_pic_url: proxycurl?.profile_pic_url || '',\n  }\n}];"
-      },
-      "id": "code-merge-proxycurl",
-      "name": "Merge Proxycurl Data",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1780, 280]
-    },
-    {
-      "parameters": {
-        "url": "=https://api.zerobounce.net/v2/validate?api_key={{ $env.ZEROBOUNCE_KEY }}&email={{ encodeURIComponent($json.email) }}",
-        "options": {
           "timeout": 15000
         }
       },
-      "id": "http-zerobounce",
-      "name": "Zerobounce: Verify Email",
+      "id": "http-findymail-verify",
+      "name": "Findymail: Verify Email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1560, 520]
+      "position": [1340, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Findymail verification result back onto the contact\nconst contact = $('Flatten Apollo Results').first().json;\nconst findymail = $input.first().json;\n\nconst emailStatus = findymail?.contact?.email_status || findymail?.status || 'unknown';\nconst emailScore = findymail?.contact?.score ?? findymail?.score ?? 0;\n\nreturn [{\n  json: {\n    ...contact,\n    email_status: emailStatus,\n    email_score: emailScore,\n  }\n}];"
+      },
+      "id": "code-merge-findymail",
+      "name": "Merge Findymail Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 400]
     },
     {
       "parameters": {
@@ -208,11 +185,20 @@
           "conditions": [
             {
               "id": "email-valid",
-              "leftValue": "={{ $json.status }}",
-              "rightValue": "valid",
+              "leftValue": "={{ $json.email_status }}",
+              "rightValue": "invalid",
               "operator": {
                 "type": "string",
-                "operation": "equals"
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "email-score",
+              "leftValue": "={{ $json.email_score }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
               }
             }
           ],
@@ -223,7 +209,7 @@
       "name": "Email Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1780, 520]
+      "position": [1780, 400]
     },
     {
       "parameters": {
@@ -252,7 +238,6 @@
             "city": "={{ $json.city }}",
             "state": "={{ $json.state }}",
             "headline": "={{ $json.headline }}",
-            "summary": "={{ $json.summary }}",
             "project_id": "={{ [$json.project_record_id] }}",
             "outreach_status": "pending_review",
             "email_verified": true,
@@ -307,35 +292,18 @@
     "Flatten Apollo Results": {
       "main": [
         [
-          { "node": "Has LinkedIn URL?", "type": "main", "index": 0 }
+          { "node": "Findymail: Verify Email", "type": "main", "index": 0 }
         ]
       ]
     },
-    "Has LinkedIn URL?": {
+    "Findymail: Verify Email": {
       "main": [
         [
-          { "node": "Proxycurl: Enrich LinkedIn", "type": "main", "index": 0 }
-        ],
-        [
-          { "node": "Zerobounce: Verify Email", "type": "main", "index": 0 }
+          { "node": "Merge Findymail Result", "type": "main", "index": 0 }
         ]
       ]
     },
-    "Proxycurl: Enrich LinkedIn": {
-      "main": [
-        [
-          { "node": "Merge Proxycurl Data", "type": "main", "index": 0 }
-        ]
-      ]
-    },
-    "Merge Proxycurl Data": {
-      "main": [
-        [
-          { "node": "Zerobounce: Verify Email", "type": "main", "index": 0 }
-        ]
-      ]
-    },
-    "Zerobounce: Verify Email": {
+    "Merge Findymail Result": {
       "main": [
         [
           { "node": "Email Valid?", "type": "main", "index": 0 }
@@ -359,6 +327,6 @@
   "staticData": null,
   "tags": ["ecas", "contacts", "enrichment"],
   "triggerCount": 0,
-  "updatedAt": "2026-03-03T00:00:00.000Z",
-  "versionId": "1"
+  "updatedAt": "2026-05-13T00:00:00.000Z",
+  "versionId": "2"
 }
