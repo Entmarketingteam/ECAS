@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "deny": [
+      "Skill(content-atomizer)",
+      "Skill(lead-magnet)",
+      "Skill(email-sequences)",
+      "Skill(seo-content)",
+      "Skill(newsletter)",
+      "Skill(direct-response-copy)",
+      "Skill(creative)",
+      "Skill(campaign-kit)",
+      "Skill(ltk-data-analyst)",
+      "Skill(creator-vetting)",
+      "Skill(client-onboard)",
+      "Skill(tax-prep)",
+      "Skill(brand-voice)",
+      "Skill(keyword-research)",
+      "Skill(positioning-angles)"
+    ]
+  }
+}

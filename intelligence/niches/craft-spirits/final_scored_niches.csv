@@ -1,0 +1,501 @@
+Niche,Typical_Deal_USD,LTV_USD,Gross_Margin_pct,Payment,Sales_Cycle_days,Primary_Channels,Delivery_Difficulty,Gross_Profit_USD,Rec_CAC_Ceiling_USD,StressA_GP_minus_2xCAC,StressB_GP_minus_1_43xCAC,StressC_Cashflow_Risk,StressD_GP_at_-20%,Cushion_0to4,Serviceability_1easy_5hard,Marketability,Econ_score,Cushion_score,Serviceability_score,Marketability_score,Composite_10pt
+Craft Tequila Producers,54000,162000,73,Retainer,50,Instagram/LinkedIn/Cold Email,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Ready-to-Drink Cocktail Brands,60000,180000,72,Retainer,45,Instagram/TikTok/LinkedIn,2,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Non-Alcoholic Spirits Brands,54000,162000,73,Retainer,40,Instagram/TikTok/LinkedIn,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Hard Seltzer Brands,54000,162000,71,Retainer,40,Instagram/TikTok/LinkedIn,2,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Functional Beverage Brands,54000,162000,72,Retainer,40,Instagram/TikTok/LinkedIn,2,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Craft Spirits Bars & Cocktail Lounges,36000,108000,69,Retainer,35,Instagram/TikTok/Google Ads,2,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Spirits-Focused Restaurants & Cocktail Bars,36000,108000,68,Retainer,35,Instagram/TikTok/Google Ads,2,24480.0,4500.0,15480.0,18045.0,LOW,19584.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Celebrity Spirits Brands,84000,252000,74,Retainer,45,Instagram/LinkedIn/Cold Email,2,62160.0,4500.0,53160.0,55725.0,LOW,49728.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Influencer-Founded Spirits Labels,72000,216000,74,Retainer,40,Instagram/TikTok/LinkedIn,2,53280.0,4500.0,44280.0,46845.0,LOW,42624.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Cosmetic Dermatology Clinics,54000,162000,78,Retainer,40,Instagram/Google Ads/Facebook,2,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Medispa & Aesthetic Injection Clinics,54000,162000,77,Retainer,35,Instagram/Google Ads/TikTok,2,41580.0,4500.0,32580.0,35145.0,LOW,33264.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Weight Loss & Metabolic Health Clinics,54000,162000,77,Retainer,35,Instagram/Google Ads/Facebook,2,41580.0,4500.0,32580.0,35145.0,LOW,33264.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Vision Surgery Centers (LASIK Cataract),54000,162000,78,Retainer,40,Google Ads/Instagram/Facebook,2,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Plastic Surgery Practices,60000,180000,78,Retainer,40,Instagram/Google Ads/Facebook,2,46800.0,4500.0,37800.0,40365.0,LOW,37440.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Plant-Based Food Manufacturers,60000,180000,72,Retainer,50,Instagram/LinkedIn/Cold Email,2,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Organic Snack Food Brands,48000,144000,73,Retainer,40,Instagram/LinkedIn/TikTok,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Sports Nutritional Supplement Brands,48000,144000,72,Retainer,40,Instagram/TikTok/LinkedIn,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Craft Soda & Non-Alcoholic Beverage Brands,42000,126000,72,Retainer,40,Instagram/TikTok/LinkedIn,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Wedding Planning Agencies,36000,108000,72,Retainer,35,Instagram/Pinterest/Google Ads,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+E-learning & Online Course Platforms,60000,180000,75,Retainer,45,LinkedIn/Google Ads/Email,2,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Language Learning Platforms,54000,162000,74,Retainer,45,LinkedIn/Google Ads/Instagram,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Pet Food & Supplement Brands,48000,144000,73,Retainer,40,Instagram/TikTok/Amazon Ads,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Mental Health Apps & Digital Therapeutics,66000,198000,76,Retainer,55,LinkedIn/Google Ads/Instagram,2,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Influencer Talent Management Agencies,60000,180000,75,Retainer,40,LinkedIn/Instagram/TikTok,2,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+User-Generated Content Platforms,60000,180000,74,Retainer,45,LinkedIn/Instagram/Cold Email,2,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,2,5,10.0,10.0,8.0,10.0,9.6
+Craft Whiskey Distilleries,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Bourbon Distilleries,54000,162000,73,Retainer,50,Instagram/LinkedIn/Cold Email,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Rye Whiskey Producers,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Single Malt Distilleries,54000,162000,73,Retainer,50,Instagram/LinkedIn/Cold Email,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Gin Distilleries,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Rum Distilleries,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Vodka Distilleries,42000,126000,71,Retainer,40,Instagram/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Mezcal Producers,54000,162000,74,Retainer,50,Instagram/LinkedIn/Cold Email,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Brandy Distilleries,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Moonshine Producers,36000,108000,70,Retainer,40,Instagram/LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Liqueur Producers,48000,144000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Breweries,42000,126000,70,Retainer,40,Instagram/LinkedIn/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Independent Wineries,48000,144000,71,Retainer,45,Instagram/LinkedIn/Cold Email,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Cideries,36000,108000,70,Retainer,40,Instagram/LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Hard Kombucha Producers,42000,126000,71,Retainer,40,Instagram/TikTok/LinkedIn,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+DTC Spirits Platforms,72000,216000,75,Retainer,45,LinkedIn/Cold Email/Instagram,2,54000.0,4500.0,45000.0,47565.0,LOW,43200.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits Subscription Box Companies,48000,144000,73,Retainer,40,Instagram/LinkedIn/Cold Email,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Label & Packaging Designers for Spirits,42000,126000,73,Retainer,45,LinkedIn/Cold Email/Instagram,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Specialty Liquor Retailers,36000,108000,68,Retainer,35,Instagram/Facebook/Google Ads,2,24480.0,4500.0,15480.0,18045.0,LOW,19584.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Distillery Tasting Rooms,30000,90000,70,Retainer,30,Instagram/Google Ads/Email,2,21000.0,4500.0,12000.0,14565.0,LOW,16800.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Luxury Spirits Retailers,54000,162000,74,Retainer,50,Instagram/LinkedIn/Email,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Beer & Spirits Gift Shops,30000,90000,68,Retainer,30,Instagram/Facebook/Google Ads,2,20400.0,4500.0,11400.0,13965.0,LOW,16320.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits Industry Publications & Media,48000,144000,73,Retainer,45,LinkedIn/Cold Email/Instagram,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits Photography & Content Studios,36000,108000,74,Retainer,35,Instagram/LinkedIn/Cold Email,2,26640.0,4500.0,17640.0,20205.0,LOW,21312.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Cocktail Recipe Developers & Consultants,30000,90000,75,Retainer,35,Instagram/LinkedIn,2,22500.0,4500.0,13500.0,16065.0,LOW,18000.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits PR Agencies,48000,144000,74,Retainer,45,LinkedIn/Cold Email/Instagram,2,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Distillery Tourism Operators,30000,90000,71,Retainer,35,Instagram/Google Ads/Email,2,21300.0,4500.0,12300.0,14865.0,LOW,17040.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Luxury & Prestige Spirits Brands,90000,270000,76,Retainer,55,Instagram/LinkedIn/Events,2,68400.0,4500.0,59400.0,61965.0,LOW,54720.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Limited Edition Spirits Producers,60000,180000,74,Retainer,45,Instagram/LinkedIn/Email,2,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Sustainable & Organic Spirits Brands,54000,162000,74,Retainer,45,Instagram/LinkedIn/TikTok,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Heritage & Terroir-Focused Distilleries,54000,162000,73,Retainer,50,Instagram/LinkedIn/Email,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Spirits Gift & Subscription Services,42000,126000,73,Retainer,35,Instagram/Email/LinkedIn,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits Brand Ambassador Programs,42000,126000,72,Retainer,40,Instagram/LinkedIn,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Beverage Alcohol Label Design Agencies,36000,108000,74,Retainer,35,Instagram/LinkedIn/Cold Email,2,26640.0,4500.0,17640.0,20205.0,LOW,21312.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Spirits Podcast & Media Networks,42000,126000,72,Retainer,40,LinkedIn/Instagram/Cold Email,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Spirits Retail Chain Operators,54000,162000,71,Retainer,50,LinkedIn/Cold Email/Instagram,2,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Functional Medicine Clinics,48000,144000,78,Retainer,40,Google Ads/Instagram/Email,2,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Concierge & Direct Primary Care Practices,54000,162000,80,Retainer,40,LinkedIn/Google Ads/Email,2,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Physical Therapy & Sports Rehab Clinics,42000,126000,76,Retainer,35,Google Ads/Instagram/Email,2,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Pediatric Therapy Clinics,42000,126000,76,Retainer,40,Google Ads/Facebook/Email,2,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Mental Health Private Practices,36000,108000,78,Retainer,35,Google Ads/Instagram/Email,2,28080.0,4500.0,19080.0,21645.0,LOW,22464.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Artisan Food Producers & Co-packers,42000,126000,72,Retainer,40,Instagram/LinkedIn/Cold Email,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Specialty Coffee Roasters,36000,108000,73,Retainer,35,Instagram/LinkedIn/Email,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Tea Brands,36000,108000,73,Retainer,35,Instagram/LinkedIn/Email,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Specialty Cheese Producers,36000,108000,72,Retainer,35,Instagram/LinkedIn/Email,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Sports & Recreation Facility Operators,42000,126000,70,Retainer,40,Instagram/LinkedIn/Google Ads,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Indoor Climbing & Adventure Park Operators,36000,108000,71,Retainer,35,Instagram/Google Ads/TikTok,2,25560.0,4500.0,16560.0,19125.0,LOW,20448.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Martial Arts & Combat Sports Gyms,24000,72000,72,Retainer,30,Instagram/Facebook/Google Ads,2,17280.0,4500.0,8280.0,10845.0,LOW,13824.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Youth Sports Club Operators,30000,90000,71,Retainer,35,Facebook/Instagram/Email,2,21300.0,4500.0,12300.0,14865.0,LOW,17040.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Esports Venue Operators,42000,126000,72,Retainer,40,Instagram/TikTok/LinkedIn,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Escape Room Franchise Operators,30000,90000,71,Retainer,30,Instagram/Google Ads/Facebook,2,21300.0,4500.0,12300.0,14865.0,LOW,17040.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Trampoline & Family Entertainment Centers,30000,90000,70,Retainer,30,Instagram/Facebook/Google Ads,2,21000.0,4500.0,12000.0,14565.0,LOW,16800.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Sports Photography & Video Production Companies,30000,90000,72,Retainer,35,Instagram/LinkedIn/Email,2,21600.0,4500.0,12600.0,15165.0,LOW,17280.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Outdoor Adventure Tour Operators,36000,108000,71,Retainer,35,Instagram/Google Ads/Email,2,25560.0,4500.0,16560.0,19125.0,LOW,20448.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Ghost Kitchen & Virtual Restaurant Operators,48000,144000,72,Retainer,40,LinkedIn/Instagram/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Food Truck Fleet Operators,30000,90000,71,Retainer,35,Instagram/TikTok/Email,2,21300.0,4500.0,12300.0,14865.0,LOW,17040.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Event Venue Operators,48000,144000,71,Retainer,45,Instagram/LinkedIn/Google Ads,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Photography Studio Chains,30000,90000,72,Retainer,30,Instagram/Google Ads/Email,2,21600.0,4500.0,12600.0,15165.0,LOW,17280.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Video Production Houses,48000,144000,73,Retainer,40,LinkedIn/Instagram/Cold Email,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Podcast Production Companies,36000,108000,73,Retainer,35,LinkedIn/Instagram/Email,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Tutoring & Test Prep Companies,36000,108000,73,Retainer,35,Google Ads/Instagram/Facebook,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Vocational Training Schools,42000,126000,73,Retainer,40,Google Ads/LinkedIn/Facebook,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Coding Bootcamps,48000,144000,74,Retainer,40,LinkedIn/Google Ads/Instagram,2,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Real Estate Schools & Licensing Programs,30000,90000,73,Retainer,35,Google Ads/Facebook/Instagram,2,21900.0,4500.0,12900.0,15465.0,LOW,17520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Swimming Pool Builders & Service Companies,36000,108000,70,Retainer,35,Google Ads/Instagram/Facebook,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Hardscape & Outdoor Living Contractors,42000,126000,71,Retainer,40,Instagram/Google Ads/Houzz,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Pet Boarding & Daycare Facilities,24000,72000,70,Retainer,30,Google Ads/Instagram/Facebook,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Veterinary Practice Groups,54000,162000,75,Retainer,45,Google Ads/Instagram/LinkedIn,2,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Pet Grooming Franchise Operators,24000,72000,70,Retainer,30,Instagram/Facebook/Google Ads,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Solar Installation Contractors,48000,144000,71,Retainer,40,Google Ads/Instagram/LinkedIn,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Smart Home Technology Installers,36000,108000,72,Retainer,35,Instagram/Google Ads/Email,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Custom Home Builders,54000,162000,71,Retainer,50,Instagram/Houzz/Google Ads,2,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Kitchen & Bath Remodeling Companies,42000,126000,71,Retainer,40,Instagram/Google Ads/Houzz,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Moving & Relocation Companies,36000,108000,69,Retainer,30,Google Ads/Facebook/LinkedIn,2,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Urgent Care Center Operators,54000,162000,75,Retainer,45,Google Ads/LinkedIn/Instagram,2,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Behavioral Health & ABA Therapy Companies,48000,144000,76,Retainer,45,Google Ads/LinkedIn/Email,2,36480.0,4500.0,27480.0,30045.0,LOW,29184.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Alcohol Brand Design Studios,36000,108000,76,Retainer,35,Instagram/LinkedIn/Cold Email,2,27360.0,4500.0,18360.0,20925.0,LOW,21888.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Spirits Retail Marketing Agencies,48000,144000,74,Retainer,45,LinkedIn/Instagram/Cold Email,2,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Cocktail Bar Consulting Firms,36000,108000,74,Retainer,35,Instagram/LinkedIn/Cold Email,2,26640.0,4500.0,17640.0,20205.0,LOW,21312.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Bartending School Operators,24000,72000,72,Retainer,30,Instagram/Google Ads/Email,2,17280.0,4500.0,8280.0,10845.0,LOW,13824.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Mixology Training Platforms,36000,108000,73,Retainer,35,Instagram/LinkedIn/Email,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Spirits Photography Studios,30000,90000,74,Retainer,30,Instagram/LinkedIn/Email,2,22200.0,4500.0,13200.0,15765.0,LOW,17760.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Alcohol Influencer Marketing Agencies,54000,162000,75,Retainer,40,LinkedIn/Instagram/Cold Email,2,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Podcast Advertising Networks,54000,162000,73,Retainer,45,LinkedIn/Cold Email/Instagram,2,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Performance Marketing Agencies (Paid Ads),60000,180000,74,Retainer,40,LinkedIn/Cold Email/Instagram,2,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+SEO & Content Marketing Agencies,54000,162000,74,Retainer,40,LinkedIn/Cold Email/Content,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Email Marketing Platform Companies,54000,162000,74,Retainer,45,LinkedIn/Cold Email,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Marketing Automation Consultants,54000,162000,75,Retainer,45,LinkedIn/Cold Email,2,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Brand Strategy Boutiques,60000,180000,76,Retainer,50,LinkedIn/Cold Email/Instagram,2,45600.0,4500.0,36600.0,39165.0,LOW,36480.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Naming & Identity Design Firms,42000,126000,76,Retainer,40,LinkedIn/Instagram/Cold Email,2,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Packaging Design Agencies,42000,126000,75,Retainer,40,Instagram/LinkedIn/Cold Email,2,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Social Media Management Agencies,42000,126000,73,Retainer,35,LinkedIn/Instagram/Cold Email,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Reputation Management Firms,54000,162000,74,Retainer,45,LinkedIn/Cold Email/Google Ads,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Public Relations Agencies (Mid-Market),54000,162000,75,Retainer,45,LinkedIn/Cold Email/Instagram,2,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Urgent Care Franchise Operators,60000,180000,74,Retainer,50,LinkedIn/Google Ads/Instagram,2,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Medical Aesthetics Training Academies,36000,108000,74,Retainer,35,Instagram/LinkedIn/Email,2,26640.0,4500.0,17640.0,20205.0,LOW,21312.0,4,2,4,10.0,10.0,8.0,8.0,9.2
+Craft Aquavit Producers,42000,126000,71,Retainer,45,Instagram/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Craft Absinthe Producers,42000,126000,72,Retainer,45,Instagram/LinkedIn/Cold Email,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Craft Grappa Producers,42000,126000,71,Retainer,45,Instagram/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Meaderies,36000,108000,70,Retainer,40,Instagram/LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Cannabis-Infused Beverage Brands,60000,180000,74,Retainer,45,Instagram/LinkedIn/Niche Pubs,3,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Hotel Bars & Beverage Programs,48000,144000,70,Retainer,50,LinkedIn/Instagram/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Spirits Auction Houses,48000,144000,72,Retainer,50,LinkedIn/Email/Instagram,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Spirits Competition Organizers,42000,126000,73,Retainer,45,LinkedIn/Cold Email/Instagram,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Nano Distilleries,24000,72000,70,Retainer,30,Instagram/Facebook/Email,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Alcohol Delivery App Companies,72000,216000,74,Retainer,55,LinkedIn/Instagram/Cold Email,3,53280.0,4500.0,44280.0,46845.0,LOW,42624.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Craft Spirits Crowdfunding Platforms,54000,162000,74,Retainer,50,LinkedIn/Instagram/Email,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Dental Sleep Medicine Practices,48000,144000,78,Retainer,45,Google Ads/LinkedIn/Email,2,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Fertility Clinics & IVF Centers,72000,216000,78,Retainer,50,Google Ads/Instagram/Email,3,56160.0,4500.0,47160.0,49725.0,LOW,44928.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Addiction & Behavioral Health Treatment Centers,60000,180000,77,Retainer,45,Google Ads/LinkedIn/Email,3,46200.0,4500.0,37200.0,39765.0,LOW,36960.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Telehealth Platform Companies,72000,216000,76,Retainer,55,LinkedIn/Google Ads/Cold Email,3,54720.0,4500.0,45720.0,48285.0,LOW,43776.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Compounding Pharmacies,42000,126000,75,Retainer,45,LinkedIn/Google Ads/Email,2,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Organic & Regenerative Farms,36000,108000,72,Retainer,40,Instagram/LinkedIn/Email,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Indoor Hydroponic Growers,48000,144000,72,Retainer,45,LinkedIn/Instagram/Cold Email,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Specialty Crop Farms (Hemp Lavender Hops),42000,126000,72,Retainer,40,Instagram/LinkedIn/Email,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Masonry & Stonework Contractors,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Specialty Flooring Contractors,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Insulation Contractors,36000,108000,70,Retainer,40,LinkedIn/Google Ads/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Painting Contractors,36000,108000,70,Retainer,40,LinkedIn/Google Ads/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Tile & Terrazzo Contractors,36000,108000,70,Retainer,40,LinkedIn/Google Ads/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Door & Hardware Contractors,36000,108000,70,Retainer,40,LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Landscape Architecture Firms,48000,144000,73,Retainer,45,LinkedIn/Instagram/Cold Email,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Roadside Assistance & Towing Companies,30000,90000,68,Retainer,35,Google Ads/Facebook/LinkedIn,2,20400.0,4500.0,11400.0,13965.0,LOW,16320.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Cybersecurity Consulting Firms (SMB),60000,180000,78,Retainer,50,LinkedIn/Cold Email/Content,3,46800.0,4500.0,37800.0,40365.0,LOW,37440.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+AI & Machine Learning Consulting Firms,84000,252000,76,Retainer,65,LinkedIn/Cold Email,3,63840.0,4500.0,54840.0,57405.0,LOW,51072.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+SaaS Product Development Studios,72000,216000,76,Retainer,55,LinkedIn/Cold Email/Content,3,54720.0,4500.0,45720.0,48285.0,LOW,43776.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Low-Code & No-Code App Development Firms,60000,180000,75,Retainer,50,LinkedIn/Cold Email/Content,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Blockchain & Web3 Development Firms,72000,216000,74,Retainer,55,LinkedIn/Cold Email/Twitter,3,53280.0,4500.0,44280.0,46845.0,LOW,42624.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Commercial Printing & Label Manufacturers,42000,126000,70,Retainer,45,LinkedIn/Cold Email/Google Ads,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Powder Coating & Surface Treatment Firms,36000,108000,70,Retainer,45,LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Custom Furniture & Millwork Manufacturers,42000,126000,71,Retainer,45,Instagram/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Golf Course Management Companies,48000,144000,71,Retainer,45,LinkedIn/Instagram/Email,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Theme & Amusement Park Operators,72000,216000,70,Retainer,60,LinkedIn/Instagram/Google Ads,3,50400.0,4500.0,41400.0,43965.0,LOW,40320.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Fitness Equipment Distributors,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Ski Resort & Mountain Operations,54000,162000,71,Retainer,50,Instagram/LinkedIn/Google Ads,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,4,10.0,10.0,6.0,8.0,8.8
+Marina & Boat Storage Operators,36000,108000,70,Retainer,40,Instagram/LinkedIn/Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+CCTV & Video Surveillance Installers,42000,126000,71,Retainer,40,LinkedIn/Google Ads/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Background Check & Screening Firms,42000,126000,72,Retainer,40,LinkedIn/Cold Email,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Immigration Law Firms,48000,144000,80,Retainer,40,LinkedIn/Google Ads/Referral,2,38400.0,4500.0,29400.0,31965.0,LOW,30720.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Estate Planning & Probate Attorneys,42000,126000,80,Retainer,40,Google Ads/LinkedIn/Referral,2,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Financial Planning Practices,48000,144000,78,Retainer,45,LinkedIn/Google Ads/Referral,2,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Property Management Companies,48000,144000,71,Retainer,50,LinkedIn/Google Ads/Cold Email,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Appraisal Firms,42000,126000,74,Retainer,50,LinkedIn/Cold Email/Referral,2,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Land Survey Companies,36000,108000,72,Retainer,45,LinkedIn/Cold Email/Google Ads,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Title Insurance Companies,42000,126000,70,Retainer,45,LinkedIn/Cold Email/Referral,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Mortgage Brokerage Firms,48000,144000,72,Retainer,40,LinkedIn/Google Ads/Referral,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Cleaning & Janitorial Companies,30000,90000,68,Retainer,35,LinkedIn/Google Ads/Cold Email,2,20400.0,4500.0,11400.0,13965.0,LOW,16320.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Pest Control Companies,30000,90000,69,Retainer,35,Google Ads/LinkedIn/Cold Email,2,20700.0,4500.0,11700.0,14265.0,LOW,16560.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Landscaping & Snow Removal Companies,36000,108000,69,Retainer,40,LinkedIn/Google Ads/Cold Email,2,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Fire & Water Damage Restoration Companies,42000,126000,71,Retainer,35,Google Ads/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Locksmith & Access Control Companies,30000,90000,71,Retainer,35,Google Ads/LinkedIn/Cold Email,2,21300.0,4500.0,12300.0,14865.0,LOW,17040.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Vending Machine & Micro-Market Operators,30000,90000,69,Retainer,35,LinkedIn/Cold Email,2,20700.0,4500.0,11700.0,14265.0,LOW,16560.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Laundry Service Providers,36000,108000,69,Retainer,40,LinkedIn/Cold Email,2,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Grounds Maintenance for Commercial Properties,30000,90000,69,Retainer,35,LinkedIn/Google Ads/Cold Email,2,20700.0,4500.0,11700.0,14265.0,LOW,16560.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Window Cleaning & High-Rise Maintenance Companies,30000,90000,70,Retainer,35,LinkedIn/Cold Email,2,21000.0,4500.0,12000.0,14565.0,LOW,16800.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+HVAC Maintenance Contract Companies,42000,126000,70,Retainer,40,LinkedIn/Google Ads/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Specialty Coffee Equipment Distributors,42000,126000,71,Retainer,45,LinkedIn/Instagram/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Corporate Catering Companies,42000,126000,71,Retainer,40,LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Corporate Event Production Companies,54000,162000,72,Retainer,50,LinkedIn/Cold Email,2,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Audio-Visual Production Companies,48000,144000,72,Retainer,45,LinkedIn/Cold Email/Instagram,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Music Recording Studios,36000,108000,72,Retainer,35,Instagram/LinkedIn/Email,2,25920.0,4500.0,16920.0,19485.0,LOW,20736.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Irrigation Installation & Service Companies,36000,108000,70,Retainer,40,Google Ads/LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Tree Service & Arborist Companies,30000,90000,70,Retainer,35,Google Ads/Facebook/Cold Email,2,21000.0,4500.0,12000.0,14565.0,LOW,16800.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Horse & Equine Facility Operators,36000,108000,71,Retainer,40,Instagram/LinkedIn/Email,2,25560.0,4500.0,16560.0,19125.0,LOW,20448.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Home Inspection Companies,24000,72000,72,Retainer,30,Google Ads/Facebook/Email,2,17280.0,4500.0,8280.0,10845.0,LOW,13824.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Radon Mitigation Contractors,24000,72000,71,Retainer,30,Google Ads/Facebook/Cold Email,2,17040.0,4500.0,8040.0,10605.0,LOW,13632.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Garage Door Installation & Service Companies,24000,72000,70,Retainer,30,Google Ads/Facebook/Cold Email,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Fence Installation Companies,24000,72000,70,Retainer,30,Google Ads/Facebook/Cold Email,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Driveway & Paving Contractors,30000,90000,69,Retainer,35,Google Ads/Facebook/Cold Email,2,20700.0,4500.0,11700.0,14265.0,LOW,16560.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Chimney Sweep & Fireplace Service Companies,24000,72000,70,Retainer,30,Google Ads/Facebook/Email,2,16800.0,4500.0,7800.0,10365.0,LOW,13440.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Self-Storage Facility Operators,42000,126000,70,Retainer,45,Google Ads/LinkedIn/Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Shredding & Data Destruction Companies,36000,108000,70,Retainer,45,LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Commercial Interior Design Firms,48000,144000,74,Retainer,45,LinkedIn/Instagram/Cold Email,2,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Signage & Wayfinding Companies,36000,108000,70,Retainer,40,LinkedIn/Cold Email/Google Ads,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Printing & Promotional Products Companies,36000,108000,70,Retainer,35,LinkedIn/Cold Email/Google Ads,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Tradeshow Staffing Companies,42000,126000,71,Retainer,40,LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Work Zone Traffic Control Companies,36000,108000,70,Retainer,40,LinkedIn/Cold Email/Google Ads,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+LED Lighting Retrofit Contractors,36000,108000,71,Retainer,40,LinkedIn/Google Ads/Cold Email,2,25560.0,4500.0,16560.0,19125.0,LOW,20448.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Generator Installation & Service Companies,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Sleep Study Centers,42000,126000,75,Retainer,40,Google Ads/LinkedIn/Email,2,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Occupational Health Clinics,42000,126000,74,Retainer,40,LinkedIn/Google Ads/Cold Email,2,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Medical Billing & Coding Companies,42000,126000,74,Retainer,45,LinkedIn/Cold Email/Google Ads,2,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Craft Spirits Accelerator Programs,48000,144000,75,Retainer,45,LinkedIn/Instagram/Cold Email,2,36000.0,4500.0,27000.0,29565.0,LOW,28800.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Sustainable Packaging Suppliers for Spirits,48000,144000,71,Retainer,50,LinkedIn/Instagram/Cold Email,2,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Spirits Certification Programs,30000,90000,74,Retainer,35,LinkedIn/Instagram/Email,2,22200.0,4500.0,13200.0,15765.0,LOW,17760.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Spirits Label Printing Companies,36000,108000,70,Retainer,40,LinkedIn/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Secondary Market Spirits Dealers,42000,126000,71,Retainer,40,Instagram/LinkedIn/Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Direct Mail Marketing Companies,42000,126000,71,Retainer,40,LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Retail Merchandising Agencies,48000,144000,73,Retainer,45,LinkedIn/Cold Email,2,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Field Marketing & Brand Ambassador Companies,48000,144000,72,Retainer,45,LinkedIn/Cold Email/Instagram,2,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Orthotic & Prosthetic Clinics,42000,126000,75,Retainer,40,LinkedIn/Google Ads/Email,2,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Sleep Medicine Clinics,42000,126000,75,Retainer,40,Google Ads/LinkedIn/Email,2,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Allergy & Immunology Practices,42000,126000,76,Retainer,40,Google Ads/LinkedIn/Email,2,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Hyperbaric Oxygen Therapy Centers,36000,108000,74,Retainer,40,Google Ads/Instagram/Email,2,26640.0,4500.0,17640.0,20205.0,LOW,21312.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Compounding Veterinary Pharmacies,36000,108000,73,Retainer,40,LinkedIn/Google Ads/Email,2,26280.0,4500.0,17280.0,19845.0,LOW,21024.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Animal Rehabilitation Centers,30000,90000,72,Retainer,35,Instagram/Google Ads/Email,2,21600.0,4500.0,12600.0,15165.0,LOW,17280.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Construction Safety Training Companies,42000,126000,73,Retainer,40,LinkedIn/Cold Email,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+OSHA Compliance Consultants,42000,126000,74,Retainer,45,LinkedIn/Cold Email,2,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Fall Protection Equipment Distributors,42000,126000,70,Retainer,45,LinkedIn/Cold Email/Trade Shows,2,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Cloud Accounting Software Resellers,42000,126000,73,Retainer,40,LinkedIn/Cold Email/Google Ads,2,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Bookkeeping Service Companies,30000,90000,72,Retainer,30,LinkedIn/Google Ads/Referral,2,21600.0,4500.0,12600.0,15165.0,LOW,17280.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Virtual CFO Services,54000,162000,78,Retainer,45,LinkedIn/Cold Email/Referral,2,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Tax Credit Consulting Firms (R&D ERC),54000,162000,78,Retainer,45,LinkedIn/Cold Email,2,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Carbon Credit Brokerages,54000,162000,74,Retainer,55,LinkedIn/Cold Email/Events,2,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Green Building Certification Consultants,48000,144000,74,Retainer,50,LinkedIn/Cold Email,2,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Water Well Drilling & Pump Companies,36000,108000,70,Retainer,40,LinkedIn/Google Ads/Cold Email,2,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Septic System Installation Companies,30000,90000,70,Retainer,35,Google Ads/Facebook/Cold Email,2,21000.0,4500.0,12000.0,14565.0,LOW,16800.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Geothermal Heating Installation Companies,42000,126000,71,Retainer,45,Google Ads/LinkedIn/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Radon & Indoor Air Quality Testing Companies,24000,72000,71,Retainer,30,Google Ads/Facebook/Email,2,17040.0,4500.0,8040.0,10605.0,LOW,13632.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Flood Mitigation Contractors,42000,126000,71,Retainer,45,LinkedIn/Google Ads/Cold Email,2,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Structural Inspection Companies,42000,126000,72,Retainer,45,LinkedIn/Cold Email/Google Ads,2,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,2,3,10.0,10.0,8.0,6.0,8.8
+Contract Distillers,60000,180000,72,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Toll Distilling Services,48000,144000,70,Retainer,45,LinkedIn/Cold Email/Industry Events,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+White Label Spirits Producers,54000,162000,72,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Private Label Whiskey Producers,60000,180000,73,Retainer,55,LinkedIn/Cold Email/Industry Events,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Bourbon Distilleries,66000,198000,74,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,48840.0,4500.0,39840.0,42405.0,LOW,39072.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Gin Distilleries,54000,162000,72,Retainer,50,LinkedIn/Cold Email/Industry Events,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Rum Distilleries,54000,162000,72,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Vodka Producers,54000,162000,71,Retainer,50,LinkedIn/Cold Email/Industry Events,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Tequila Producers,60000,180000,73,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Craft Spirits Incubators,42000,126000,75,Retainer,45,LinkedIn/Cold Email/Accelerator Networks,3,31500.0,4500.0,22500.0,25065.0,LOW,25200.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Craft Spirits Distributors,48000,144000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Alcohol Importers,60000,180000,71,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Wine & Spirits Wholesalers,60000,180000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Alcohol Beverage Logistics Firms,48000,144000,70,Retainer,55,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cross-Border Spirits Importers,54000,162000,71,Retainer,60,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Craft Beer Distributors,42000,126000,69,Retainer,50,LinkedIn/Cold Email,3,28980.0,4500.0,19980.0,22545.0,LOW,23184.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Last-Mile Beverage Delivery Services,42000,126000,70,Retainer,45,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Spirits E-commerce Fulfillment Centers,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cooperage & Barrel Manufacturers,54000,162000,71,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Distillery Equipment Manufacturers,66000,198000,72,Retainer,70,LinkedIn/Cold Email/Trade Shows,3,47520.0,4500.0,38520.0,41085.0,LOW,38016.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Grain & Malt Suppliers for Distilleries,48000,144000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Botanical Ingredient Suppliers,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Spirits Bottle & Glass Manufacturers,54000,162000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cork & Closure Suppliers for Spirits,36000,108000,69,Retainer,45,LinkedIn/Cold Email,3,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Filtration Equipment Suppliers for Distilleries,42000,126000,70,Retainer,55,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Copper Still Manufacturers,54000,162000,72,Retainer,65,LinkedIn/Cold Email/Trade Shows,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Fermentation Equipment Suppliers,42000,126000,70,Retainer,55,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Flavoring & Extract Suppliers for Spirits,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Spirit Capsule & Seal Manufacturers,36000,108000,69,Retainer,45,LinkedIn/Cold Email,3,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Airport Duty-Free Spirits Retailers,60000,180000,70,Retainer,60,LinkedIn/Cold Email,3,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+TTB Compliance Consultants,48000,144000,78,Retainer,55,LinkedIn/Cold Email,3,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Alcohol Attorneys,60000,180000,80,Retainer,60,LinkedIn/Cold Email/Referral,3,48000.0,4500.0,39000.0,41565.0,LOW,38400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Spirits Brand Launch Consultants,54000,162000,78,Retainer,50,LinkedIn/Cold Email,3,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Distillery Start-up Advisors,48000,144000,78,Retainer,55,LinkedIn/Cold Email,3,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Alcohol Licensing Specialists,42000,126000,78,Retainer,45,LinkedIn/Cold Email,3,32760.0,4500.0,23760.0,26325.0,LOW,26208.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Alcohol Compliance Software Companies,72000,216000,78,Retainer,60,LinkedIn/Cold Email,3,56160.0,4500.0,47160.0,49725.0,LOW,44928.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Industry Trade Show Organizers,60000,180000,73,Retainer,55,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Distillery Management Software Companies,66000,198000,76,Retainer,60,LinkedIn/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Spirits Inventory Management Platforms,54000,162000,75,Retainer,55,LinkedIn/Cold Email,3,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Industry Analytics Firms,66000,198000,76,Retainer,65,LinkedIn/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Distillery HVAC & Infrastructure Contractors,48000,144000,70,Retainer,55,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Orthopedic Surgery Centers,72000,216000,78,Retainer,60,LinkedIn/Google Ads/Cold Email,3,56160.0,4500.0,47160.0,49725.0,LOW,44928.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Home Health Aide Agencies,42000,126000,74,Retainer,45,LinkedIn/Google Ads/Cold Email,3,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Memory Care Facilities,60000,180000,75,Retainer,55,LinkedIn/Google Ads/Email,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Pain Management Clinics,48000,144000,76,Retainer,45,Google Ads/LinkedIn/Email,3,36480.0,4500.0,27480.0,30045.0,LOW,29184.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Healthcare Staffing Agencies,60000,180000,74,Retainer,50,LinkedIn/Cold Email,3,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Medical Device Distributors,66000,198000,72,Retainer,65,LinkedIn/Cold Email/Trade Shows,3,47520.0,4500.0,38520.0,41085.0,LOW,38016.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Durable Medical Equipment Companies,48000,144000,72,Retainer,50,LinkedIn/Google Ads/Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Specialty Pharmacy Operators,54000,162000,74,Retainer,55,LinkedIn/Cold Email,3,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Healthcare Revenue Cycle Consulting Firms,66000,198000,76,Retainer,60,LinkedIn/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Precision Agriculture Technology Companies,66000,198000,74,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,48840.0,4500.0,39840.0,42405.0,LOW,39072.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Vertical Farming Operations,60000,180000,73,Retainer,55,LinkedIn/Cold Email/Instagram,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Agricultural Equipment Dealers,54000,162000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Food Safety Testing Laboratories,48000,144000,72,Retainer,55,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cold Chain Logistics for Food,54000,162000,70,Retainer,55,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Contract Food Manufacturers,54000,162000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Greenhouse Operators,48000,144000,70,Retainer,50,LinkedIn/Cold Email/Instagram,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Farm Management Software Companies,60000,180000,74,Retainer,60,LinkedIn/Cold Email,3,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Irrigation Systems Installers,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Roofing Contractors,48000,144000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Waterproofing & Building Envelope Contractors,48000,144000,71,Retainer,50,LinkedIn/Cold Email/Google Ads,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Concrete Flatwork & Foundation Contractors,42000,126000,69,Retainer,45,LinkedIn/Google Ads/Cold Email,3,28980.0,4500.0,19980.0,22545.0,LOW,23184.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Window & Curtain Wall Installers,54000,162000,71,Retainer,55,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Fire Protection & Suppression Contractors,54000,162000,72,Retainer,55,LinkedIn/Cold Email,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial HVAC Contractors,54000,162000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Electrical Contractors (Commercial),54000,162000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Plumbing Contractors (Commercial),48000,144000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Demolition & Deconstruction Contractors,48000,144000,69,Retainer,50,LinkedIn/Cold Email,3,33120.0,4500.0,24120.0,26685.0,LOW,26496.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Asbestos & Mold Remediation Contractors,48000,144000,71,Retainer,40,LinkedIn/Google Ads/Cold Email,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Underground Utility Contractors,54000,162000,70,Retainer,55,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Site Preparation & Grading Contractors,42000,126000,70,Retainer,45,LinkedIn/Google Ads/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Soil Remediation Contractors,54000,162000,71,Retainer,55,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Environmental Consulting Firms,60000,180000,73,Retainer,60,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Stormwater Management Contractors,48000,144000,71,Retainer,50,LinkedIn/Cold Email,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Air Quality Monitoring & Compliance Firms,54000,162000,72,Retainer,55,LinkedIn/Cold Email,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Recycling & Waste Brokerage Companies,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+E-Waste Recycling Facilities,42000,126000,71,Retainer,45,LinkedIn/Cold Email/Instagram,3,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Solar Panel Recycling Companies,48000,144000,72,Retainer,50,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Environmental Engineering Firms,66000,198000,73,Retainer,65,LinkedIn/Cold Email,3,48180.0,4500.0,39180.0,41745.0,LOW,38544.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Freight Brokerage Firms,54000,162000,70,Retainer,45,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Last-Mile Delivery Companies,48000,144000,69,Retainer,45,LinkedIn/Cold Email/Google Ads,3,33120.0,4500.0,24120.0,26685.0,LOW,26496.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cold Chain Logistics Providers,60000,180000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+3PL Warehousing & Fulfillment Centers,54000,162000,70,Retainer,50,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Fleet Management Software Companies,66000,198000,74,Retainer,60,LinkedIn/Cold Email,3,48840.0,4500.0,39840.0,42405.0,LOW,39072.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Truck Dealerships,48000,144000,69,Retainer,45,LinkedIn/Google Ads/Cold Email,3,33120.0,4500.0,24120.0,26685.0,LOW,26496.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Truck & Fleet Leasing Companies,54000,162000,70,Retainer,55,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Driver Staffing & Trucking Recruitment Agencies,54000,162000,72,Retainer,45,LinkedIn/Cold Email,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Supply Chain Consulting Firms,72000,216000,75,Retainer,65,LinkedIn/Cold Email,3,54000.0,4500.0,45000.0,47565.0,LOW,43200.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Customs Brokerage & Trade Compliance Firms,60000,180000,73,Retainer,60,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cross-Border Logistics Companies,60000,180000,71,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Drone Delivery & UAV Logistics Companies,66000,198000,73,Retainer,60,LinkedIn/Cold Email/Instagram,3,48180.0,4500.0,39180.0,41745.0,LOW,38544.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Managed Service Providers (MSPs),54000,162000,75,Retainer,45,LinkedIn/Cold Email/Referral,3,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Cloud Migration & DevOps Agencies,66000,198000,76,Retainer,55,LinkedIn/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+QA & Software Testing Firms,48000,144000,75,Retainer,45,LinkedIn/Cold Email,3,36000.0,4500.0,27000.0,29565.0,LOW,28800.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+CRM Integration Specialists,60000,180000,76,Retainer,55,LinkedIn/Cold Email,3,45600.0,4500.0,36600.0,39165.0,LOW,36480.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Business Intelligence & Analytics Firms,72000,216000,76,Retainer,60,LinkedIn/Cold Email,3,54720.0,4500.0,45720.0,48285.0,LOW,43776.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+IT Staffing & Recruiting Agencies,60000,180000,72,Retainer,45,LinkedIn/Cold Email,3,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Tech Stack Consulting Firms,60000,180000,75,Retainer,55,LinkedIn/Cold Email,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+AR/VR Development Studios,66000,198000,74,Retainer,55,LinkedIn/Cold Email/Instagram,3,48840.0,4500.0,39840.0,42405.0,LOW,39072.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Digital Transformation Consulting Firms,84000,252000,75,Retainer,70,LinkedIn/Cold Email,3,63000.0,4500.0,54000.0,56565.0,LOW,50400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Precision Metal Fabricators,54000,162000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+CNC Machining Job Shops,48000,144000,70,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Injection Molding Companies,54000,162000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Custom Packaging Manufacturers,48000,144000,71,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Gasket & Seal Manufacturers,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Composite Materials Manufacturers,60000,180000,71,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Tooling & Die Manufacturing Companies,54000,162000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Valve & Pump Manufacturers,60000,180000,71,Retainer,65,LinkedIn/Cold Email/Trade Shows,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Hydraulic & Pneumatic Systems Manufacturers,54000,162000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Specialty Wire & Cable Manufacturers,54000,162000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Textile & Technical Fabric Manufacturers,48000,144000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Foam & Cushioning Manufacturers,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Plastic Extrusion Companies,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Rubber Parts Manufacturers,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Private Security Firms (Commercial),54000,162000,70,Retainer,50,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Security Systems Integrators,54000,162000,71,Retainer,50,LinkedIn/Cold Email/Google Ads,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Access Control System Companies,48000,144000,71,Retainer,45,LinkedIn/Cold Email/Google Ads,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Security Guard Staffing Agencies,42000,126000,69,Retainer,40,LinkedIn/Cold Email/Google Ads,3,28980.0,4500.0,19980.0,22545.0,LOW,23184.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Drone Security & Perimeter Monitoring Firms,60000,180000,73,Retainer,55,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Loss Prevention Consulting Firms,48000,144000,72,Retainer,50,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Employment & HR Law Firms,60000,180000,80,Retainer,55,LinkedIn/Cold Email/Referral,3,48000.0,4500.0,39000.0,41565.0,LOW,38400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Business Valuation Firms,54000,162000,78,Retainer,55,LinkedIn/Cold Email/Referral,3,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Management Consulting Boutiques,84000,252000,78,Retainer,75,LinkedIn/Cold Email,3,65520.0,4500.0,56520.0,59085.0,LOW,52416.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Executive Search & Headhunting Firms,66000,198000,76,Retainer,55,LinkedIn/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Professional Employer Organizations (PEOs),72000,216000,74,Retainer,60,LinkedIn/Cold Email,3,53280.0,4500.0,44280.0,46845.0,LOW,42624.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Outsourced CFO & Accounting Firms,60000,180000,78,Retainer,50,LinkedIn/Cold Email/Referral,3,46800.0,4500.0,37800.0,40365.0,LOW,37440.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Tax Resolution & IRS Representation Firms,48000,144000,78,Retainer,40,Google Ads/LinkedIn/Cold Email,3,37440.0,4500.0,28440.0,31005.0,LOW,29952.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Insurance Brokerages,60000,180000,72,Retainer,50,LinkedIn/Cold Email/Referral,3,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Wealth Management & RIA Firms,72000,216000,78,Retainer,60,LinkedIn/Cold Email/Referral,3,56160.0,4500.0,47160.0,49725.0,LOW,44928.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Real Estate Brokerages,66000,198000,73,Retainer,60,LinkedIn/Cold Email,3,48180.0,4500.0,39180.0,41745.0,LOW,38544.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Real Estate Investment Companies,72000,216000,73,Retainer,60,LinkedIn/Cold Email,3,52560.0,4500.0,43560.0,46125.0,LOW,42048.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Elevator Maintenance & Service Companies,48000,144000,71,Retainer,50,LinkedIn/Cold Email,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Facility Management Companies,60000,180000,70,Retainer,55,LinkedIn/Cold Email,3,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Parking Lot Management Companies,36000,108000,69,Retainer,45,LinkedIn/Cold Email,3,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Uniform & Workwear Rental Companies,42000,126000,70,Retainer,45,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Building Automation System Integrators,60000,180000,72,Retainer,60,LinkedIn/Cold Email,3,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Kitchen Equipment Dealers,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Restaurant Franchise Operators,54000,162000,70,Retainer,50,LinkedIn/Instagram/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Trade Show Display & Exhibit Companies,54000,162000,71,Retainer,50,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Corporate Training Companies,60000,180000,75,Retainer,50,LinkedIn/Cold Email,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Animal Hospital Groups,54000,162000,74,Retainer,50,Google Ads/LinkedIn/Instagram,3,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+EV Charging Station Installers,54000,162000,72,Retainer,50,LinkedIn/Cold Email/Google Ads,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Records Management & Document Storage Companies,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Office Furniture Dealers,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Merchandising & Retail Fixture Companies,42000,126000,70,Retainer,45,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Safety Equipment Distributors,48000,144000,70,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Scaffolding Rental & Erection Companies,36000,108000,69,Retainer,45,LinkedIn/Cold Email,3,24840.0,4500.0,15840.0,18405.0,LOW,19872.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Construction Equipment Rental Companies,48000,144000,69,Retainer,50,LinkedIn/Cold Email,3,33120.0,4500.0,24120.0,26685.0,LOW,26496.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Rigging & Millwright Services,48000,144000,70,Retainer,55,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Welding & Fabrication Shops,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Cleaning & Surface Prep Companies,42000,126000,70,Retainer,45,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Painting & Coating Contractors,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Pipeline Inspection Companies,60000,180000,71,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Non-Destructive Testing (NDT) Firms,54000,162000,72,Retainer,55,LinkedIn/Cold Email,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Calibration & Metrology Labs,48000,144000,72,Retainer,55,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Third-Party Logistics Audit Firms,54000,162000,73,Retainer,55,LinkedIn/Cold Email,3,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Quality Management System Consultants,48000,144000,74,Retainer,50,LinkedIn/Cold Email,3,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+ISO Certification Consultants,42000,126000,74,Retainer,45,LinkedIn/Cold Email,3,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Lean & Six Sigma Consulting Firms,54000,162000,75,Retainer,55,LinkedIn/Cold Email,3,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Energy Efficiency Consulting Firms,54000,162000,74,Retainer,55,LinkedIn/Cold Email,3,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Power Quality & Electrical Testing Firms,48000,144000,71,Retainer,50,LinkedIn/Cold Email,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+UPS System Integrators,48000,144000,71,Retainer,50,LinkedIn/Cold Email,3,34080.0,4500.0,25080.0,27645.0,LOW,27264.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Telecommunications Infrastructure Contractors,66000,198000,71,Retainer,65,LinkedIn/Cold Email/Trade Shows,3,46860.0,4500.0,37860.0,40425.0,LOW,37488.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Fiber Optic Installation Companies,54000,162000,71,Retainer,55,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+DAS & Small Cell Network Installers,60000,180000,71,Retainer,60,LinkedIn/Cold Email,3,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Hospice & Palliative Care Organizations,48000,144000,76,Retainer,50,LinkedIn/Google Ads/Cold Email,3,36480.0,4500.0,27480.0,30045.0,LOW,29184.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Ambulatory Surgery Centers,66000,198000,76,Retainer,60,LinkedIn/Google Ads/Cold Email,3,50160.0,4500.0,41160.0,43725.0,LOW,40128.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Radiology & Imaging Centers,60000,180000,76,Retainer,55,LinkedIn/Google Ads/Cold Email,3,45600.0,4500.0,36600.0,39165.0,LOW,36480.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Home Infusion Therapy Companies,54000,162000,74,Retainer,55,LinkedIn/Cold Email,3,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Lab Testing & Diagnostics Companies,60000,180000,74,Retainer,60,LinkedIn/Cold Email/Trade Shows,3,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Teleradiology Companies,60000,180000,75,Retainer,55,LinkedIn/Cold Email,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Healthcare Consulting Firms,72000,216000,77,Retainer,65,LinkedIn/Cold Email,3,55440.0,4500.0,46440.0,49005.0,LOW,44352.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Micro-Distillery Equipment Leasing Companies,42000,126000,71,Retainer,50,LinkedIn/Cold Email,3,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Biomass & Spent Grain Upcycling Companies,42000,126000,72,Retainer,50,LinkedIn/Cold Email/Instagram,3,30240.0,4500.0,21240.0,23805.0,LOW,24192.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Beverage Industry Recruiters,48000,144000,72,Retainer,45,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Outdoor Advertising Companies,54000,162000,70,Retainer,50,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Digital Billboard Operators,54000,162000,70,Retainer,50,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Transit Advertising Companies,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Trade Marketing Agencies,54000,162000,73,Retainer,50,LinkedIn/Cold Email,3,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Reproductive Endocrinology Clinics,60000,180000,77,Retainer,50,Google Ads/Instagram/LinkedIn,3,46200.0,4500.0,37200.0,39765.0,LOW,36960.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Industrial Hygiene Consulting Firms,48000,144000,74,Retainer,50,LinkedIn/Cold Email,3,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Environmental Health & Safety (EHS) Software Companies,66000,198000,75,Retainer,60,LinkedIn/Cold Email,3,49500.0,4500.0,40500.0,43065.0,LOW,39600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Risk Management Consulting Firms,66000,198000,75,Retainer,60,LinkedIn/Cold Email,3,49500.0,4500.0,40500.0,43065.0,LOW,39600.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Workers Compensation Consulting Firms,48000,144000,74,Retainer,50,LinkedIn/Cold Email,3,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Ergonomics Consulting Firms,42000,126000,74,Retainer,45,LinkedIn/Cold Email,3,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Emergency Response Planning Companies,48000,144000,74,Retainer,50,LinkedIn/Cold Email,3,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Business Continuity Planning Consultants,54000,162000,75,Retainer,55,LinkedIn/Cold Email,3,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+401k & Retirement Plan Administrators,48000,144000,73,Retainer,50,LinkedIn/Cold Email,3,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Employee Benefits Brokerages,54000,162000,72,Retainer,50,LinkedIn/Cold Email,3,38880.0,4500.0,29880.0,32445.0,LOW,31104.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Executive Compensation Consultants,60000,180000,76,Retainer,60,LinkedIn/Cold Email,3,45600.0,4500.0,36600.0,39165.0,LOW,36480.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Commercial Solar Farm Developers,72000,216000,73,Retainer,65,LinkedIn/Cold Email,3,52560.0,4500.0,43560.0,46125.0,LOW,42048.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Energy Storage System Integrators,72000,216000,73,Retainer,65,LinkedIn/Cold Email,3,52560.0,4500.0,43560.0,46125.0,LOW,42048.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Microgrid Design & Installation Companies,66000,198000,73,Retainer,65,LinkedIn/Cold Email,3,48180.0,4500.0,39180.0,41745.0,LOW,38544.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+EV Fleet Electrification Companies,66000,198000,73,Retainer,60,LinkedIn/Cold Email,3,48180.0,4500.0,39180.0,41745.0,LOW,38544.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Voluntary Carbon Market Platforms,60000,180000,74,Retainer,60,LinkedIn/Cold Email,3,44400.0,4500.0,35400.0,37965.0,LOW,35520.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Sustainable Construction Consultants,54000,162000,74,Retainer,55,LinkedIn/Cold Email,3,39960.0,4500.0,30960.0,33525.0,LOW,31968.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Disaster Recovery & Business Continuity Firms,54000,162000,75,Retainer,55,LinkedIn/Cold Email,3,40500.0,4500.0,31500.0,34065.0,LOW,32400.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Code Compliance Consulting Firms,48000,144000,73,Retainer,50,LinkedIn/Cold Email,3,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,3,3,10.0,10.0,6.0,6.0,8.4
+Craft Spirits Trade Associations,42000,126000,74,Retainer,50,LinkedIn/Cold Email,3,31080.0,4500.0,22080.0,24645.0,LOW,24864.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Dental Service Organizations (DSOs),84000,252000,77,Retainer,70,LinkedIn/Cold Email,4,64680.0,4500.0,55680.0,58245.0,LOW,51744.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Aquaculture & Fish Farming Operations,42000,126000,70,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Livestock Feed Manufacturers,48000,144000,70,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Grain Storage & Elevator Operators,42000,126000,69,Retainer,55,LinkedIn/Cold Email,3,28980.0,4500.0,19980.0,22545.0,LOW,23184.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Seed & Biotech Companies,84000,252000,74,Retainer,75,LinkedIn/Cold Email,4,62160.0,4500.0,53160.0,55725.0,LOW,49728.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Agricultural Consulting Firms,42000,126000,73,Retainer,50,LinkedIn/Cold Email,3,30660.0,4500.0,21660.0,24225.0,LOW,24528.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Brownfield Redevelopment Consultants,60000,180000,73,Retainer,65,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Wetlands Mitigation Banking Companies,54000,162000,73,Retainer,60,LinkedIn/Cold Email,3,39420.0,4500.0,30420.0,32985.0,LOW,31536.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Industrial Tank Cleaning Companies,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Biogas & Anaerobic Digestion Plant Operators,60000,180000,72,Retainer,65,LinkedIn/Cold Email,3,43200.0,4500.0,34200.0,36765.0,LOW,34560.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Hazmat Transportation Companies,54000,162000,70,Retainer,55,LinkedIn/Cold Email,3,37800.0,4500.0,28800.0,31365.0,LOW,30240.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Flatbed & Oversize Load Carriers,48000,144000,69,Retainer,50,LinkedIn/Cold Email,3,33120.0,4500.0,24120.0,26685.0,LOW,26496.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Industrial IoT Integration Companies,72000,216000,74,Retainer,65,LinkedIn/Cold Email/Trade Shows,4,53280.0,4500.0,44280.0,46845.0,LOW,42624.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Robotics & Automation Integrators,84000,252000,74,Retainer,70,LinkedIn/Cold Email/Trade Shows,4,62160.0,4500.0,53160.0,55725.0,LOW,49728.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Data Center Construction & Colocation Companies,90000,270000,73,Retainer,75,LinkedIn/Cold Email,4,65700.0,4500.0,56700.0,59265.0,LOW,52560.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+ERP Implementation Consultants,84000,252000,75,Retainer,70,LinkedIn/Cold Email,4,63000.0,4500.0,54000.0,56565.0,LOW,50400.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Healthcare IT Consulting Firms,84000,252000,76,Retainer,70,LinkedIn/Cold Email,4,63840.0,4500.0,54840.0,57405.0,LOW,51072.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Fintech Software Development Companies,84000,252000,76,Retainer,65,LinkedIn/Cold Email,4,63840.0,4500.0,54840.0,57405.0,LOW,51072.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Electronics Contract Manufacturers,72000,216000,71,Retainer,70,LinkedIn/Cold Email/Trade Shows,4,51120.0,4500.0,42120.0,44685.0,LOW,40896.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Executive Protection Firms,60000,180000,73,Retainer,55,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Armored Vehicle Transport Companies,54000,162000,71,Retainer,60,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Correctional Facility Support Services,54000,162000,71,Retainer,60,LinkedIn/Cold Email,3,38340.0,4500.0,29340.0,31905.0,LOW,30672.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Satellite Communication Companies,72000,216000,72,Retainer,70,LinkedIn/Cold Email,4,51840.0,4500.0,42840.0,45405.0,LOW,41472.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Cell Tower Companies,66000,198000,71,Retainer,65,LinkedIn/Cold Email,4,46860.0,4500.0,37860.0,40425.0,LOW,37488.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Dialysis Center Operators,60000,180000,75,Retainer,60,LinkedIn/Cold Email,4,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Spirits Sensory Science Consultants,42000,126000,76,Retainer,45,LinkedIn/Cold Email,3,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Fermentation Science Labs,48000,144000,74,Retainer,55,LinkedIn/Cold Email,3,35520.0,4500.0,26520.0,29085.0,LOW,28416.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Bioscience & Enzyme Suppliers for Fermentation,42000,126000,71,Retainer,55,LinkedIn/Cold Email/Trade Shows,3,29820.0,4500.0,20820.0,23385.0,LOW,23856.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Distillery Waste Management Specialists,36000,108000,70,Retainer,45,LinkedIn/Cold Email,3,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Organic Grain Suppliers for Distilleries,42000,126000,70,Retainer,50,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Yeast & Culture Suppliers,36000,108000,70,Retainer,50,LinkedIn/Cold Email/Trade Shows,3,25200.0,4500.0,16200.0,18765.0,LOW,20160.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Water Treatment Systems for Distilleries,42000,126000,70,Retainer,55,LinkedIn/Cold Email,3,29400.0,4500.0,20400.0,22965.0,LOW,23520.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Specialty Cask Brokers,48000,144000,72,Retainer,50,LinkedIn/Cold Email,3,34560.0,4500.0,25560.0,28125.0,LOW,27648.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Spirits Logistics & Bond Warehouses,48000,144000,70,Retainer,50,LinkedIn/Cold Email,3,33600.0,4500.0,24600.0,27165.0,LOW,26880.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Alcohol Excise Tax Consultants,42000,126000,76,Retainer,45,LinkedIn/Cold Email,3,31920.0,4500.0,22920.0,25485.0,LOW,25536.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Nuclear Medicine Imaging Centers,60000,180000,75,Retainer,60,LinkedIn/Cold Email,3,45000.0,4500.0,36000.0,38565.0,LOW,36000.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Forensic Accounting Firms,54000,162000,78,Retainer,55,LinkedIn/Cold Email/Referral,3,42120.0,4500.0,33120.0,35685.0,LOW,33696.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Family Office Advisory Firms,84000,252000,79,Retainer,80,LinkedIn/Referral/Events,3,66360.0,4500.0,57360.0,59925.0,LOW,53088.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Wind Energy Project Developers,84000,252000,73,Retainer,75,LinkedIn/Cold Email,3,61320.0,4500.0,52320.0,54885.0,LOW,49056.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Hydrogen Fuel Cell Technology Companies,78000,234000,73,Retainer,80,LinkedIn/Cold Email,4,56940.0,4500.0,47940.0,50505.0,LOW,45552.0,4,4,3,10.0,10.0,4.0,6.0,8.0
+Wildfire Risk Assessment Firms,48000,144000,73,Retainer,50,LinkedIn/Cold Email,3,35040.0,4500.0,26040.0,28605.0,LOW,28032.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Seismic Engineering Firms,60000,180000,73,Retainer,60,LinkedIn/Cold Email,3,43800.0,4500.0,34800.0,37365.0,LOW,35040.0,4,3,2,10.0,10.0,6.0,4.0,8.0
+Spirits Industry Investment Firms,84000,252000,78,Retainer,75,LinkedIn/Cold Email,4,65520.0,4500.0,56520.0,59085.0,LOW,52416.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Beverage Alcohol ERP Providers,84000,252000,76,Retainer,70,LinkedIn/Cold Email,4,63840.0,4500.0,54840.0,57405.0,LOW,51072.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Meat Processing & Packing Plants,54000,162000,68,Retainer,60,LinkedIn/Cold Email/Trade Shows,4,36720.0,4500.0,27720.0,30285.0,LOW,29376.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Dairy Cooperatives & Processors,54000,162000,68,Retainer,60,LinkedIn/Cold Email,4,36720.0,4500.0,27720.0,30285.0,LOW,29376.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Structural Steel Fabricators & Erectors,66000,198000,70,Retainer,65,LinkedIn/Cold Email/Trade Shows,4,46200.0,4500.0,37200.0,39765.0,LOW,36960.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Hazardous Waste Disposal Companies,60000,180000,71,Retainer,60,LinkedIn/Cold Email,4,42600.0,4500.0,33600.0,36165.0,LOW,34080.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Industrial Wastewater Treatment Companies,66000,198000,71,Retainer,65,LinkedIn/Cold Email,4,46860.0,4500.0,37860.0,40425.0,LOW,37488.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Marine Freight & Port Logistics,66000,198000,70,Retainer,65,LinkedIn/Cold Email/Trade Shows,4,46200.0,4500.0,37200.0,39765.0,LOW,36960.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Air Cargo & Charter Services,72000,216000,71,Retainer,60,LinkedIn/Cold Email,4,51120.0,4500.0,42120.0,44685.0,LOW,40896.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Rail Logistics & Intermodal Companies,66000,198000,70,Retainer,65,LinkedIn/Cold Email,4,46200.0,4500.0,37200.0,39765.0,LOW,36960.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Aviation Maintenance & Repair Organizations,72000,216000,72,Retainer,70,LinkedIn/Cold Email/Trade Shows,4,51840.0,4500.0,42840.0,45405.0,LOW,41472.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Intermodal Container Leasing Companies,60000,180000,70,Retainer,65,LinkedIn/Cold Email,4,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Cybersecurity for Critical Infrastructure,84000,252000,76,Retainer,75,LinkedIn/Cold Email,4,63840.0,4500.0,54840.0,57405.0,LOW,51072.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Defense Subcontractors (Non-Weapons),72000,216000,72,Retainer,80,LinkedIn/Cold Email,4,51840.0,4500.0,42840.0,45405.0,LOW,41472.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Border Security Technology Companies,72000,216000,72,Retainer,75,LinkedIn/Cold Email,4,51840.0,4500.0,42840.0,45405.0,LOW,41472.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Anti-Drone Technology Firms,72000,216000,73,Retainer,70,LinkedIn/Cold Email,4,52560.0,4500.0,43560.0,46125.0,LOW,42048.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Mergers & Acquisitions Advisory Firms,90000,270000,80,Retainer,90,LinkedIn/Cold Email,4,72000.0,4500.0,63000.0,65565.0,LOW,57600.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Crane & Heavy Lift Companies,60000,180000,70,Retainer,60,LinkedIn/Cold Email/Trade Shows,4,42000.0,4500.0,33000.0,35565.0,LOW,33600.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Surgical Robotics Training Centers,72000,216000,75,Retainer,65,LinkedIn/Cold Email,4,54000.0,4500.0,45000.0,47565.0,LOW,43200.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Private Equity Fund Administrators,84000,252000,78,Retainer,80,LinkedIn/Cold Email/Referral,4,65520.0,4500.0,56520.0,59085.0,LOW,52416.0,4,4,2,10.0,10.0,4.0,4.0,7.6
+Nuclear Waste Management Firms,84000,252000,72,Retainer,90,LinkedIn/Cold Email,4,60480.0,4500.0,51480.0,54045.0,LOW,48384.0,4,4,1,10.0,10.0,4.0,2.0,7.2
+Pharmaceutical Contract Manufacturers,90000,270000,72,Retainer,80,LinkedIn/Cold Email/Trade Shows,5,64800.0,4500.0,55800.0,58365.0,LOW,51840.0,4,5,2,10.0,10.0,2.0,4.0,7.2
+Medical Device Contract Manufacturers,84000,252000,72,Retainer,75,LinkedIn/Cold Email/Trade Shows,5,60480.0,4500.0,51480.0,54045.0,LOW,48384.0,4,5,2,10.0,10.0,2.0,4.0,7.2

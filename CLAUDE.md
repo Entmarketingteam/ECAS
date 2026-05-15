@@ -195,22 +195,23 @@ Files that call Anthropic API:
 - `0DmEuRRQqcLXCUUY` — ECAS 03 RSS Aggregator (every 15min)
 - `8nQHnHFmdnH8lWmL` — ECAS 05 Signal Processor / Claude Extraction (every 15min)
 - `kMssKmg50794zXl8` — ECAS 07 Contact Enricher (every 5min poll)
+- `contract-motion-signal-audit` — **NEW** Site Webhook Handler (`n8n-webhook-handler.json`)
+- `contract-motion-ferc-sniper` — **NEW** FERC/PJM Project Sniper (`n8n-ferc-sniper.json`)
 - n8n creds: Airtable `dAoeOLbTnBUK1gTy`, Anthropic `MwxIqQP3l6cUcwcZ`, Slack `EMdoV2Sq9neZV1Tn`
 
-## Industry Factory (Planned — Not Built)
-Spec: `docs/superpowers/specs/2026-04-16-industry-factory-design.md`
-Status: `industries/` folder does not exist yet. Wave 1 not started.
-Goal: YAML-driven per-industry config → `industry_runner.py` orchestrator → zero-debug first run
+## Niche Intelligence Lab (intelligence/niches/)
+Recent 17-part deep-dives and ColdIQ mapping completed for:
+- Document Shredding Services
+- Janitorial Services (High-Rise)
+- Restaurant Equipment Sales
+- Retirement Planning Services
+- 401(k) Plan Advisory
+- Tax Planning & Strategy
+- ... (20+ total niches refactored to ContractMotion identity)
 
-## Outstanding Blockers
-1. **Bridge missing:** `epc_company_leads` → Airtable `projects` (no `populate_projects.py` standalone script)
-2. **2 SMTP failures:** `karlee@contractmotionai.com`, `ethan.atchley@contractmotion.com` need new app passwords
-3. **0 inboxes connected to campaigns:** all 14 ContractMotion inboxes have `campaign_count=0`
-4. **Placeholder secrets:** `PROXYCURL_API_KEY`, `FULLENRICH_API_KEY`, `FMP_API_KEY` blocking enrichment steps
-5. **Airtable linked records:** projects↔signals, projects↔contacts, projects↔deals not linked yet
-
-## Marketing
-- **Website:** https://contractmotion-site-production.up.railway.app ✅ LIVE
-- **Tracking domain:** emailtracking.contractmotion.com
-- **Reply-to:** ethan@contractmotion.com
-- Lead magnet: "Contract Signal Report" — 5 active grid projects in territory before RFPs drop
+## Marketing Assets
+- **Website:** https://contractmotion.com ✅ LIVE
+- **Smartlead Campaign 3040599:** Data Center & AI Infrastructure ✅ 6-email sequence updated
+- **Lead magnet:** "HIPAA Document Disposal Gap Checklist" (docs/hipaa-document-disposal-gap-checklist.md)
+- **Lead magnet:** "2026 Retail Anchor Vacancy & NNN Recovery Map" (docs/2026-retail-anchor-vacancy-nnn-recovery-map.md)
+- **ABM Plan:** High-Rise Janitorial Infrastructure (intelligence/niches/janitorial-services-high-rise/ABM_Plan.md)

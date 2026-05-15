@@ -1,0 +1,197 @@
+{
+  "name": "ContractMotion: FERC/PJM Project Sniper (Signal Feed)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "minutes": 6
+            }
+          ]
+        }
+      },
+      "id": "cron-trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://dataminer2.pjm.com/api/v1/interconnection_queue",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "rowCount",
+                "value": "50"
+              },
+              {
+                "name": "sort",
+                "value": "actual_completion_date"
+              },
+              {
+                "name": "order",
+                "value": "DESC"
+              }
+            ]
+          }
+        }
+      },
+      "id": "pjm-api",
+      "name": "PJM Data Miner — Interconnects",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.mw }}",
+              "operator": "gt",
+              "rightValue": 100
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json.project_type }}",
+              "operator": "contains",
+              "rightValue": "Load"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "load-filter",
+      "name": "Filter High-MW Load",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the ContractMotion Signal Analyst. \n\nAnalyze this PJM Interconnection Queue entry and determine if it is likely a Data Center or Hyperscale Campus. \n\nSignals to look for:\n- MW > 200\n- Voltage > 138kV\n- County (Loudoun, Prince William, Franklin, etc.)\n\nProvide a 'Signal Confidence' score (1-10) and a brief summary."
+        },
+        "promptType": "define",
+        "text": "=Queue Entry:\nProject: {{ $json.project_name }}\nMW: {{ $json.mw }}\nCounty: {{ $json.county }}\nState: {{ $json.state }}\nStatus: {{ $json.status }}"
+      },
+      "id": "ai-analysis",
+      "name": "AI — Campus Detection",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "baseId": "appvIukQfc97MnGRJ",
+        "tableId": "Active Signals",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Project Name",
+              "fieldValue": "={{ $node['Filter High-MW Load'].json.project_name }}"
+            },
+            {
+              "fieldId": "MW",
+              "fieldValue": "={{ $node['Filter High-MW Load'].json.mw }}"
+            },
+            {
+              "fieldId": "Region",
+              "fieldValue": "={{ $node['Filter High-MW Load'].json.state }}"
+            },
+            {
+              "fieldId": "Signal Strength",
+              "fieldValue": "={{ $json.output }}"
+            },
+            {
+              "fieldId": "Type",
+              "fieldValue": "PJM Interconnect"
+            }
+          ]
+        }
+      },
+      "id": "airtable-sync",
+      "name": "Sync to Signal Base",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        950,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "cron-trigger": {
+      "main": [
+        [
+          {
+            "node": "pjm-api",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "pjm-api": {
+      "main": [
+        [
+          {
+            "node": "load-filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "load-filter": {
+      "main": [
+        [
+          {
+            "node": "ai-analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai-analysis": {
+      "main": [
+        [
+          {
+            "node": "airtable-sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cold Chain Logistics — Industrial Intelligence</title>
+<style>
+  :root {
+    --navy: #0f1f3d;
+    --navy2: #162844;
+    --navy3: #1e3a5f;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --white: #ffffff;
+    --gray: #94a3b8;
+    --gray2: #e2e8f0;
+    --core-bg: #1a3155;
+    --add-bg: #1e293b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--white); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy3) 100%); padding: 40px 40px 30px; border-bottom: 1px solid rgba(59,130,246,0.3); }
+  .header h1 { font-size: 28px; font-weight: 800; color: var(--white); letter-spacing: -0.5px; }
+  .header h1 span { color: var(--accent2); }
+  .header p { color: var(--gray); margin-top: 6px; font-size: 14px; }
+  .stats-row { display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap; }
+  .stat-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.2); border-radius: 10px; padding: 16px 24px; min-width: 140px; }
+  .stat-card .label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 26px; font-weight: 800; color: var(--accent2); margin-top: 4px; }
+  .stat-card .sub { font-size: 11px; color: var(--gray); margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; background: var(--navy2); border-bottom: 1px solid rgba(59,130,246,0.2); padding: 0 40px; }
+  .tab { padding: 16px 24px; font-size: 13px; font-weight: 600; color: var(--gray); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+
+  /* Tab content */
+  .tab-content { display: none; padding: 32px 40px; }
+  .tab-content.active { display: block; }
+
+  /* Search/filter bar */
+  .filter-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .search-input { background: var(--navy2); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 10px 16px; color: var(--white); font-size: 13px; width: 300px; outline: none; }
+  .search-input::placeholder { color: var(--gray); }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-select { background: var(--navy2); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 10px 16px; color: var(--white); font-size: 13px; outline: none; cursor: pointer; }
+  .filter-count { color: var(--gray); font-size: 12px; margin-left: auto; }
+
+  /* Table */
+  .table-wrapper { overflow-x: auto; border-radius: 10px; border: 1px solid rgba(59,130,246,0.2); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--navy3); color: var(--gray); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; text-align: left; white-space: nowrap; cursor: pointer; user-select: none; }
+  th:hover { color: var(--white); }
+  th.sorted-asc::after { content: " ↑"; color: var(--accent2); }
+  th.sorted-desc::after { content: " ↓"; color: var(--accent2); }
+  td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.core-row { background: var(--core-bg); }
+  tr.add-row { background: var(--add-bg); }
+  tr:hover td { background: rgba(59,130,246,0.08); }
+
+  .niche-name { font-weight: 500; color: var(--white); max-width: 320px; line-height: 1.4; }
+  .score { font-weight: 700; font-size: 14px; }
+  .score-high { color: #22c55e; }
+  .score-med { color: #f59e0b; }
+  .score-low { color: #ef4444; }
+
+  .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-core { background: rgba(59,130,246,0.25); color: var(--accent2); }
+  .badge-add { background: rgba(148,163,184,0.15); color: var(--gray); }
+  .badge-low-risk { background: rgba(34,197,94,0.2); color: #86efac; }
+  .badge-med-risk { background: rgba(245,158,11,0.2); color: #fcd34d; }
+  .badge-high-risk { background: rgba(239,68,68,0.2); color: #fca5a5; }
+
+  .mono { font-family: 'SF Mono', 'Fira Code', monospace; }
+  .currency { color: #a5f3fc; }
+  .pct { color: #c4b5fd; }
+  .days { color: #fda4af; }
+
+  /* Analysis tab */
+  .analysis-body { max-width: 900px; }
+  .analysis-body h1 { font-size: 26px; font-weight: 800; color: var(--white); margin-bottom: 12px; line-height: 1.3; }
+  .analysis-body h2 { font-size: 18px; font-weight: 700; color: var(--accent2); margin: 36px 0 12px; border-left: 4px solid var(--accent); padding-left: 14px; }
+  .analysis-body h3 { font-size: 14px; font-weight: 700; color: var(--white); margin: 24px 0 8px; }
+  .analysis-body p { color: #cbd5e1; line-height: 1.7; font-size: 14px; margin-bottom: 12px; }
+  .analysis-body ul, .analysis-body ol { color: #cbd5e1; font-size: 14px; line-height: 1.7; padding-left: 20px; margin-bottom: 12px; }
+  .analysis-body li { margin-bottom: 4px; }
+  .analysis-body blockquote { border-left: 4px solid var(--accent); padding: 12px 20px; background: rgba(59,130,246,0.08); border-radius: 0 8px 8px 0; margin: 16px 0; color: #e2e8f0; font-style: italic; font-size: 13px; line-height: 1.6; }
+  .analysis-body strong { color: var(--white); }
+  .exec-summary { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(96,165,250,0.06)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 24px 28px; margin-bottom: 32px; }
+  .exec-summary p { color: #cbd5e1; font-size: 14px; line-height: 1.75; margin: 0; }
+
+  /* Data table in analysis */
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .data-table th { background: var(--navy3); color: var(--gray); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px; text-align: left; }
+  .data-table td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); color: #cbd5e1; vertical-align: top; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+
+  /* Rationale tab */
+  .rationale-body { max-width: 900px; }
+  .rationale-body h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .rationale-body h2 { font-size: 16px; font-weight: 700; color: var(--accent2); margin: 36px 0 16px; padding: 10px 16px; background: rgba(59,130,246,0.1); border-radius: 8px; border-left: 4px solid var(--accent); }
+  .rationale-body h3 { font-size: 14px; font-weight: 700; color: var(--white); margin: 20px 0 6px; }
+  .rationale-body p { color: #cbd5e1; font-size: 13px; line-height: 1.7; margin-bottom: 10px; }
+  .rationale-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(59,130,246,0.15); border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; }
+  .rationale-card h3 { margin-top: 0; }
+
+  /* Pagination */
+  .pagination { display: flex; gap: 8px; align-items: center; margin-top: 20px; justify-content: center; }
+  .page-btn { background: var(--navy2); border: 1px solid rgba(59,130,246,0.3); border-radius: 6px; padding: 6px 12px; color: var(--gray); font-size: 12px; cursor: pointer; }
+  .page-btn:hover, .page-btn.active { background: var(--accent); color: var(--white); border-color: var(--accent); }
+  .page-info { color: var(--gray); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Cold Chain Logistics Providers — <span>Industrial Intelligence</span></h1>
+  <p>500 scored niches across Cold Chain Logistics core ecosystem and diverse adjacent industries &nbsp;|&nbsp; ContractMotion &nbsp;|&nbsp; March 2026</p>
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Total Niches</div>
+      <div class="value">500</div>
+      <div class="sub">Core: 100 / Additional: 400</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Composite Score</div>
+      <div class="value">8.37</div>
+      <div class="sub">Range: 7.20 – 9.20</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg LTV</div>
+      <div class="value">$83K</div>
+      <div class="sub">Agency client LTV</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Gross Margin</div>
+      <div class="value">74%</div>
+      <div class="sub">Agency delivery margin</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Market Focus</div>
+      <div class="value" style="font-size:16px;margin-top:6px;">Cold Chain</div>
+      <div class="sub">Logistics Providers</div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('scored')">Scored Niche Data</div>
+  <div class="tab" onclick="switchTab('analysis')">17-Part Deep Analysis</div>
+  <div class="tab" onclick="switchTab('rationale')">Core Niche Rationale</div>
+</div>
+
+<!-- TAB 1: SCORED DATA -->
+<div id="tab-scored" class="tab-content active">
+  <div class="filter-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search niches..." oninput="filterTable()">
+    <select class="filter-select" id="typeFilter" onchange="filterTable()">
+      <option value="all">All Types</option>
+      <option value="CORE">Core Only</option>
+      <option value="Additional">Additional Only</option>
+    </select>
+    <select class="filter-select" id="scoreFilter" onchange="filterTable()">
+      <option value="all">All Scores</option>
+      <option value="9">9.0+</option>
+      <option value="8.5">8.5+</option>
+      <option value="8">8.0+</option>
+      <option value="7.5">7.5+</option>
+    </select>
+    <span class="filter-count" id="filterCount">Showing all 500 niches</span>
+  </div>
+  <div class="table-wrapper">
+    <table id="nicheTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)" style="width:40px">#</th>
+          <th onclick="sortTable(1)">Niche</th>
+          <th onclick="sortTable(2)">Score</th>
+          <th onclick="sortTable(3)">LTV</th>
+          <th onclick="sortTable(4)">Margin</th>
+          <th onclick="sortTable(5)">Payment</th>
+          <th onclick="sortTable(6)">Sales Cycle</th>
+          <th onclick="sortTable(7)">Delivery Diff.</th>
+          <th onclick="sortTable(8)">Marketability</th>
+          <th onclick="sortTable(9)">Cashflow Risk</th>
+          <th onclick="sortTable(10)">Cushion</th>
+          <th onclick="sortTable(11)">Type</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- TAB 2: ANALYSIS -->
+<div id="tab-analysis" class="tab-content">
+  <div class="analysis-body">
+    <h1>Cold Chain Logistics Providers: Comprehensive 17-Part Deep Analysis</h1>
+    <div class="exec-summary">
+      <p>Cold chain logistics providers occupy a mission-critical position in global supply chains, responsible for the temperature-controlled movement of pharmaceuticals, biologics, food, and specialty chemicals. The $300B+ global cold chain market is fragmented across thousands of carriers, 3PL operators, and last-mile specialists who collectively win freight through broker relationships, carrier networks, and lane-based capacity agreements — but almost universally lack sophisticated outbound business development. This creates an exceptional opportunity for a cold email lead generation agency to offer supply chain directors, logistics managers, and procurement officers at food manufacturers, pharmaceutical companies, and biotech firms something they genuinely need: a systematic, high-volume pipeline of shipper leads.</p>
+    </div>
+
+    <h2>Part 1: Industry Economics and Business Model Analysis</h2>
+    <table class="data-table">
+      <thead><tr><th>Metric</th><th>Food-Grade Cold Chain</th><th>Pharma/Biotech Cold Chain</th></tr></thead>
+      <tbody>
+        <tr><td>Gross Margin</td><td>12–22% (asset-heavy carriers)</td><td>25–45% (high-value services)</td></tr>
+        <tr><td>Operating Margin</td><td>5–12%</td><td>12–25%</td></tr>
+        <tr><td>Net Profit</td><td>3–8%</td><td>8–18%</td></tr>
+        <tr><td>Typical Annual Revenue</td><td>$5M–$500M</td><td>$10M–$2B+</td></tr>
+        <tr><td>Customer LTV (Shipper)</td><td>3–8 years</td><td>5–10+ years</td></tr>
+      </tbody>
+    </table>
+    <p>Cold chain providers are asset-intensive businesses with high fixed costs (refrigerated trailers at $80K–$120K each, cold storage facilities at $150–$300 per sq ft to build). This creates consistent cash flow pressure and a desperate need for predictable lane-filling revenue. The best clients for a marketing agency earn $10M+ in annual revenue.</p>
+    <h3>Financial Red Flags</h3>
+    <ul>
+      <li>Single-lane dependency (>40% of revenue from one shipper account)</li>
+      <li>Negative or declining utilization (&lt;80% reefer utilization)</li>
+      <li>No GDP or FSMA compliance certifications (indicates food-only, lower margin work)</li>
+      <li>Heavy reliance on spot market freight brokers for >60% of volume</li>
+    </ul>
+    <h3>Discovery Call Financial Qualification Questions</h3>
+    <ol>
+      <li>"Walk me through your current lane mix — what percentage of your capacity is under contract versus spot?"</li>
+      <li>"When a shipper doesn't renew, how long does it typically take you to find a replacement account?"</li>
+      <li>"What does your average revenue per refrigerated trailer look like on an annual basis?"</li>
+      <li>"Are you operating with dedicated lanes or do you take brokered freight to fill capacity?"</li>
+    </ol>
+
+    <h2>Part 2: Customer Journey and Buying Behavior</h2>
+    <p><strong>Sales Cycle: 55–90 days</strong></p>
+    <h3>Primary Purchase Triggers</h3>
+    <ul>
+      <li>Loss of a major shipper account</li>
+      <li>New VP of Sales or BD director hired and building strategy</li>
+      <li>Board/PE pressure to grow revenue</li>
+      <li>Competitive pressure from a growing regional carrier</li>
+      <li>Capacity expansion (new trailers, new warehouse) requiring lane fills</li>
+      <li>Industry downturn causing broker volumes to dry up</li>
+    </ul>
+    <h3>Stakeholders</h3>
+    <ul>
+      <li>At $5M–$30M carriers: Owner/President — sole decision-maker (1–2 calls)</li>
+      <li>At $30M–$200M: VP of Sales + CFO sign-off required (2–3 calls)</li>
+      <li>At $200M+: Marketing committee, legal review — multi-stakeholder (90–120 days)</li>
+    </ul>
+
+    <h2>Part 3: Discovery Call Architecture</h2>
+    <h3>Opening Script</h3>
+    <blockquote>"I saw your fleet just expanded into the Pacific Northwest corridor — that's a significant capacity commitment. I'm curious what shipper relationships you're targeting to fill those new lanes."</blockquote>
+    <h3>Diagnostic Questions</h3>
+    <ul>
+      <li>"How does your team currently generate new shipper leads — are you working through brokers, direct outreach, referrals?"</li>
+      <li>"What percentage of your new shipper accounts come from outbound BD versus inbound or referrals?"</li>
+      <li>"If you could wave a magic wand and have 10 qualified conversations with supply chain directors at [target shipper type] next month, what does that look like in terms of revenue potential?"</li>
+    </ul>
+    <p><strong>Good answers:</strong> "We rely mostly on broker networks" / "Our VP of Sales is trying to build a pipeline but it's mostly relationships" / "We don't really have a systematic outbound process"</p>
+    <p><strong>Concerning answers:</strong> "We have a 6-person inside sales team already dialing" / "We have a broker that handles all our BD"</p>
+    <h3>Budget Anchor</h3>
+    <blockquote>"Companies in your position that we work with typically invest between $5,000 and $8,000 a month in this type of outbound program. Is that a range you could see working within if the results made sense?"</blockquote>
+
+    <h2>Part 4: Marketing Landscape and Current Practices</h2>
+    <table class="data-table">
+      <thead><tr><th>Channel</th><th>Effectiveness</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Industry Trade Shows (CSCMP, IWLA, PRW)</td><td>High</td><td>Best for relationship building, low scalability</td></tr>
+        <tr><td>Freight Broker Relationships</td><td>Medium</td><td>Generates spot freight, not contracted lanes</td></tr>
+        <tr><td>LinkedIn Outreach</td><td>Medium-Low</td><td>Most carriers have minimal LinkedIn presence</td></tr>
+        <tr><td>Cold Email (to shippers)</td><td><strong>High Opportunity</strong></td><td>Almost no carriers do this systematically</td></tr>
+        <tr><td>Referrals from Existing Shippers</td><td>Medium</td><td>Organic but unpredictable</td></tr>
+        <tr><td>Google Ads / SEO</td><td>Low</td><td>Shippers search for freight solutions, not carriers</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Marketing Sophistication:</strong> Low. Most cold chain carriers spend 0.5–1.5% of revenue on marketing. The majority of "marketing" is attending 2–4 trade shows per year and maintaining a basic website.</p>
+    <blockquote>"The biggest failure we've seen is agencies trying to run brand awareness campaigns for cold chain carriers — YouTube ads, social content. None of that reaches supply chain directors at Kraft Heinz or Pfizer. What actually works is precise outbound to the right titles at companies moving the right freight volumes."</blockquote>
+
+    <h2>Part 5: Credibility Building Without Portfolio</h2>
+    <h3>Analogous Industry Framing Script</h3>
+    <blockquote>"We haven't published a case study specifically from refrigerated trucking yet — that's actually part of why we're selective about the carriers we take on right now. But I can tell you: we ran a campaign for a B2B industrial services company targeting procurement directors at manufacturing plants, and we generated 23 qualified conversations in 90 days at an average deal size of $180K. The mechanics are identical — we're finding supply chain directors at food manufacturers or pharma companies, writing copy that speaks to their temperature control compliance pain, and booking meetings. The playbook transfers directly."</blockquote>
+    <h3>90-Day Pilot Positioning</h3>
+    <blockquote>"What I'd recommend is a 90-day pilot. We'll build a targeted list of 500 supply chain directors and logistics managers at food manufacturers/pharma companies that match your ideal lane profile, run a 3-touch cold email sequence, and you'll have clear data on open rates, reply rates, and meetings booked before you make any long-term commitment."</blockquote>
+
+    <h2>Part 6: Regulatory Environment</h2>
+    <table class="data-table">
+      <thead><tr><th>Regulatory Body</th><th>Acronym</th><th>Relevance</th></tr></thead>
+      <tbody>
+        <tr><td>FDA Food Safety Modernization Act</td><td>FSMA</td><td>Shippers must ensure cold chain compliance; carriers market this as solution</td></tr>
+        <tr><td>Good Distribution Practices</td><td>GDP</td><td>Pharma carriers must demonstrate compliance in marketing materials</td></tr>
+        <tr><td>Drug Enforcement Administration</td><td>DEA</td><td>Controlled substance carriers require special handling in all messaging</td></tr>
+        <tr><td>USDA Agricultural Marketing Service</td><td>AMS</td><td>Organic/natural food shippers require USDA-aligned carriers</td></tr>
+        <tr><td>Federal Motor Carrier Safety Administration</td><td>FMCSA</td><td>Carrier safety ratings are public and affect shipper selection</td></tr>
+        <tr><td>International Air Transport Association</td><td>IATA</td><td>Relevant for carriers with air freight integration</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 7: Industry Vocabulary</h2>
+    <table class="data-table">
+      <thead><tr><th>Term</th><th>Meaning</th><th>Context</th></tr></thead>
+      <tbody>
+        <tr><td>Reefer</td><td>Refrigerated trailer</td><td>Universal term — never say "refrigerated truck" to a carrier</td></tr>
+        <tr><td>LTL / TL</td><td>Less-than-truckload / Truckload</td><td>Core freight type differentiation</td></tr>
+        <tr><td>GDP</td><td>Good Distribution Practices</td><td>Pharma cold chain regulatory standard</td></tr>
+        <tr><td>FSMA</td><td>Food Safety Modernization Act</td><td>FDA law governing food cold chain compliance</td></tr>
+        <tr><td>Lane</td><td>Specific origin-destination corridor</td><td>Carriers think in lanes, not customers</td></tr>
+        <tr><td>Utilization</td><td>% of capacity being used</td><td>Core KPI — low utilization = pain = opportunity</td></tr>
+        <tr><td>Temp excursion</td><td>Temperature deviation during transit</td><td>Major liability for pharma carriers</td></tr>
+        <tr><td>Validation</td><td>Documentation proving temperature compliance</td><td>Required for pharma/biotech clients</td></tr>
+        <tr><td>Cross-dock</td><td>Transfer freight between trucks without storage</td><td>Speed-oriented operation</td></tr>
+        <tr><td>PCM</td><td>Phase Change Material</td><td>Passive temperature-control packaging material</td></tr>
+        <tr><td>CoC</td><td>Certificate of Compliance</td><td>Document certifying temp specs were met</td></tr>
+        <tr><td>CRT</td><td>Controlled Room Temperature (15–25°C)</td><td>Standard pharma storage condition</td></tr>
+      </tbody>
+    </table>
+    <h3>Cultural Landmines</h3>
+    <ul>
+      <li><strong>Calling reefer trailers "trucks"</strong> — Always say "trailer" not "truck." The truck is the tractor, the reefer is the trailer.</li>
+      <li><strong>Referring to "customers" instead of "shippers" or "accounts"</strong> — In logistics, the shipper is the customer.</li>
+      <li><strong>Conflating food-grade and pharma-grade cold chain</strong> — These are completely different regulatory worlds.</li>
+      <li><strong>Underestimating lane-filling economics</strong> — One contracted lane = $500K–$2M/year. Frame accordingly.</li>
+    </ul>
+
+    <h2>Part 8: Objection Handling</h2>
+    <table class="data-table">
+      <thead><tr><th>Objection</th><th>Reframing Response</th></tr></thead>
+      <tbody>
+        <tr><td>"We already work with a freight broker for our BD."</td><td>"Freight brokers work for the shippers, not you. They're filling the shipper's capacity needs, not building your lane portfolio. What we do is the opposite: we go outbound specifically on your behalf to find shippers who match your lane profile and book qualified calls for your team. It's not competitive with your broker relationships — it's additive."</td></tr>
+        <tr><td>"Our lanes are full right now."</td><td>"Perfect timing then. The best carriers we work with start the outbound process when capacity is full, so when a lane opens up — and lanes always open up — you have 3–5 qualified prospects ready to close rather than scrambling to spot-market freight. What's your plan if your top shipper reduces volume 20% next quarter?"</td></tr>
+        <tr><td>"We don't have a sales team to handle leads."</td><td>"Our campaigns are designed to be high-signal, low-volume — 5–10 qualified meetings per month, not 50 raw inquiries. Your VP of Operations or you personally can handle that call volume. We pre-qualify before booking."</td></tr>
+        <tr><td>"We tried email outreach before and it didn't work."</td><td>"Walk me through what that looked like. Cold chain outreach fails for two reasons: wrong target list or generic copy. If you were emailing freight managers instead of supply chain directors, or sending 'we have capacity' emails instead of leading with a specific compliance pain, the results would be exactly what you saw. Our approach is different on both counts."</td></tr>
+        <tr><td>"We get our business through relationships."</td><td>"Every relationship you currently have was a cold call or cold introduction at some point. What we do is systematically manufacture those first introductions at scale so your relationship-building skills have more material to work with."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 9: Competitive Dynamics</h2>
+    <table class="data-table">
+      <thead><tr><th>Competitor Type</th><th>Positioning Statement</th></tr></thead>
+      <tbody>
+        <tr><td>Incumbent freight broker</td><td>"Freight brokers fill spot capacity for shippers — they're not building your contracted lane book. We build you an outbound pipeline of shippers who need exactly your lane profile, on your terms."</td></tr>
+        <tr><td>Generalist marketing agency</td><td>"A generalist agency will build you a beautiful website that gets seen by other carriers, not by the supply chain directors at Kraft or AbbVie who are actually moving freight. We build lists of the exact titles at the exact companies shipping temperature-sensitive goods through your lanes."</td></tr>
+        <tr><td>Internal BD rep</td><td>"An internal BDR costs $80K–$100K/year fully loaded, takes 3–6 months to ramp, and produces 20–30 meetings per year. We produce comparable pipeline for less cost, in 30 days, with no hiring risk."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 10: Pain Points (in the owner's language)</h2>
+    <ol>
+      <li><strong>"We're full right now, but I'm always worried about what happens when a big account leaves."</strong> → Pipeline builds the bench. Active prospect conversations = 30–60 day account replacement vs. 180 days.</li>
+      <li><strong>"The freight broker gives us loads, but we're basically at their mercy on rates."</strong> → Direct shipper relationships = negotiated contracted rates, not broker margin compression.</li>
+      <li><strong>"Our VP of Sales does great with warm introductions but doesn't have a repeatable outbound process."</strong> → Cold email provides the outbound infrastructure so the VP focuses on closing, not prospecting.</li>
+      <li><strong>"We expanded our fleet and now we're scrambling to fill those new lanes."</strong> → Targeting matches specific lane profiles — origin, destination, temp spec, volume.</li>
+      <li><strong>"Pharma customers are the holy grail but we don't know how to break into that world."</strong> → Targeted outreach to pharmaceutical supply chain directors is achievable with GDP compliance credentials.</li>
+    </ol>
+
+    <h2>Part 11: Qualification Framework</h2>
+    <table class="data-table">
+      <thead><tr><th>Criteria</th><th>Ideal</th><th>Problematic</th></tr></thead>
+      <tbody>
+        <tr><td>Annual Revenue</td><td>$10M–$500M</td><td>&lt;$5M (can't afford retainer) or >$1B (complex procurement)</td></tr>
+        <tr><td>Fleet/Facility Size</td><td>20+ reefer trailers or 25,000+ sq ft cold storage</td><td>Single-truck owner-operators</td></tr>
+        <tr><td>Compliance Certifications</td><td>FSMA, GDP, or SQF certification</td><td>No certifications (limits pharma/premium shipper access)</td></tr>
+        <tr><td>Sales Infrastructure</td><td>VP of Sales or dedicated BD person</td><td>Zero internal sales capacity</td></tr>
+        <tr><td>Growth Intent</td><td>Actively seeking new lanes, expanding capacity</td><td>Contentedly full with no growth appetite</td></tr>
+        <tr><td>Budget Comfort</td><td>Open to $5K–$8K/month</td><td>"We don't pay for marketing" mindset</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 12: Technology Stack</h2>
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Software Examples</th><th>Relevance</th></tr></thead>
+      <tbody>
+        <tr><td>TMS</td><td>MercuryGate, TMW Suite, McLeod Software, Samsara</td><td>CRM/outreach data may need to integrate with their TMS</td></tr>
+        <tr><td>Cold Chain Monitoring</td><td>Sensitech, Emerson Cold Chain, Controlant, Tive</td><td>Compliance data usable as proof points in outreach</td></tr>
+        <tr><td>CRM / Sales</td><td>Salesforce, HubSpot, Pipeline CRM</td><td>Where leads delivered — confirm CRM access upfront</td></tr>
+        <tr><td>Carrier Compliance</td><td>Carrier411, RMIS, Highway</td><td>Compliance status visible to shippers — affects messaging</td></tr>
+        <tr><td>Pharma Quality</td><td>Veeva Vault, MasterControl, Sparta Systems</td><td>GDP documentation usable as credibility in outreach</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 13: Proposal Architecture and Closing</h2>
+    <ol>
+      <li><strong>Situation Summary</strong> — Recap the specific pain points they described</li>
+      <li><strong>Target Market Definition</strong> — Named shipper types, titles, company sizes, geographies</li>
+      <li><strong>Campaign Architecture</strong> — List methodology, 3–4 touch email sequence, A/B testing</li>
+      <li><strong>Sample Email Sequence</strong> — 2–3 actual email drafts in their voice</li>
+      <li><strong>Deliverables & Timeline</strong> — Month 1: launch. Month 2: optimization. Month 3: results review.</li>
+      <li><strong>Investment</strong> — Monthly retainer, 90-day out clause</li>
+    </ol>
+    <h3>Closing Script</h3>
+    <blockquote>"Based on everything you've shared — the new trailer capacity you need to fill, the pharma accounts you're trying to break into, and the fact that your current BD is all relationship-based — I think this fits well. The question isn't really whether outbound to food and pharma shippers makes sense for you. It clearly does. The question is whether now is the right time and we're the right partner. What would it take for you to feel confident saying yes today?"</blockquote>
+
+    <h2>Part 14: Success Metrics</h2>
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Metric</th><th>Why It Matters</th></tr></thead>
+      <tbody>
+        <tr><td>Pipeline</td><td>Qualified meetings booked per month</td><td>Primary deliverable — carrier's sales team closes from here</td></tr>
+        <tr><td>Outreach</td><td>Email open rate (target: 35–50%)</td><td>Validates targeting and subject line effectiveness</td></tr>
+        <tr><td>Outreach</td><td>Reply rate (target: 5–12%)</td><td>Validates copy resonance with shipper audience</td></tr>
+        <tr><td>Pipeline</td><td>Pipeline value (meetings × avg lane value)</td><td>Connects outreach to business impact</td></tr>
+        <tr><td>Quality</td><td>Meeting-to-proposal conversion rate</td><td>Improves over time as targeting refines</td></tr>
+        <tr><td>Retention</td><td>Months before first new contracted lane</td><td>Ultimate proof metric — typically 90–180 days</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 15: Pricing Presentation</h2>
+    <h3>Single Lane ROI Anchor</h3>
+    <blockquote>"One contracted lane for a carrier your size typically represents $400K–$800K in annual revenue at a 15–20% margin. That's $60K–$160K in gross profit from one account. Our 12-month retainer costs $66,000. If we book you into one new contracted lane in the next 12 months, we've already paid for ourselves multiple times over."</blockquote>
+    <table class="data-table">
+      <thead><tr><th>Pricing Pressure</th><th>Response</th></tr></thead>
+      <tbody>
+        <tr><td>"Can you do $3,500/month?"</td><td>"At $3,500 I'd have to cut the list size in half and reduce to 2 touches instead of 4. Let me offer this: $5,000 flat for first 90 days with a performance review at day 60."</td></tr>
+        <tr><td>"We want to pay per meeting."</td><td>"Performance-based models incentivize quantity over quality. Our retainer keeps us incentivized to fill your pipeline with meetings that actually convert to proposals."</td></tr>
+        <tr><td>"We need to see results before we pay."</td><td>"We can do a paid pilot — 30 days at $2,500 — where we build the list and launch the first sequence. You'll see real data on open rates, replies, and initial meetings."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 16: Network & Relationship Dynamics</h2>
+    <table class="data-table">
+      <thead><tr><th>Category</th><th>Examples</th><th>Strategic Importance</th></tr></thead>
+      <tbody>
+        <tr><td>Industry Influencers</td><td>FreightWaves journalists, Cold Chain Radio podcast, Food Logistics editors</td><td>Name-dropping signals industry immersion</td></tr>
+        <tr><td>Connectors</td><td>IWLA executive director, GCCA board members, PRW conference organizers</td><td>Association connectors open doors to mid-market carriers</td></tr>
+        <tr><td>Conferences</td><td>CSCMP Edge, IWLA Convention, GS1 Connect, IFTPS Annual, Food Logistics Forum</td><td>Primary networking venues — ask which shows they attend</td></tr>
+        <tr><td>Online Communities</td><td>FreightWaves community, LinkedIn Cold Chain Logistics Professionals group</td><td>Research pain points and identify active BD leaders</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 17: Future Outlook</h2>
+    <table class="data-table">
+      <thead><tr><th>Trend</th><th>Description & Impact</th></tr></thead>
+      <tbody>
+        <tr><td>FSMA Traceability Tightening</td><td>Rule 204 fully enforced by January 2026 — requires more documentation from carriers. Creates differentiation for compliant carriers willing to invest in marketing their capabilities.</td></tr>
+        <tr><td>Pharmaceutical Logistics Growth</td><td>Global biologics market expected to reach $900B by 2030. Cell & gene therapy logistics is fastest-growing niche with cryogenic requirements and premium pricing.</td></tr>
+        <tr><td>E-commerce Cold Chain</td><td>DTC food and specialty grocery growing 18%+ annually, requiring last-mile cold chain capability that most traditional carriers don't have.</td></tr>
+        <tr><td>Visibility Mandates</td><td>Walmart, Kroger, Amazon Fresh now requiring real-time temperature visibility as a carrier qualification requirement — carriers with this technology should market it aggressively.</td></tr>
+        <tr><td>Consolidation Wave</td><td>PE-backed acquisitions consolidating regional carriers. Outbound-generated revenue strengthens EBITDA multiples and makes carriers more attractive acquisition targets.</td></tr>
+      </tbody>
+    </table>
+    <h3>Strategic Positioning Talking Points</h3>
+    <ul>
+      <li>"The carriers who win the next decade aren't just the ones with the most trailers — they're the ones with the most diversified shipper portfolios."</li>
+      <li>"The FSMA Traceability Rule going into full enforcement changes the competitive landscape. You have compliance — but your target shippers don't know it. That's a marketing problem we can solve."</li>
+      <li>"Cell and gene therapy logistics is the most premium, fastest-growing corner of pharma cold chain. The carriers who position as specialists in -80°C and cryogenic transport in the next 24 months will own that market for a decade."</li>
+      <li>"Private equity is consolidating cold chain. Your shipper relationships and contracted lane book are your most valuable assets. Building a documented, growing pipeline meaningfully increases your EBITDA multiple."</li>
+    </ul>
+
+    <p style="margin-top:48px;color:var(--gray);font-size:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;">Analysis prepared by ContractMotion &nbsp;|&nbsp; Cold Chain Logistics Provider Niche Intelligence &nbsp;|&nbsp; March 2026</p>
+  </div>
+</div>
+
+<!-- TAB 3: RATIONALE -->
+<div id="tab-rationale" class="tab-content">
+  <div class="rationale-body">
+    <h1>100 Core Niches: Cold Chain Logistics Providers Ecosystem — Rationale</h1>
+    <p style="color:var(--gray);font-size:13px;margin-bottom:8px;">Prepared for: ContractMotion &nbsp;|&nbsp; March 2026</p>
+    <p style="color:#cbd5e1;font-size:13px;margin-bottom:32px;">This document provides detailed rationale for the selection of 100 core niches closely related to the Cold Chain Logistics Providers industry, selected based on market opportunity, growth trajectory, competitive landscape, ecosystem overlap, and marketing agency suitability.</p>
+
+    <h2>Sub-Cat 1: Pharmaceutical & Biotech Cold Chain Logistics Providers (Niches 1–10)</h2>
+    <div class="rationale-card"><h3>1. Pharmaceutical Cold Chain 3PL Providers</h3><p>Global pharmaceutical cold chain market projected to reach $21.3B by 2030 (CAGR ~7.5%). GDP-compliant 3PLs win accounts through regulatory audits and relationships — almost never through systematic outbound. Marketing agency opportunity: reach supply chain directors at pharma manufacturers seeking GDP-compliant partners. Composite score: 9.2.</p></div>
+    <div class="rationale-card"><h3>2. Biotech Specimen Cold Chain Logistics Companies</h3><p>$4B+ segment with explosive growth tied to genomics, precision medicine, and clinical research. Companies depend on scientific conference BD. Cold email targeting clinical operations and lab logistics managers at biotech fills a genuine gap.</p></div>
+    <div class="rationale-card"><h3>3. Clinical Trial Temperature-Controlled Logistics Firms</h3><p>Global clinical trial logistics market exceeds $6B growing at 8%+ annually. Companies depend heavily on CRO relationships for new business. Cold email outreach to clinical operations directors and supply chain managers at pharma sponsors is vastly underexploited.</p></div>
+    <div class="rationale-card"><h3>4. GDP-Compliant Pharmaceutical Freight Carriers</h3><p>&lt;15% of US refrigerated carriers have invested in formal GDP qualification. Those that have are severely undermarketed — a compelling differentiator rarely communicated proactively to pharmaceutical supply chain directors.</p></div>
+    <div class="rationale-card"><h3>5. Controlled Substance Cold Chain Logistics Companies</h3><p>DEA-licensed carriers handling Schedule II–V pharmaceuticals operate in a tightly regulated niche with very few competitors and exceptional pricing power. Cold email to pharmacy chain supply chain managers and hospital GPO procurement directors is essentially untouched.</p></div>
+    <div class="rationale-card"><h3>6. Oncology Drug Distribution Logistics Providers</h3><p>Oncology biologics represent the highest-value, fastest-growing segment of pharmaceutical distribution. Distribution companies serving oncology clinics need to market to the growing network of community oncology practices and health system pharmacy buyers.</p></div>
+    <div class="rationale-card"><h3>7. Cell & Gene Therapy Logistics Specialists</h3><p>CAR-T, gene therapy, and autologous cell therapy logistics is the most technically demanding, highest-margin segment. Market growing at 25%+ annually. Only a handful of specialists exist, none with mature outbound marketing. Cold email to clinical supply directors at cell therapy developers is exceptional.</p></div>
+    <div class="rationale-card"><h3>8. Radiopharmaceutical Transport Companies</h3><p>PET tracers and targeted radiotherapies have half-lives of hours to days, requiring ultra-rapid temperature-controlled transport. Growing rapidly with diagnostic imaging and targeted radionuclide therapy expansion. Marketing to nuclear medicine directors and radiopharmacy buyers is underexplored.</p></div>
+    <div class="rationale-card"><h3>9. Medical Cannabis Cold Chain Logistics Providers</h3><p>Emerging segment with potential federal legalization expanding the market. Early-mover marketing advantage significant in a nascent, growing niche. Marketing to dispensary chain buyers and cannabis manufacturer supply chain managers.</p></div>
+    <div class="rationale-card"><h3>10. Pharmaceutical Returns & Reverse Logistics Companies</h3><p>FDA-regulated pharmaceutical return and destruction processes require cold chain integrity throughout the reverse logistics chain. Marketing to hospital pharmacy directors and pharmaceutical manufacturer logistics heads about compliant returns programs.</p></div>
+
+    <h2>Sub-Cat 2: Food & Perishable Cold Chain Logistics Companies (Niches 11–20)</h2>
+    <div class="rationale-card"><h3>11. Fresh Produce Cold Chain Distributors</h3><p>US fresh produce cold chain is a $70B+ market. Distributors serving food manufacturers, restaurant groups, and retail chains need systematic shipper account acquisition. Cold email to supply chain directors at grocery retailers and food service distributors is highly actionable.</p></div>
+    <div class="rationale-card"><h3>12–20. Food Cold Chain Carriers (Seafood, Dairy, Meat, Frozen, Floral, Specialty Grocery, Organic, Restaurant Supply, Import/Export)</h3><p>All segments share the same core BD problem: over-dependence on broker relationships and legacy accounts. Cold email targeting supply chain directors at major food manufacturers and distributors is an essentially untapped channel across all of these sub-niches. Market sizes range from $2.5B (floral) to $55B+ (meat/poultry), with consistent marketing agency opportunity across the board.</p></div>
+
+    <h2>Sub-Cat 3: Refrigerated Trucking & Reefer Carriers (Niches 21–30)</h2>
+    <div class="rationale-card"><h3>21. Refrigerated Truckload (TL) Carriers — Anchor Niche</h3><p>Estimated 50,000+ reefer trailers in operation by US carriers. Most win freight through broker boards or legacy shipper relationships. A systematic cold email program targeting supply chain directors at food manufacturers represents the highest-volume niche in the entire ecosystem. The fundamental value proposition is clean and compelling: systematic outbound to fill contracted lanes at premium margins vs. spot market dependence.</p></div>
+    <div class="rationale-card"><h3>22–30. Reefer Trucking Sub-Segments</h3><p>LTL carriers, reefer fleet operators, intermodal, tankers, cryogenic, pharmaceutical-focused, dedicated contract, expedited, and owner-operator fleets all share the same pain: inconsistent new lane acquisition. Each segment has differentiated positioning (pharma premium, LTL complexity, cryogenic specialization) that can be leveraged in targeted outreach campaigns.</p></div>
+
+    <h2>Sub-Cat 4: Cold Storage Warehouse Operators (Niches 31–40)</h2>
+    <div class="rationale-card"><h3>31–40. Cold Storage 3PL Operators</h3><p>The Global Cold Chain Alliance (GCCA) reports 4.5B+ cubic feet of refrigerated warehouse capacity in the US operated by thousands of 3PLs. While Americold, Lineage Logistics, and US Cold Storage dominate, 3,000+ independent operators compete on service and relationships and lack marketing infrastructure. Contract cold storage, blast freezing, CA storage, e-commerce fulfillment, port terminals, pharma vaults, co-packing, and cold storage real estate investment all represent distinct marketing agency opportunities.</p></div>
+
+    <h2>Sub-Cat 5: Temperature-Controlled Last-Mile Delivery (Niches 41–50)</h2>
+    <div class="rationale-card"><h3>41–50. Last-Mile Cold Chain Companies</h3><p>The intersection of e-commerce grocery, meal kit delivery, and pharmaceutical home delivery is creating a new class of last-mile cold chain companies. Marketing to grocery chains, meal kit brands, specialty food DTC companies, pharmaceutical home delivery operators, and healthcare systems represents a growth-stage outbound opportunity. Medical specimen couriers, blood bank transport, cryogenic courier, and white-glove cold delivery complete the last-mile ecosystem.</p></div>
+
+    <h2>Sub-Cat 6: Cryogenic & Liquid Nitrogen Logistics (Niches 51–60)</h2>
+    <div class="rationale-card"><h3>51–60. Cryogenic Logistics Specialists</h3><p>Liquid nitrogen, dry ice, cryogenic gases, liquid CO2, industrial gas logistics, biobanking, cryogenic equipment leasing, liquid helium, cryopreservation, and cryogenic vessel distribution all share a common profile: highly specialized, relationship-dependent, with minimal outbound marketing infrastructure. The biobanking market alone is $55B+ and growing. Cryopreservation for fertility clinics is tied to a $15B+ US fertility market. Outstanding outbound opportunity across all sub-segments.</p></div>
+
+    <h2>Sub-Cat 7: Clinical Trial & Biospecimen Logistics (Niches 61–70)</h2>
+    <div class="rationale-card"><h3>61–70. Clinical Trial Logistics Specialists</h3><p>A $6B+ market growing at 8%+ annually. Providers manage temperature-controlled drug shipment to trial sites globally. BD is almost entirely CRO-relationship and pharmaceutical RFP-driven. Cold email to clinical supply chain managers at pharma sponsors, biotech companies, and CROs is a high-value, underexploited channel. Phase-specific specialists, biospecimen management, central lab logistics, patient home dosing, IMP carriers, tissue/organ transport, reference standards, and comparator drug sourcing all represent distinct sub-niches within this ecosystem.</p></div>
+
+    <h2>Sub-Cat 8: Vaccine & Biologics Distribution (Niches 71–80)</h2>
+    <div class="rationale-card"><h3>71–80. Biologics & Vaccine Distribution</h3><p>Vaccines, biologics, blood products, plasma, antigens/antibodies, monoclonal antibodies, insulin/GLP-1 products (explosive growth with Ozempic/Wegovy), immunotherapy, biosimilars, and specialty biologics 3PLs represent the most premium, fastest-growing, and highest-regulation segment of pharmaceutical distribution. All sub-niches are severely undermarketed relative to their value. The GLP-1 growth story alone makes insulin/hormone cold chain distribution exceptionally timely in 2026.</p></div>
+
+    <h2>Sub-Cat 9: Cold Chain Packaging & Insulated Shippers (Niches 81–90)</h2>
+    <div class="rationale-card"><h3>81–90. Cold Chain Packaging Companies</h3><p>Insulated containers, pharmaceutical cold chain packaging, PCM shippers, dry ice packaging, gel packs, thermal pallet covers, VIP packaging, cryogenic shippers, validated testing labs, and packaging engineering firms all serve pharmaceutical and food companies with cold chain packaging needs. B2B outbound to packaging engineers, cold chain managers, and supply chain directors at pharma and food companies is highly actionable across all sub-segments.</p></div>
+
+    <h2>Sub-Cat 10 & 11: Temperature Monitoring, IoT & Consulting (Niches 91–100)</h2>
+    <div class="rationale-card"><h3>91–100. IoT, Monitoring & Compliance</h3><p>Temperature data loggers, cold chain IoT sensors, Bluetooth trackers, real-time visibility platforms, control tower software, asset tracking, predictive analytics, compliance/QMS software, cold chain consulting, and GDP/GMP audit firms round out the ecosystem. Technology vendors in this space (Sensitech, Controlant, Tive, Parsyl) serve pharmaceutical and food companies with SaaS/services products. Marketing to supply chain directors and VP of Supply Chain contacts at large pharma and food manufacturers is a well-defined enterprise software outbound target with strong LTV ($100K+ ARR).</p></div>
+
+    <p style="margin-top:48px;color:var(--gray);font-size:12px;border-top:1px solid rgba(255,255,255,0.1);padding-top:20px;">Rationale prepared by ContractMotion &nbsp;|&nbsp; Cold Chain Logistics Niche Research &nbsp;|&nbsp; March 2026</p>
+  </div>
+</div>
+
+<script>
+// ===== NICHE DATA =====
+const NICHES = [
+];
+
+// We'll load from embedded CSV-like data
+const CSV_DATA = `Niche,Score,LTV,Margin,Payment,Cycle,Difficulty,Marketability,Risk,Cushion,IsCore
+Microgreens & Specialty Produce Growers,9.2,64000,72,Retainer,48,2,4,LOW,4,0
+Commercial Driver Medical Exam Clinics,9.2,60000,72,Retainer,45,2,4,LOW,4,0
+CDL Training Schools,9.2,60000,72,Retainer,45,2,4,LOW,4,0
+Fresh Produce Cold Chain Distributors,8.8,80000,74,Retainer,55,3,4,LOW,4,1
+Dairy Product Cold Chain Transportation Companies,8.8,76000,73,Retainer,52,3,4,LOW,4,1
+Meat & Poultry Cold Chain Logistics Providers,8.8,80000,74,Retainer,55,3,4,LOW,4,1
+Frozen Food Cold Chain Distributors,8.8,80000,73,Retainer,55,3,4,LOW,4,1
+Floral Cold Chain Logistics Companies,8.8,70000,72,Retainer,50,3,4,LOW,4,1
+Specialty Grocery Cold Chain Distributors,8.8,76000,73,Retainer,52,3,4,LOW,4,1
+Organic & Natural Food Cold Chain Carriers,8.8,76000,73,Retainer,52,3,4,LOW,4,1
+Restaurant Supply Cold Chain Distributors,8.8,76000,73,Retainer,52,3,4,LOW,4,1
+Refrigerated Truckload (TL) Carriers,8.8,76000,73,Retainer,55,3,4,LOW,4,1
+Refrigerated LTL (Less-Than-Truckload) Carriers,8.8,80000,74,Retainer,58,3,4,LOW,4,1
+Dedicated Contract Refrigerated Carriers,8.8,84000,74,Retainer,60,3,4,LOW,4,1
+Refrigerated Expedited Freight Companies,8.8,90000,75,Retainer,55,3,4,LOW,4,1
+Owner-Operator Reefer Trucking Fleets,8.8,64000,72,Retainer,48,3,4,LOW,4,1
+Public Refrigerated Warehousing Companies,8.8,90000,75,Retainer,62,3,4,LOW,4,1
+Contract Cold Storage Operators,8.8,96000,76,Retainer,65,3,4,LOW,4,1
+Frozen & Refrigerated Distribution Center Operators,8.8,90000,75,Retainer,60,3,4,LOW,4,1
+E-commerce Cold Storage Fulfillment Centers,8.8,90000,75,Retainer,60,3,4,LOW,4,1
+Temperature-Controlled Last-Mile Delivery Startups,8.8,84000,75,Retainer,55,3,4,LOW,4,1
+Grocery & Meal Kit Last-Mile Cold Chain Companies,8.8,80000,74,Retainer,52,3,4,LOW,4,1
+Same-Day Refrigerated Courier Services,8.8,70000,73,Retainer,45,3,4,LOW,4,1
+Urban Cold Chain Micro-Fulfillment Operators,8.8,80000,74,Retainer,55,3,4,LOW,4,1
+Medical Specimen Courier Services,8.8,76000,74,Retainer,50,3,4,LOW,4,1
+Temperature-Controlled Parcel Delivery Companies,8.8,84000,74,Retainer,58,3,4,LOW,4,1
+Temperature Data Logger Manufacturers,8.8,90000,75,Retainer,60,3,4,LOW,4,1
+Cold Chain IoT Sensor & Monitoring Companies,8.8,100000,76,Retainer,65,3,4,LOW,4,1
+Bluetooth Temperature Tracking Device Companies,8.8,96000,75,Retainer,62,3,4,LOW,4,1
+Real-Time Cold Chain Visibility Platform Companies,8.8,104000,76,Retainer,68,3,4,LOW,4,1
+Cold Chain Control Tower Software Companies,8.8,110000,77,Retainer,72,3,4,LOW,4,1
+Temperature-Controlled Asset Tracking Companies,8.8,96000,75,Retainer,62,3,4,LOW,4,1
+Cold Chain Analytics & Predictive Intelligence Platforms,8.8,110000,77,Retainer,70,3,4,LOW,4,1
+Cold Chain Compliance & Quality Management Software Companies,8.8,104000,76,Retainer,68,3,4,LOW,4,1
+Brownfield to Solar Conversion Firms,8.8,96000,76,Retainer,65,3,4,LOW,4,0
+Oilfield Recruitment & Staffing Agencies,8.8,70000,73,Retainer,52,3,4,LOW,4,0
+Energy Industry Training & Safety Companies,8.8,80000,74,Retainer,58,3,4,LOW,4,0
+Well Data Analytics Platforms,8.8,96000,76,Retainer,68,3,4,LOW,4,0
+Upstream Oil & Gas ERP Software Companies,8.8,100000,76,Retainer,70,3,4,LOW,4,0
+Oil & Gas Accounting Software Companies,8.8,90000,75,Retainer,65,3,4,LOW,4,0
+Digital Oilfield Technology Companies,8.8,100000,76,Retainer,70,3,4,LOW,4,0
+Precision Agriculture Drone Companies,8.8,84000,75,Retainer,62,3,4,LOW,4,0
+Vineyard & Winery Management Companies,8.8,70000,74,Retainer,55,3,4,LOW,4,0
+Berry Farm Operators,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Mushroom Cultivation Companies,8.8,70000,73,Retainer,52,3,4,LOW,4,0
+Aquaponics Operations,8.8,70000,73,Retainer,52,3,4,LOW,4,0
+Insect Protein Producers,8.8,76000,74,Retainer,58,3,4,LOW,4,0
+Hemp CBD Extraction Companies,8.8,76000,74,Retainer,58,3,4,LOW,4,0
+Essential Oil Distillers,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Silage & Forage Producers,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Game Meat Processing Companies,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Sausage & Charcuterie Manufacturers,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Smoked Fish Producers,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Shellfish Aquaculture Companies,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Cold-Press Juice Manufacturers,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Kombucha Manufacturers,8.8,64000,72,Retainer,48,3,4,LOW,4,0
+Honey Packers & Processors,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Maple Syrup Producers & Distributors,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Specialty Vinegar Producers,8.8,56000,72,Retainer,42,2,3,LOW,4,0
+Hot Sauce & Condiment Manufacturers,8.8,64000,72,Retainer,48,3,4,LOW,4,0
+Pickle & Fermented Vegetable Producers,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Large Animal Veterinary Mobile Practices,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Biological Pest Control Companies,8.8,70000,73,Retainer,50,3,4,LOW,4,0
+Agricultural Land Leasing Companies,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Agricultural Auctioneers,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Grain Inspection & Weighing Agencies,8.8,60000,72,Retainer,45,2,3,LOW,4,0
+Mass Timber & CLT Building Companies,8.8,84000,74,Retainer,60,3,4,LOW,4,0
+Forklift Dealers & Service Companies,8.8,70000,73,Retainer,52,3,4,LOW,4,0
+Industrial Label & Barcode Companies,8.8,64000,72,Retainer,48,3,4,LOW,4,0
+Warehouse Management System Companies,8.8,100000,76,Retainer,68,3,4,LOW,4,0
+Inventory Optimization Software Companies,8.8,96000,76,Retainer,65,3,4,LOW,4,0
+Transportation Management System (TMS) Companies,8.8,104000,76,Retainer,68,3,4,LOW,4,0
+Load Board Technology Companies,8.8,80000,74,Retainer,58,3,4,LOW,4,0
+Digital Freight Matching Platforms,8.8,90000,75,Retainer,62,3,4,LOW,4,0
+Freight Factoring Companies,8.8,80000,74,Retainer,58,3,4,LOW,4,0
+Trucking Insurance Brokerages,8.8,76000,74,Retainer,55,3,4,LOW,4,0
+Truck Driver Staffing Companies,8.8,70000,73,Retainer,50,3,4,LOW,4,0
+Owner-Operator Truck Leasing Companies,8.8,70000,73,Retainer,50,3,4,LOW,4,0
+Truck Stop & Travel Center Operators,8.8,64000,72,Retainer,48,2,3,LOW,4,0
+Electronic Logging Device (ELD) Companies,8.8,80000,74,Retainer,58,3,4,LOW,4,0
+Fleet Telematics Companies,8.8,84000,75,Retainer,60,3,4,LOW,4,0
+Dash Camera System Companies,8.8,76000,73,Retainer,55,3,4,LOW,4,0
+Mobile Truck Repair Companies,8.8,56000,72,Retainer,42,2,3,LOW,4,0
+Truck Wash & Fleet Maintenance Companies,8.8,56000,71,Retainer,42,2,3,LOW,4,0
+BIM & Revit Modeling Firms,8.8,80000,76,Retainer,58,3,4,LOW,4,0
+Construction Management Software Companies,8.8,100000,76,Retainer,68,3,4,LOW,4,0
+Hard Money Lending Companies,8.8,76000,73,Retainer,55,3,4,LOW,4,0
+Home Care Agency Operators,8.8,60000,72,Retainer,48,3,4,LOW,4,0
+Adult Day Program Operators,8.8,56000,72,Retainer,45,2,3,LOW,4,0
+Age-Tech & Senior Living Technology Companies,8.8,84000,75,Retainer,62,3,4,LOW,4,0
+Power Purchase Agreement (PPA) Developers,8.8,96000,75,Retainer,68,3,4,LOW,4,0
+Geriatric Care Managers,8.65,52000,71,Retainer,42,2,3,LOW,4,0
+Senior Transportation Services,8.65,52000,71,Retainer,42,2,3,LOW,4,0
+Medical Cannabis Cold Chain Logistics Providers,8.4,90000,75,Retainer,60,3,3,LOW,4,1
+Seafood & Frozen Fish Cold Chain Carriers,8.4,84000,74,Retainer,58,3,3,LOW,4,1
+Reefer Trailer Fleet Operators,8.4,84000,74,Retainer,60,3,3,LOW,4,1
+Refrigerated Tanker Truck Companies,8.4,80000,73,Retainer,58,3,3,LOW,4,1
+Blast Freezing & Quick Freeze Facility Operators,8.4,84000,74,Retainer,58,3,3,LOW,4,1
+Controlled Atmosphere Storage Operators,8.4,90000,75,Retainer,62,3,3,LOW,4,1
+Temperature-Controlled Co-Packing Facilities,8.4,84000,74,Retainer,58,3,3,LOW,4,1
+Cold Storage Real Estate Investment Companies,8.4,110000,76,Retainer,72,3,3,LOW,4,1
+Cryogenic Courier & Dry Ice Logistics Companies,8.4,90000,75,Retainer,60,3,3,LOW,4,1
+Cold Chain White-Glove Delivery Companies,8.4,96000,76,Retainer,62,3,3,LOW,4,1
+Liquid Nitrogen Logistics & Distribution Companies,8.4,90000,75,Retainer,60,3,3,LOW,4,1
+Dry Ice Manufacturing & Distribution Companies,8.4,80000,74,Retainer,55,3,3,LOW,4,1
+Liquid CO2 Transport & Logistics Providers,8.4,84000,74,Retainer,58,3,3,LOW,4,1
+Industrial Gas Cold Chain Logistics Companies,8.4,90000,75,Retainer,62,3,3,LOW,4,1
+Cryogenic Equipment Leasing Companies,8.4,96000,75,Retainer,65,3,3,LOW,4,1
+Cryogenic Vessel & Dewar Distributors,8.4,84000,74,Retainer,58,3,3,LOW,4,1
+Blood Bank & Tissue Transport Companies,8.4,100000,76,Retainer,65,4,3,LOW,4,1
+Port Cold Storage Terminal Operators,8.4,100000,76,Retainer,68,4,3,LOW,4,1
+Temperature-Controlled Intermodal Rail Carriers,8.4,90000,75,Retainer,65,4,3,LOW,4,1
+Cryogenic Transport Carriers,8.4,110000,77,Retainer,70,4,3,LOW,4,1
+Pharmaceutical Reefer Trucking Companies,8.4,110000,77,Retainer,72,4,3,LOW,4,1`;
+
+// Parse CSV
+function parseData(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',');
+  return lines.slice(1).map((line, idx) => {
+    const vals = line.split(',');
+    return {
+      rank: idx + 1,
+      niche: vals[0],
+      score: parseFloat(vals[1]),
+      ltv: parseInt(vals[2]),
+      margin: parseInt(vals[3]),
+      payment: vals[4],
+      cycle: parseInt(vals[5]),
+      difficulty: parseInt(vals[6]),
+      marketability: parseInt(vals[7]),
+      risk: vals[8],
+      cushion: parseInt(vals[9]),
+      isCore: vals[10] === '1'
+    };
+  });
+}
+
+const allNiches = parseData(CSV_DATA);
+let filtered = [...allNiches];
+let sortCol = 0;
+let sortDir = 1;
+let currentPage = 1;
+const PAGE_SIZE = 50;
+
+function getScoreClass(s) {
+  if (s >= 8.5) return 'score-high';
+  if (s >= 7.5) return 'score-med';
+  return 'score-low';
+}
+function getRiskBadge(r) {
+  if (r === 'LOW') return '<span class="badge badge-low-risk">LOW</span>';
+  if (r === 'MEDIUM') return '<span class="badge badge-med-risk">MED</span>';
+  return '<span class="badge badge-high-risk">HIGH</span>';
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = page.map(r => `
+    <tr class="${r.isCore ? 'core-row' : 'add-row'}">
+      <td style="color:var(--gray);font-size:11px">${r.rank}</td>
+      <td class="niche-name">${r.niche}</td>
+      <td class="score ${getScoreClass(r.score)}">${r.score.toFixed(2)}</td>
+      <td class="mono currency">$${(r.ltv/1000).toFixed(0)}K</td>
+      <td class="mono pct">${r.margin}%</td>
+      <td>${r.payment}</td>
+      <td class="mono days">${r.cycle}d</td>
+      <td class="mono">${r.difficulty}/5</td>
+      <td class="mono">${r.marketability}/5</td>
+      <td>${getRiskBadge(r.risk)}</td>
+      <td class="mono">${r.cushion}/4</td>
+      <td><span class="badge ${r.isCore ? 'badge-core' : 'badge-add'}">${r.isCore ? 'CORE' : 'ADD'}</span></td>
+    </tr>`).join('');
+
+  renderPagination();
+  document.getElementById('filterCount').textContent = `Showing ${filtered.length} niches (page ${currentPage} of ${Math.ceil(filtered.length/PAGE_SIZE)})`;
+}
+
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  const pg = document.getElementById('pagination');
+  let html = '';
+  if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">← Prev</button>`;
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(total, currentPage + 2);
+  for (let i = start; i <= end; i++) {
+    html += `<button class="page-btn${i===currentPage?' active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  if (currentPage < total) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">Next →</button>`;
+  html += `<span class="page-info">&nbsp;of ${total} pages (${filtered.length} total)</span>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) { currentPage = p; renderTable(); }
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const type = document.getElementById('typeFilter').value;
+  const minScore = parseFloat(document.getElementById('scoreFilter').value) || 0;
+  filtered = allNiches.filter(r => {
+    if (q && !r.niche.toLowerCase().includes(q)) return false;
+    if (type === 'CORE' && !r.isCore) return false;
+    if (type === 'Additional' && r.isCore) return false;
+    if (minScore && r.score < minScore) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function sortTable(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  document.querySelectorAll('th').forEach((th, i) => {
+    th.classList.remove('sorted-asc', 'sorted-desc');
+    if (i === col) th.classList.add(sortDir === 1 ? 'sorted-asc' : 'sorted-desc');
+  });
+  const keys = ['rank', 'niche', 'score', 'ltv', 'margin', 'payment', 'cycle', 'difficulty', 'marketability', 'risk', 'cushion', 'isCore'];
+  const k = keys[col];
+  filtered.sort((a, b) => {
+    let av = a[k], bv = b[k];
+    if (typeof av === 'string') av = av.toLowerCase();
+    if (typeof bv === 'string') bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+  renderTable();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Init
+renderTable();
+</script>
+</body>
+</html>

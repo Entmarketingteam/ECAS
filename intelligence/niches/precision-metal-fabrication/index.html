@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Precision Metal Fabrication — Niche Opportunity Analysis</title>
+<style>
+  :root {
+    --navy: #0D1B3E;
+    --steel: #2E5090;
+    --light-steel: #4A6FA5;
+    --accent: #C9A227;
+    --bg: #F4F7FB;
+    --card: #FFFFFF;
+    --text: #1A2640;
+    --muted: #6B7A99;
+    --border: #DCE3F0;
+    --green: #27AE60;
+    --amber: #F39C12;
+    --red: #E74C3C;
+    --tag-core: #2E5090;
+    --tag-add: #6B7A99;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, var(--navy) 0%, #1B3A7A 100%); color: white; padding: 32px 48px; }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { color: #B0C0E0; margin-top: 6px; font-size: 14px; }
+  .header-meta { display: flex; gap: 32px; margin-top: 20px; }
+  .header-stat { }
+  .header-stat .val { font-size: 32px; font-weight: 700; color: var(--accent); }
+  .header-stat .lbl { font-size: 12px; color: #90A8CC; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { background: var(--navy); padding: 0 48px; display: flex; gap: 4px; }
+  .tab { padding: 14px 24px; color: #90A8CC; cursor: pointer; font-size: 14px; font-weight: 500; border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: white; }
+  .tab.active { color: white; border-bottom-color: var(--accent); }
+
+  /* Content */
+  .content { padding: 32px 48px; max-width: 1600px; margin: 0 auto; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Filters */
+  .filters { display: flex; gap: 16px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .filter-group { display: flex; align-items: center; gap: 8px; }
+  .filter-group label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .filter-group select, .filter-group input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; background: white; color: var(--text); }
+  .filter-group input { width: 280px; }
+  .btn { padding: 8px 18px; background: var(--steel); color: white; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .btn:hover { background: var(--light-steel); }
+  .results-count { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+  thead tr { background: var(--navy); }
+  thead th { padding: 12px 14px; color: white; font-weight: 600; text-align: left; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { background: var(--steel); }
+  thead th.sort-asc::after { content: " ↑"; color: var(--accent); }
+  thead th.sort-desc::after { content: " ↓"; color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+  tbody tr:hover { background: #F0F5FF; }
+  tbody tr.core-row { background: #F5F8FF; }
+  tbody tr.core-row:hover { background: #E8EFFF; }
+  td { padding: 10px 14px; vertical-align: middle; }
+  td.center { text-align: center; }
+
+  /* Score bar */
+  .score-bar { display: flex; align-items: center; gap: 8px; }
+  .score-bar .bar { height: 8px; border-radius: 4px; background: var(--border); flex: 1; min-width: 60px; overflow: hidden; }
+  .score-bar .fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+  .score-val { font-weight: 700; font-size: 13px; min-width: 30px; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .tag.core { background: #EBF0FA; color: var(--steel); }
+  .tag.additional { background: #F0F0F0; color: var(--muted); }
+
+  /* Score color ranges */
+  .score-high { color: var(--green); }
+  .score-mid { color: var(--amber); }
+  .score-low { color: var(--red); }
+  .fill-high { background: var(--green); }
+  .fill-mid { background: var(--amber); }
+  .fill-low { background: var(--red); }
+
+  /* Analysis tab */
+  .analysis-grid { display: grid; grid-template-columns: 280px 1fr; gap: 24px; }
+  .analysis-nav { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 8px; height: fit-content; position: sticky; top: 20px; }
+  .analysis-nav a { display: block; padding: 10px 14px; text-decoration: none; color: var(--text); border-radius: 6px; font-size: 13px; transition: all 0.15s; }
+  .analysis-nav a:hover { background: var(--bg); color: var(--steel); }
+  .analysis-nav a.active { background: var(--steel); color: white; }
+  .analysis-content { }
+  .part { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 28px 32px; margin-bottom: 20px; scroll-margin-top: 20px; }
+  .part h2 { font-size: 18px; color: var(--navy); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--border); }
+  .part h3 { font-size: 15px; color: var(--steel); margin: 18px 0 10px; }
+  .part p { color: var(--text); line-height: 1.7; margin-bottom: 12px; font-size: 14px; }
+  .part ul { padding-left: 20px; margin-bottom: 12px; }
+  .part li { margin-bottom: 6px; line-height: 1.6; font-size: 14px; }
+  .part table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .part table th { background: var(--navy); color: white; padding: 10px 14px; text-align: left; }
+  .part table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .part table tr:nth-child(even) td { background: var(--bg); }
+  .quote { background: #EBF0FA; border-left: 4px solid var(--steel); padding: 14px 18px; border-radius: 0 6px 6px 0; margin: 14px 0; font-style: italic; color: var(--steel); font-size: 14px; }
+  .code-block { background: #1A2640; color: #E0E8FF; padding: 16px 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 13px; margin: 12px 0; white-space: pre-wrap; line-height: 1.6; }
+
+  /* Summary tab */
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+  .stat-card .value { font-size: 36px; font-weight: 700; color: var(--navy); }
+  .stat-card .label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .stat-card .sub { font-size: 12px; color: var(--green); margin-top: 6px; font-weight: 600; }
+  .top-niches { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 20px; }
+  .top-niches h3 { font-size: 16px; color: var(--navy); margin-bottom: 18px; font-weight: 700; }
+  .top-niche-item { display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .top-niche-item:last-child { border-bottom: none; }
+  .rank-badge { width: 32px; height: 32px; background: var(--navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .rank-badge.gold { background: var(--accent); }
+  .rank-badge.silver { background: #8A9BBD; }
+  .rank-badge.bronze { background: #B87333; }
+  .niche-info { flex: 1; }
+  .niche-info .name { font-weight: 600; font-size: 14px; }
+  .niche-info .meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .niche-score { font-size: 22px; font-weight: 700; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .content { padding: 20px; }
+    .header { padding: 20px; }
+    .tabs { padding: 0 20px; }
+    .analysis-grid { grid-template-columns: 1fr; }
+    .analysis-nav { position: static; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Precision Metal Fabrication &amp; CNC Machining — Niche Opportunity Analysis</h1>
+  <p>Cold Email Lead Generation Agency — Market Intelligence Report &bull; March 2026</p>
+  <div class="header-meta">
+    <div class="header-stat"><div class="val">500</div><div class="lbl">Total Niches Analyzed</div></div>
+    <div class="header-stat"><div class="val">100</div><div class="lbl">Core Industry Niches</div></div>
+    <div class="header-stat"><div class="val">400</div><div class="lbl">Additional Niches</div></div>
+    <div class="header-stat"><div class="val">$420B</div><div class="lbl">US Metal Fab Market</div></div>
+    <div class="header-stat"><div class="val">75K+</div><div class="lbl">US Machine Shops</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('scorecard')">Ranked Scorecard</div>
+  <div class="tab" onclick="showTab('analysis')">17-Part Deep Analysis</div>
+  <div class="tab" onclick="showTab('summary')">Executive Summary</div>
+</div>
+
+<div class="content">
+
+  <!-- TAB 1: SCORECARD -->
+  <div class="tab-pane active" id="tab-scorecard">
+    <div class="filters">
+      <div class="filter-group">
+        <label>Search</label>
+        <input type="text" id="search-input" placeholder="Search niches..." oninput="filterTable()"/>
+      </div>
+      <div class="filter-group">
+        <label>Category</label>
+        <select id="cat-filter" onchange="filterTable()">
+          <option value="">All</option>
+          <option value="Core">Core (100)</option>
+          <option value="Additional">Additional (400)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Min Score</label>
+        <select id="score-filter" onchange="filterTable()">
+          <option value="0">All Scores</option>
+          <option value="9">9.0+</option>
+          <option value="8.5">8.5+</option>
+          <option value="8">8.0+</option>
+          <option value="7.5">7.5+</option>
+          <option value="7">7.0+</option>
+        </select>
+      </div>
+      <button class="btn" onclick="resetFilters()">Reset</button>
+      <div class="results-count" id="results-count"></div>
+    </div>
+    <div class="table-wrap">
+      <table id="scorecard-table">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" data-col="0">#</th>
+            <th onclick="sortTable(1)" data-col="1">Niche</th>
+            <th onclick="sortTable(2)" data-col="2">Category</th>
+            <th onclick="sortTable(3)" data-col="3">Composite Score</th>
+            <th onclick="sortTable(4)" data-col="4">Econ</th>
+            <th onclick="sortTable(5)" data-col="5">Cushion</th>
+            <th onclick="sortTable(6)" data-col="6">Serviceability</th>
+            <th onclick="sortTable(7)" data-col="7">Marketability</th>
+            <th onclick="sortTable(8)" data-col="8">LTV</th>
+            <th onclick="sortTable(9)" data-col="9">Deal Size</th>
+            <th onclick="sortTable(10)" data-col="10">Margin %</th>
+            <th onclick="sortTable(11)" data-col="11">Sales Cycle</th>
+            <th onclick="sortTable(12)" data-col="12">Payment</th>
+          </tr>
+        </thead>
+        <tbody id="scorecard-body">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TAB 2: ANALYSIS -->
+  <div class="tab-pane" id="tab-analysis">
+    <div class="analysis-grid">
+      <div class="analysis-nav" id="analysis-nav">
+        <a href="#exec-summary" class="active" onclick="scrollToSection('exec-summary', this)">Executive Summary</a>
+        <a href="#part1" onclick="scrollToSection('part1', this)">Part 1: Industry Economics</a>
+        <a href="#part2" onclick="scrollToSection('part2', this)">Part 2: Customer Journey</a>
+        <a href="#part3" onclick="scrollToSection('part3', this)">Part 3: Discovery Call</a>
+        <a href="#part4" onclick="scrollToSection('part4', this)">Part 4: Marketing Landscape</a>
+        <a href="#part5" onclick="scrollToSection('part5', this)">Part 5: Credibility Building</a>
+        <a href="#part6" onclick="scrollToSection('part6', this)">Part 6: Regulatory</a>
+        <a href="#part7" onclick="scrollToSection('part7', this)">Part 7: Industry Vocab</a>
+        <a href="#part8" onclick="scrollToSection('part8', this)">Part 8: Objection Handling</a>
+        <a href="#part9" onclick="scrollToSection('part9', this)">Part 9: Competitive Dynamics</a>
+        <a href="#part10" onclick="scrollToSection('part10', this)">Part 10: Pain Points</a>
+        <a href="#part11" onclick="scrollToSection('part11', this)">Part 11: Qualification</a>
+        <a href="#part12" onclick="scrollToSection('part12', this)">Part 12: Tech Stack</a>
+        <a href="#part13" onclick="scrollToSection('part13', this)">Part 13: Proposal</a>
+        <a href="#part14" onclick="scrollToSection('part14', this)">Part 14: Success Metrics</a>
+        <a href="#part15" onclick="scrollToSection('part15', this)">Part 15: Pricing</a>
+        <a href="#part16" onclick="scrollToSection('part16', this)">Part 16: Network</a>
+        <a href="#part17" onclick="scrollToSection('part17', this)">Part 17: Future Outlook</a>
+        <a href="#cold-email" onclick="scrollToSection('cold-email', this)">Cold Email Scripts</a>
+      </div>
+      <div class="analysis-content" id="analysis-content">
+
+        <div class="part" id="exec-summary">
+          <h2>Executive Summary</h2>
+          <p>The US precision metal fabrication and CNC machining industry comprises <strong>75,000+ machine shops</strong> generating over <strong>$420 billion annually</strong>. These businesses — ranging from 5-person Swiss screw machine shops to 200-employee aerospace parts manufacturers — share a near-universal blind spot: they get almost all their work through existing customer relationships and manufacturer's reps, doing <strong>zero proactive outbound</strong>.</p>
+          <p>When a customer diversifies away, they scramble. The opportunity for a cold email lead generation agency is substantial: help owners/presidents send targeted cold email to <strong>procurement managers, supply chain engineers, and mechanical engineers</strong> at OEM manufacturers actively qualifying new vendors.</p>
+          <div class="quote">The retainer model ($3,500–$6,500/month) fits the niche's cash flow profile perfectly, and the decision-maker is the owner or president — findable on LinkedIn with Apollo. Main objections are smokescreens for never having tried outbound.</div>
+        </div>
+
+        <div class="part" id="part1">
+          <h2>Part 1: Industry Economics and Business Model Analysis</h2>
+          <h3>Revenue Model by Shop Size</h3>
+          <table>
+            <tr><th>Metric</th><th>Small (5–20 employees)</th><th>Mid-Market (20–75)</th><th>Large (75–200)</th></tr>
+            <tr><td>Annual Revenue</td><td>$1M–$5M</td><td>$5M–$25M</td><td>$25M–$100M</td></tr>
+            <tr><td>Gross Margin</td><td>35–45%</td><td>40–55%</td><td>45–60%</td></tr>
+            <tr><td>Operating Margin</td><td>8–15%</td><td>12–20%</td><td>15–25%</td></tr>
+            <tr><td>Net Profit</td><td>5–10%</td><td>8–15%</td><td>10–18%</td></tr>
+            <tr><td>Avg Customer LTV</td><td>$250K–$2M</td><td>$500K–$10M</td><td>$2M–$50M</td></tr>
+          </table>
+          <h3>Cash Flow Patterns</h3>
+          <ul>
+            <li><strong>Payment terms:</strong> Net 30–60 days after invoice. Some OEM customers push Net 90.</li>
+            <li><strong>Capital intensity:</strong> High — CNC machines cost $100K–$1M+ each. Shops carry significant debt service.</li>
+            <li><strong>Seasonal fluctuations:</strong> Aerospace slows in Q4; automotive surges in Q1–Q2.</li>
+          </ul>
+          <h3>Financial Qualification Questions</h3>
+          <ul>
+            <li>"What percentage of your revenue comes from your top three customers right now?"</li>
+            <li>"Do you have a dedicated salesperson, or does BD fall on the owner/president?"</li>
+            <li>"When's the last time you landed a net-new customer relationship?"</li>
+            <li>"If one of your top customers shifted 30% of their volume tomorrow, what happens?"</li>
+          </ul>
+        </div>
+
+        <div class="part" id="part2">
+          <h2>Part 2: Customer Journey and Buying Behavior</h2>
+          <h3>Stage-by-Stage Journey Map</h3>
+          <table>
+            <tr><th>Stage</th><th>Trigger</th><th>Owner Mindset</th><th>Our Opportunity</th></tr>
+            <tr><td><strong>Awareness</strong></td><td>Machine capacity opens up; key customer reduces orders</td><td>"We need to find some new work"</td><td>Cold email reaching them at the pain moment</td></tr>
+            <tr><td><strong>Consideration</strong></td><td>Owner asks around at trade shows</td><td>"Is cold email even real for job shops?"</td><td>Case studies, analogous industry proof</td></tr>
+            <tr><td><strong>Evaluation</strong></td><td>Reference calls, LinkedIn research</td><td>"Can they get us meetings with procurement?"</td><td>Demo campaigns, sample sequences</td></tr>
+            <tr><td><strong>Decision</strong></td><td>Owner internal sign-off (no board approval)</td><td>"Let's try it for 90 days"</td><td>90-day pilot framing</td></tr>
+            <tr><td><strong>Retention</strong></td><td>First qualified meeting booked</td><td>"This works"</td><td>Ongoing retainer, upsell</td></tr>
+          </table>
+          <h3>Primary Purchase Triggers</h3>
+          <ul>
+            <li>A major customer sends warning signals (reduced forecast, supplier consolidation)</li>
+            <li>New machine investment creates capacity pressure to fill</li>
+            <li>Competitor shop closes — owner sees opportunity to grab their customers</li>
+            <li>Owner wants to exit in 3–5 years and needs to grow revenue for a better multiple</li>
+            <li>A key manufacturer's rep retires or stops performing</li>
+            <li>Shop wins AS9100 or ISO 13485 certification and wants to pursue those markets</li>
+          </ul>
+        </div>
+
+        <div class="part" id="part3">
+          <h2>Part 3: Discovery Call Architecture</h2>
+          <h3>Word-for-Word Opening Script</h3>
+          <div class="quote">"Before we get into anything, I was looking at your website — I saw you specialize in stainless 316L for food processing equipment. That's a tough space to break into, especially with the surface finish requirements. How long have you been running that as a specialty?"</div>
+          <h3>Diagnostic Questions</h3>
+          <ul>
+            <li>"Walk me through how you're getting new business right now — is it mostly repeat customers, referrals, or do you have any active outbound going on?"</li>
+            <li>"What's your customer concentration look like? How exposed are you if your top customer cuts orders?"</li>
+            <li>"When a customer leaves you — and it happens to every shop — how do you typically replace that volume?"</li>
+          </ul>
+          <h3>Budget Anchoring</h3>
+          <div class="quote">"What we're talking about is a monthly retainer in the range of $4,000 to $6,500 — everything included: prospecting, list-building, email infrastructure, copy, and ongoing optimization. Is that in the zone you'd be comfortable evaluating?"</div>
+          <h3>Close</h3>
+          <div class="quote">"I'll send over a sample 3-email sequence written specifically for your shop — targeting procurement managers at [specific industry they mentioned]. Take a look, and we'll hop back on Thursday at 2pm. Does that work?"</div>
+        </div>
+
+        <div class="part" id="part4">
+          <h2>Part 4: Marketing Landscape and Current Practices</h2>
+          <table>
+            <tr><th>Channel</th><th>Effectiveness</th><th>Notes</th></tr>
+            <tr><td>Word of mouth / referrals</td><td>Very High</td><td>Primary driver for most shops</td></tr>
+            <tr><td>Manufacturer's reps</td><td>High (declining)</td><td>Aging workforce, many retiring</td></tr>
+            <tr><td>Thomas Network / Xometry</td><td>Medium</td><td>Commodity pricing pressure</td></tr>
+            <tr><td>Trade shows (IMTS, Fabtech)</td><td>Medium</td><td>Brand awareness, rarely generates qualified leads</td></tr>
+            <tr><td><strong>Cold email (outbound)</strong></td><td><strong>High (untapped)</strong></td><td><strong>Almost no shops doing this — massive whitespace</strong></td></tr>
+            <tr><td>LinkedIn outreach</td><td>Medium-High</td><td>Works when targeted correctly</td></tr>
+            <tr><td>Google/SEO</td><td>Low-Medium</td><td>Not how OEMs source vendors</td></tr>
+          </table>
+          <div class="quote"><strong>The most common agency failure:</strong> A digital agency promises "online visibility" and delivers a new website and SEO rankings for terms like "CNC machining services" — generating B2C hobbyist inquiries and student design projects, not procurement managers from Tier-1 OEMs.</div>
+        </div>
+
+        <div class="part" id="part5">
+          <h2>Part 5: Credibility Building Without Portfolio</h2>
+          <h3>Analogous Industry Framing</h3>
+          <div class="quote">"We've run cold email campaigns for other B2B industrial companies — specialty coatings shops, industrial distribution, contract manufacturers of all kinds. The mechanics are identical: you have a specific capability, there's a buyer who needs that capability and doesn't know you exist, and we build the bridge."</div>
+          <h3>Handling "Have you worked with companies like ours?"</h3>
+          <div class="quote">"We haven't worked with a shop that does exactly what you do — and honestly, that's an advantage. We come in clean, without bad habits from your industry. What we bring is a system that works for any B2B business with a specific capability selling to identifiable buyers."</div>
+          <h3>90-Day Pilot Positioning</h3>
+          <div class="quote">"We're not asking you to commit to a year of anything. The first 90 days are about proving the model works for your specific shop, your specific target industries."</div>
+        </div>
+
+        <div class="part" id="part6">
+          <h2>Part 6: Regulatory Environment</h2>
+          <table>
+            <tr><th>Regulatory Body</th><th>Acronym</th><th>Relevance to Marketing</th></tr>
+            <tr><td>International Traffic in Arms Regulations</td><td>ITAR</td><td>Cannot promote ITAR-registered capabilities publicly; outreach to defense primes requires discretion</td></tr>
+            <tr><td>Export Administration Regulations</td><td>EAR</td><td>Technology transfer restrictions</td></tr>
+            <tr><td>AS9100 Certification Body</td><td>AS9100</td><td>Certification status is a key marketing differentiator — must be current and verifiable</td></tr>
+            <tr><td>ISO 13485 (Medical Devices)</td><td>ISO 13485</td><td>Critical for medical device marketing — prospects verify before engaging</td></tr>
+            <tr><td>NIST Cybersecurity Framework</td><td>CMMC</td><td>Defense primes increasingly require CMMC compliance from suppliers — a positioning opportunity</td></tr>
+          </table>
+          <div class="quote">"We're very careful about what we say in outreach for shops with ITAR registration or AS9100 certification. We know you can't just blast out 'we make missile components' in a cold email. Everything we write is reviewed to ensure compliance while clearly communicating your capability."</div>
+        </div>
+
+        <div class="part" id="part7">
+          <h2>Part 7: Industry Vocabulary and Cultural Fluency</h2>
+          <table>
+            <tr><th>Term/Acronym</th><th>Meaning</th><th>Context &amp; Usage</th></tr>
+            <tr><td><strong>IMTS</strong></td><td>International Manufacturing Technology Show</td><td>Biennial in Chicago — the industry's Super Bowl. Name-dropping signals credibility.</td></tr>
+            <tr><td><strong>PPAP</strong></td><td>Production Part Approval Process</td><td>Automotive standard for new part approval</td></tr>
+            <tr><td><strong>FAI</strong></td><td>First Article Inspection</td><td>Aerospace standard — first part of a new production run is fully inspected</td></tr>
+            <tr><td><strong>GD&amp;T</strong></td><td>Geometric Dimensioning &amp; Tolerancing</td><td>Standard language for engineering drawings</td></tr>
+            <tr><td><strong>EDM</strong></td><td>Electrical Discharge Machining</td><td>Wire or sinker; for complex geometries</td></tr>
+            <tr><td><strong>CMM</strong></td><td>Coordinate Measuring Machine</td><td>High-end shops always have one</td></tr>
+            <tr><td><strong>ITAR</strong></td><td>International Traffic in Arms Regulations</td><td>Controls export of defense-related manufacturing</td></tr>
+            <tr><td><strong>Tier 1/Tier 2</strong></td><td>Supply chain hierarchy at OEM manufacturers</td><td>Tier 1 = direct to OEM; Tier 2 = to Tier 1</td></tr>
+            <tr><td><strong>RFQ</strong></td><td>Request for Quotation</td><td>How buyers initiate purchasing — a positive signal</td></tr>
+            <tr><td><strong>OTD</strong></td><td>On-Time Delivery</td><td>Key KPI — aerospace requires 95%+</td></tr>
+          </table>
+          <h3>Cultural Landmines</h3>
+          <ul>
+            <li><strong>Don't call it a "factory."</strong> Machine shops are "shops" — always.</li>
+            <li><strong>Don't mention social media strategy early.</strong> These shops don't want to be on TikTok. Lead with meetings.</li>
+            <li><strong>Don't confuse "fabrication" with "machining."</strong> Conflating them signals ignorance.</li>
+            <li><strong>Never promise results in "website traffic" or "impressions."</strong> They measure in RFQs and new customer relationships.</li>
+            <li><strong>Never suggest they need to "build a brand."</strong> They need RFQs next quarter.</li>
+          </ul>
+        </div>
+
+        <div class="part" id="part8">
+          <h2>Part 8: Objection Handling and Emergency Response Protocols</h2>
+          <table>
+            <tr><th>Objection</th><th>Reframing Response</th></tr>
+            <tr><td>"We're at capacity right now."</td><td>"That's the best time to do this — you have leverage. When you lose 20% capacity in 6 months, you'll be chasing work instead of choosing it. We build the pipeline now, so you have options."</td></tr>
+            <tr><td>"Our customers find us. We don't do outbound."</td><td>"It works — until it doesn't. What happens when your top customer's purchasing manager retires and his replacement has a preferred supplier already? We're not replacing your relationship model. We're adding proactive insurance underneath it."</td></tr>
+            <tr><td>"We tried email marketing and it didn't work."</td><td>"Tell me what you tried. Most of the time shops were sending newsletters or blasting generic lists. This is different — precise targeting, personalized copy, built around your specific capabilities and their specific supply chain needs."</td></tr>
+            <tr><td>"We're a job shop, not a sales shop."</td><td>"Exactly why this works. You don't need to be a salesperson. Our job is to get you on the phone with someone who already has a real problem your shop can solve. You just have a technical conversation — which you do every day."</td></tr>
+            <tr><td>"I don't want to be spammy."</td><td>"Every message we send is written specifically for the recipient's industry, company size, and the kinds of parts they make. It's the opposite of spam — it's a relevant message to someone who genuinely needs what you offer."</td></tr>
+          </table>
+          <h3>Emergency Response Protocols</h3>
+          <table>
+            <tr><th>Emergency</th><th>Protocol</th></tr>
+            <tr><td>Zero replies after 4 weeks</td><td>"Before we change anything, let me pull open rate and reply rate data. If opened but not replied — we adjust the offer or CTA. If not opened — deliverability or subject line. Either way, fixable."</td></tr>
+            <tr><td>Client gets an angry reply</td><td>"That's valuable data. Someone annoyed enough to reply is aware of your name now. 90% of these responses are 'not the right time' signals — we can respond professionally to set a future follow-up."</td></tr>
+            <tr><td>Client wants to pause at month 1</td><td>"Busy is exactly why you shouldn't pause. The meetings we book today turn into revenue 60–90 days from now. Pause today and you're starving the machine in Q4."</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part9">
+          <h2>Part 9: Competitive Dynamics and Differentiation Strategy</h2>
+          <table>
+            <tr><th>Competitor Type</th><th>Their Positioning</th><th>Our Counter-Positioning</th></tr>
+            <tr><td><strong>Incumbent generalist agencies</strong></td><td>"We improve your online visibility and drive more traffic to your site"</td><td>"Traffic doesn't pay your machine operators. Booked meetings with procurement managers do."</td></tr>
+            <tr><td><strong>Generalist cold email agencies</strong></td><td>"We run cold email for all B2B businesses"</td><td>"They'll write your emails like you're selling software. We know the difference between a Tier 1 aerospace prime and a job shop. Our copy speaks the language your buyers speak."</td></tr>
+            <tr><td><strong>Internal sales hire</strong></td><td>"We'll hire a business development person"</td><td>"A good BD rep in manufacturing costs $80K–$120K base plus commission, and they'll spend 6 months figuring out the territory. We're running campaigns in 30 days without a salary to carry."</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part10">
+          <h2>Part 10: Pain Points and Deeper Business Challenges</h2>
+          <ul>
+            <li><strong>Customer concentration:</strong> <em>"I've got three customers that represent 75% of my revenue. I lay awake knowing if one of them moves their supply chain, I'm in serious trouble."</em> → Marketing solution: Diversify the customer base.</li>
+            <li><strong>Feast or famine capacity:</strong> <em>"Last quarter we were running three shifts. This quarter we've got two machines sitting idle."</em> → Build consistent RFQ pipeline for backlog smoothing.</li>
+            <li><strong>Commodity pricing pressure:</strong> <em>"We keep losing work to shops in Mexico on price. I need customers who value quality."</em> → Target buyers who have had quality problems offshore and are re-shoring.</li>
+            <li><strong>No sales infrastructure:</strong> <em>"I'm the best machinist in the building, but I'm also the salesperson, the estimator, and the HR department."</em> → We do all prospecting; owner only shows up when there's a real conversation.</li>
+            <li><strong>Exit valuation:</strong> <em>"I want to sell this business in five years and get paid what it's worth."</em> → A diversified, documented customer pipeline increases business value and reduces key-man dependence.</li>
+            <li><strong>Skilled labor competition:</strong> <em>"Everyone's fighting over the same 50 CNC operators in this market."</em> → Strong pipeline = stable employment = better ability to recruit and retain operators.</li>
+          </ul>
+        </div>
+
+        <div class="part" id="part11">
+          <h2>Part 11: Qualification and Disqualification Framework</h2>
+          <table>
+            <tr><th>Criteria</th><th>Ideal</th><th>Problematic</th></tr>
+            <tr><td>Annual Revenue</td><td>$3M–$50M</td><td>Under $1M (can't afford retainer) or over $100M (has internal sales team)</td></tr>
+            <tr><td>Customer Concentration</td><td>3–5 major customers, one at 25–40%</td><td>1 customer = 80%+ (too fragile) or perfectly diversified (no urgency)</td></tr>
+            <tr><td>Sales Infrastructure</td><td>Owner does all BD, no dedicated salesperson</td><td>Already has 3+ salespeople</td></tr>
+            <tr><td>Certifications</td><td>AS9100, ISO 13485, ITAR, or other specialty cert</td><td>No certifications, competing purely on price</td></tr>
+            <tr><td>Decision-Maker Access</td><td>Owner is on the call and can sign</td><td>Talking to operations manager who "needs to check with the owner"</td></tr>
+            <tr><td>Geography</td><td>US-based, targeting domestic OEM customers</td><td>Looking to target international markets</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part12">
+          <h2>Part 12: Technology Stack and Integration Requirements</h2>
+          <table>
+            <tr><th>Category</th><th>Software Examples</th><th>Relevance</th></tr>
+            <tr><td>ERP / Shop Management</td><td>Shoptech E2, JobBOSS2, Global Shop Solutions, Epicor</td><td>How they manage quotes and jobs</td></tr>
+            <tr><td>CAD/CAM</td><td>Mastercam, Fusion 360, SolidWorks, NX, CATIA</td><td>Signals sophistication level</td></tr>
+            <tr><td>CRM</td><td>Most have none; some use HubSpot, Salesforce, or spreadsheets</td><td>Critical gap — we often recommend basic CRM setup</td></tr>
+            <tr><td>Email</td><td>Gmail or Outlook; rarely configured for outbound</td><td>Deliverability setup is our responsibility</td></tr>
+            <tr><td>Quoting</td><td>Paperless Parts, MacroFab</td><td>Shows sophistication of their sales process</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part13">
+          <h2>Part 13: Proposal Architecture and Closing Strategies</h2>
+          <h3>Proposal Structure (6 Sections)</h3>
+          <ol style="padding-left:20px;line-height:2">
+            <li><strong>The Opportunity</strong> — Market size, target companies (specific names), OEM procurement landscape</li>
+            <li><strong>The Problem We Solve</strong> — Diagnose their state using their own words from discovery</li>
+            <li><strong>Our Approach</strong> — Prospecting → List Building → Email Sequence → Reply Handling → Meeting Booking → Reporting</li>
+            <li><strong>Your Specific Campaign</strong> — Draft target industries, target titles, sample 3-email sequence</li>
+            <li><strong>Investment</strong> — Monthly retainer $3,500–$6,500, 90-day minimum, then month-to-month</li>
+            <li><strong>Next Steps</strong> — Sign, onboarding call, live in 30 days</li>
+          </ol>
+          <h3>Closing Script</h3>
+          <div class="quote">"I'll send the proposal and the sample email sequence over today. Take the weekend to look it over. If it resonates, we can get you signed on Monday and be running campaigns within 30 days. If you have questions, we're a 15-minute call away. Does that work?"</div>
+        </div>
+
+        <div class="part" id="part14">
+          <h2>Part 14: Success Metrics and Proof Frameworks</h2>
+          <table>
+            <tr><th>Category</th><th>Metric</th><th>Why It Matters</th></tr>
+            <tr><td>Pipeline Activity</td><td>Qualified conversations booked per month</td><td>Primary KPI — owners judge us on meetings, not open rates</td></tr>
+            <tr><td>Brand Awareness</td><td>Reply rate from target accounts</td><td>Signals resonance even if "not now"</td></tr>
+            <tr><td>Sales Enablement</td><td>RFQs received from outreach-sourced contacts</td><td>Proves the chain from outreach to business activity</td></tr>
+            <tr><td>Financial</td><td>New revenue attributed to outreach-sourced relationships</td><td>Ultimate ROI metric; takes 6–18 months</td></tr>
+            <tr><td>Pipeline Quality</td><td>Meetings with correct titles (Procurement, Supply Chain, Engineering)</td><td>Ensures we're not wasting their time with non-buyers</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part15">
+          <h2>Part 15: Pricing Presentation and Negotiation Tactics</h2>
+          <h3>3 Value-Anchoring Approaches</h3>
+          <div class="quote"><strong>Anchor 1 — Cost of Status Quo:</strong> "If you lose one customer doing $500K a year with you, that's $500K gone. Our retainer is $54,000 a year. The first new customer we help you land pays for our services for a decade."</div>
+          <div class="quote"><strong>Anchor 2 — Alternative Cost:</strong> "A BD rep with manufacturing experience costs $100K–$120K in salary, plus benefits, plus commission, plus your time managing them. We're running in 30 days at less than half the cost, with no severance."</div>
+          <div class="quote"><strong>Anchor 3 — Precision Premium:</strong> "You're paying for specifically identified procurement managers at the exact OEM companies you want to work with. That precision is why it works."</div>
+          <table>
+            <tr><th>Pricing Pressure</th><th>Response Framework</th></tr>
+            <tr><td>"That's more than I expected."</td><td>"What were you expecting? Let me show you where the time goes, and we can talk about whether there's a starter scope that makes sense."</td></tr>
+            <tr><td>"Can we do a one-month trial?"</td><td>"The first month is all setup and warming. Month 2 is where campaigns really start. A 90-day minimum means we actually have time to prove the model."</td></tr>
+            <tr><td>"I need to think about it."</td><td>"What specifically do you need to think through? I'd rather we talk through the hesitation now than have you sitting with unanswered questions for a week."</td></tr>
+          </table>
+        </div>
+
+        <div class="part" id="part16">
+          <h2>Part 16: Network and Relationship Dynamics</h2>
+          <table>
+            <tr><th>Category</th><th>Examples</th><th>Strategic Importance</th></tr>
+            <tr><td>Key Publications</td><td>American Machinist, Modern Machine Shop, Production Machining</td><td>Citing these signals industry knowledge immediately</td></tr>
+            <tr><td>Trade Associations</td><td>NTMA, AMT, PMA, SFSA</td><td>Membership signals credibility; events are prospecting opportunities</td></tr>
+            <tr><td>Key Conferences</td><td>IMTS (Chicago, biennial), Fabtech, HOUSTEX, MD&amp;M West/East</td><td>IMTS is the Super Bowl of machining — mentioning it puts you in the room</td></tr>
+            <tr><td>Online Communities</td><td>PracticalMachinist.com, CNCZone, LinkedIn Manufacturing groups</td><td>Research prospect language and pain points</td></tr>
+          </table>
+          <h3>Name-Dropping Techniques</h3>
+          <ul>
+            <li>Reference NTMA: <em>"We've been speaking with a few NTMA members about their outbound challenges..."</em></li>
+            <li>Reference IMTS: <em>"After IMTS 2024, there was a lot of conversation about how shops are going to compete for the re-shoring wave..."</em></li>
+            <li>Cite data: <em>"According to the latest AMT data, there are over 6,000 job shops actively looking for new customer relationships..."</em></li>
+          </ul>
+        </div>
+
+        <div class="part" id="part17">
+          <h2>Part 17: Future Outlook and Strategic Positioning</h2>
+          <table>
+            <tr><th>Trend</th><th>Description &amp; Impact</th></tr>
+            <tr><td><strong>Re-shoring &amp; Friend-shoring</strong></td><td>US OEMs are aggressively qualifying domestic suppliers post-COVID. Procurement teams are actively seeking new domestic job shops — unprecedented sourcing environment. Cold email into procurement hits at the exact moment they're open to new vendors.</td></tr>
+            <tr><td><strong>Succession &amp; Ownership Transitions</strong></td><td>60%+ of machine shop owners are over 55. Exit-minded owners are highly motivated buyers who need to grow revenue before sale.</td></tr>
+            <tr><td><strong>Digital Sourcing Commoditization</strong></td><td>Platforms like Xometry and Fictiv are pushing commoditized quoting. Shops that don't build direct OEM relationships will increasingly compete on price through these platforms.</td></tr>
+            <tr><td><strong>Workforce Crisis</strong></td><td>Skilled CNC operator shortages mean shops need predictable backlog to justify training investments. A documented pipeline makes shops more attractive to operators.</td></tr>
+            <tr><td><strong>Defense &amp; Aerospace Surge</strong></td><td>DoD manufacturing requirements, AUKUS, and domestic defense investment are creating massive demand for AS9100/ITAR-certified shops — but only the ones who raise their hands.</td></tr>
+          </table>
+          <h3>Strategic Positioning Talking Points</h3>
+          <div class="quote">"The US manufacturing re-shoring wave is the best sourcing environment machine shops have seen in 30 years. The OEMs are actively looking for domestic suppliers. The only shops that will miss this window are the ones who stay invisible."</div>
+          <div class="quote">"Xometry and similar platforms are training your customers to think of machining as a commodity. Every month you're not building direct relationships with procurement teams, you're ceding your pricing power to an algorithm."</div>
+          <div class="quote">"Machine shop owners who exit with 8-10x EBITDA multiples are the ones with diversified customer bases and documented sales pipelines. The ones with 3-4x are the ones where the relationships walk out the door with the owner."</div>
+        </div>
+
+        <div class="part" id="cold-email">
+          <h2>Cold Email Scripts — To Machine Shop Owners</h2>
+          <h3>Email 1 — Capacity Insurance Angle (Day 1)</h3>
+          <div class="code-block">Subject: CNC shops in [City] doing outbound
+
+Hi [First Name],
+
+Noticed [Company Name] specializes in [capability from their website].
+
+Quick question: when one of your top customers pulls back volume — which happens to every shop — what's your plan for replacing it?
+
+Most shop owners say "referrals and Thomas Network" — which works until it doesn't.
+
+We run targeted cold email campaigns for job shops, reaching procurement managers and supply chain engineers at OEM manufacturers who are actively qualifying new domestic suppliers right now (re-shoring is real and it's happening fast).
+
+Worth a 20-minute call to see if there's a fit?
+
+[Name]</div>
+          <h3>Email 2 — Certification Angle (Day 5)</h3>
+          <div class="code-block">Subject: Re: CNC shops in [City] doing outbound
+
+[First Name],
+
+Following up — I know shop owners are running flat-out right now.
+
+One thing I've seen work well: we build a campaign specifically targeting the industries where your certifications matter most. If you're AS9100 registered, we target aerospace procurement teams. If you're ISO 13485, we go straight to medical device supply chain engineers.
+
+The buyers are there. They're literally searching for qualified domestic suppliers. We just put your name in front of them before your competitor does.
+
+15 minutes?
+
+[Name]</div>
+          <h3>Email 3 — Soft Breakup (Day 12)</h3>
+          <div class="code-block">Subject: Last note
+
+[First Name],
+
+I'll make this easy — if the timing's off, just say so and I'll leave you alone.
+
+If you're curious about what a targeted outbound campaign could do for [Company Name], I'll put together a short sample sequence for your specific capability set and you can judge it on its own merits.
+
+Either way, appreciate your time.
+
+[Name]</div>
+        </div>
+
+      </div><!-- /analysis-content -->
+    </div><!-- /analysis-grid -->
+  </div>
+
+  <!-- TAB 3: SUMMARY -->
+  <div class="tab-pane" id="tab-summary">
+    <div class="summary-grid">
+      <div class="stat-card">
+        <div class="value">500</div>
+        <div class="label">Total Niches Analyzed</div>
+        <div class="sub">100 Core + 400 Additional</div>
+      </div>
+      <div class="stat-card">
+        <div class="value">$420B</div>
+        <div class="label">US Metal Fabrication Market</div>
+        <div class="sub">Growing with re-shoring tailwind</div>
+      </div>
+      <div class="stat-card">
+        <div class="value">75K+</div>
+        <div class="label">US Machine Shops</div>
+        <div class="sub">Nearly zero doing outbound sales</div>
+      </div>
+      <div class="stat-card">
+        <div class="value">$54K</div>
+        <div class="label">Target Annual Retainer</div>
+        <div class="sub">$4,500/mo avg × 12 months</div>
+      </div>
+      <div class="stat-card">
+        <div class="value">78%</div>
+        <div class="label">Target Gross Margin</div>
+        <div class="sub">Cold email lead gen for B2B manufacturing</div>
+      </div>
+      <div class="stat-card">
+        <div class="value">60 days</div>
+        <div class="label">Avg Sales Cycle</div>
+        <div class="sub">Owner decision — no committee</div>
+      </div>
+    </div>
+
+    <div class="top-niches">
+      <h3>Top 10 Core Niches by Opportunity Score</h3>
+      <div id="top10-list">Loading...</div>
+    </div>
+
+    <div class="top-niches">
+      <h3>Strategic Recommendation</h3>
+      <p style="font-size:14px;line-height:1.8;color:var(--text)">
+        <strong>Lead niche:</strong> General CNC Machining Job Shops and Swiss CNC Screw Machine Shops represent the largest addressable market with the clearest decision-maker profile (owner/president, $3M–$50M revenue, zero outbound activity). These are the initial ICP for campaign development.<br><br>
+        <strong>Premium tier:</strong> Aerospace Machined Parts Manufacturers (AS9100), Medical Device Component Manufacturers (ISO 13485), and Semiconductor Equipment Parts Manufacturers command premium retainers ($6,000–$8,000/month) due to the specificity of their buyer universe and the urgency of re-shoring.<br><br>
+        <strong>Core positioning:</strong> ContractMotion is <em>not</em> a marketing agency — we are a <strong>business development engine for manufacturers who have never done outbound</strong>. The language is always "qualified conversations," "procurement meetings," and "new customer relationships" — never "brand awareness," "impressions," or "traffic."<br><br>
+        <strong>Outreach strategy:</strong> Apollo + LinkedIn to identify shop owners/presidents. Initial list: 500 targets per month. 3-touch email sequence. Reply handling in-house. Meeting booking routed directly to owner calendar. Monthly reporting call.
+      </p>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ── Niche data ─────────────────────────────────────────────────────────────────
+const NICHES = [
+  // FORMAT: [rank, name, category, composite, econ, cushion, serv, mktability, ltv, deal, margin, sales_cycle, payment]
+  // Core niches (scored inline for HTML — representative sample of top scoring)
+  [1,"5-Axis Simultaneous Machining Centers","Core",9.56,10,10,6,6,120000,60000,80,75,"Retainer"],
+  [2,"Aerospace Turbine Blade & Airfoil Manufacturers","Core",9.20,10,10,4,4,140000,70000,80,90,"Retainer"],
+  [3,"Missile & Munitions Component Manufacturers","Core",9.20,10,10,4,4,140000,70000,80,90,"Retainer"],
+  [4,"Orthopedic Implant Machining Companies","Core",9.20,10,10,4,4,140000,70000,80,90,"Retainer"],
+  [5,"Photomask & Reticle Component Manufacturers","Core",9.24,10,10,4,4,140000,70000,82,90,"Retainer"],
+  [6,"Aerospace Machined Parts Manufacturers (AS9100)","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [7,"Defense Component Machining Companies","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [8,"Medical Device Machined Component Manufacturers (ISO 13485)","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [9,"Semiconductor Equipment Parts Manufacturers","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [10,"RF Module & Microelectronics Assembly Companies","Core",9.12,10,10,4,4,130000,65000,80,75,"Retainer"],
+  [11,"Defense Electronics Contract Manufacturers","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [12,"AS9100 & ITAR Registered Machining Companies","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [13,"Defense-Cleared Precision Machining Facilities","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [14,"Titanium & Exotic Alloy Machining Specialists","Core",9.12,10,10,4,4,130000,65000,80,90,"Retainer"],
+  [15,"Precision EDM & CNC Combination Shops","Core",8.90,10,10,6,6,100000,50000,80,60,"Retainer"],
+  [16,"Swiss CNC Screw Machine Shops","Core",8.89,10,10,6,6,100000,50000,80,60,"Retainer"],
+  [17,"Swiss Turn Precision Parts Manufacturers","Core",8.97,10,10,6,6,104000,52000,80,60,"Retainer"],
+  [18,"Production CNC Machining Houses (High Volume)","Core",8.74,10,10,6,4,110000,55000,78,75,"Retainer"],
+  [19,"Fine Blanking & Precision Stamping Houses","Core",8.74,10,10,6,4,110000,55000,80,75,"Retainer"],
+  [20,"Multi-Spindle CNC Production Shops","Core",8.74,10,10,6,4,100000,50000,78,60,"Retainer"],
+  [21,"Progressive Die Stamping Companies","Core",8.74,10,10,6,4,110000,55000,78,75,"Retainer"],
+  [22,"Closed Die Forging Companies","Core",8.74,10,10,6,4,110000,55000,78,75,"Retainer"],
+  [23,"Contract Electronics Manufacturing Services (EMS)","Core",8.74,10,10,6,6,120000,60000,78,75,"Retainer"],
+  [24,"PCB Assembly & SMT Contract Manufacturers","Core",8.74,10,10,6,6,110000,55000,78,60,"Retainer"],
+  [25,"Micro-Precision Screw Machine Shops","Core",8.74,10,10,6,4,110000,55000,80,75,"Retainer"],
+  [26,"Hybrid Additive-Subtractive Machining Centers","Core",8.67,10,10,6,6,120000,60000,80,75,"Retainer"],
+  [27,"Metal 3D Printing & DMLS Service Bureaus","Core",8.74,10,10,6,6,110000,55000,80,60,"Retainer"],
+  [28,"Rapid Prototyping & Low-Volume CNC Shops","Core",8.67,10,10,6,8,96000,48000,80,45,"Retainer"],
+  [29,"Wafer Handling Component Machining Shops","Core",8.67,10,10,4,4,120000,60000,80,75,"Retainer"],
+  [30,"General CNC Machining Job Shops (3-5 Axis)","Core",8.53,10,10,6,6,96000,48000,78,60,"Retainer"],
+  [31,"Offshore Wind Installation Vessel Operators","Additional",8.74,10,10,4,4,140000,70000,75,90,"Retainer"],
+  [32,"Subsea Cable Laying & Maintenance Companies","Additional",8.56,10,10,4,4,130000,65000,75,90,"Retainer"],
+  [33,"FPSO Conversion & Offshore Facility Companies","Additional",8.74,10,10,4,2,140000,70000,75,90,"Retainer"],
+  [34,"LNG Carrier Management Companies","Additional",8.74,10,10,4,2,140000,70000,75,90,"Retainer"],
+  [35,"Semi-Submersible Platform Operators","Additional",8.74,10,10,4,2,140000,70000,72,90,"Retainer"],
+  [36,"Jack-Up Rig Contractors","Additional",8.56,10,10,4,4,130000,65000,72,90,"Retainer"],
+  [37,"Private Jet Charter Companies","Additional",8.33,10,10,6,6,120000,60000,75,75,"Retainer"],
+  [38,"Aircraft Fractional Ownership Companies","Additional",8.45,10,10,6,4,130000,65000,75,90,"Retainer"],
+  [39,"Port Master Planning & Development Consultants","Additional",8.33,10,10,4,4,120000,60000,80,90,"Retainer"],
+  [40,"Private Equity Portfolio Operations Teams","Additional",8.33,10,10,4,4,120000,60000,80,90,"Retainer"],
+];
+
+// ── Tab switching ──────────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab')[['scorecard','analysis','summary'].indexOf(name)].classList.add('active');
+}
+
+// ── Scorecard table ────────────────────────────────────────────────────────────
+let sortCol = 0;
+let sortDir = 1;
+let filteredData = [...NICHES];
+
+function scoreColor(s) {
+  if (s >= 8.5) return 'score-high';
+  if (s >= 7.0) return 'score-mid';
+  return 'score-low';
+}
+
+function fillClass(s) {
+  if (s >= 8.5) return 'fill-high';
+  if (s >= 7.0) return 'fill-mid';
+  return 'fill-low';
+}
+
+function formatMoney(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + n;
+}
+
+function renderTable() {
+  const tbody = document.getElementById('scorecard-body');
+  tbody.innerHTML = '';
+  document.getElementById('results-count').textContent = filteredData.length + ' niches shown';
+
+  filteredData.forEach(row => {
+    const [rank, name, cat, comp, econ, cush, serv, mktab, ltv, deal, margin, cycle, payment] = row;
+    const tr = document.createElement('tr');
+    if (cat === 'Core') tr.classList.add('core-row');
+
+    const pct = Math.round((comp / 10) * 100);
+    tr.innerHTML = `
+      <td class="center">${rank}</td>
+      <td>${name}</td>
+      <td class="center"><span class="tag ${cat === 'Core' ? 'core' : 'additional'}">${cat}</span></td>
+      <td>
+        <div class="score-bar">
+          <div class="bar"><div class="fill ${fillClass(comp)}" style="width:${pct}%"></div></div>
+          <span class="score-val ${scoreColor(comp)}">${comp}</span>
+        </div>
+      </td>
+      <td class="center ${scoreColor(econ)}">${econ}</td>
+      <td class="center ${scoreColor(cush)}">${cush}</td>
+      <td class="center ${scoreColor(serv)}">${serv}</td>
+      <td class="center ${scoreColor(mktab)}">${mktab}</td>
+      <td class="center">${formatMoney(ltv)}</td>
+      <td class="center">${formatMoney(deal)}</td>
+      <td class="center">${margin}%</td>
+      <td class="center">${cycle}d</td>
+      <td class="center">${payment}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const cat = document.getElementById('cat-filter').value;
+  const minScore = parseFloat(document.getElementById('score-filter').value) || 0;
+
+  filteredData = NICHES.filter(row => {
+    const [rank, name, category, comp] = row;
+    const matchSearch = !search || name.toLowerCase().includes(search);
+    const matchCat = !cat || category === cat;
+    const matchScore = comp >= minScore;
+    return matchSearch && matchCat && matchScore;
+  });
+
+  // Re-sort
+  sortTableData();
+  renderTable();
+}
+
+function resetFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('cat-filter').value = '';
+  document.getElementById('score-filter').value = '0';
+  filteredData = [...NICHES];
+  sortTableData();
+  renderTable();
+}
+
+function sortTable(col) {
+  if (sortCol === col) { sortDir *= -1; }
+  else { sortCol = col; sortDir = 1; }
+
+  document.querySelectorAll('thead th').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+  });
+  const ths = document.querySelectorAll('thead th');
+  ths[col].classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+
+  sortTableData();
+  renderTable();
+}
+
+function sortTableData() {
+  filteredData.sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (typeof av === 'string') return sortDir * av.localeCompare(bv);
+    return sortDir * (av - bv);
+  });
+}
+
+// ── Analysis nav ───────────────────────────────────────────────────────────────
+function scrollToSection(id, el) {
+  document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.analysis-nav a').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+  return false;
+}
+
+// ── Top 10 summary ─────────────────────────────────────────────────────────────
+function renderTop10() {
+  const top10 = NICHES.filter(n => n[2] === 'Core').sort((a,b) => b[3]-a[3]).slice(0,10);
+  const container = document.getElementById('top10-list');
+  const badges = ['gold','silver','bronze','','','','','','',''];
+  container.innerHTML = top10.map((n, i) => `
+    <div class="top-niche-item">
+      <div class="rank-badge ${badges[i] || ''}">${i+1}</div>
+      <div class="niche-info">
+        <div class="name">${n[1]}</div>
+        <div class="meta">LTV: ${formatMoney(n[8])} &bull; Deal: ${formatMoney(n[9])} &bull; ${n[12]}</div>
+      </div>
+      <div class="niche-score ${scoreColor(n[3])}">${n[3]}</div>
+    </div>
+  `).join('');
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────────
+filteredData = [...NICHES];
+sortTableData();
+renderTable();
+renderTop10();
+</script>
+</body>
+</html>

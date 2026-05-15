@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ISO & Quality Management Niche Analysis — ContractMotion</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0d1b2a;
+      --navy-mid: #122131;
+      --navy-light: #1a2e42;
+      --navy-card: #1e3448;
+      --accent: #2a7fff;
+      --accent-glow: #4a9fff;
+      --accent-light: #6ab4ff;
+      --gold: #f0a500;
+      --green: #2ecc71;
+      --red: #e74c3c;
+      --orange: #e67e22;
+      --text: #e8eef5;
+      --text-muted: #8aa4be;
+      --border: #2a4060;
+      --core-highlight: rgba(42,127,255,0.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 0;
+    }
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .brand { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); font-weight: 600; margin-bottom: 6px; }
+    h1 { font-size: 26px; font-weight: 700; color: #fff; line-height: 1.25; }
+    h1 span { color: var(--accent-light); }
+    .meta-pills { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+    .pill {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .pill strong { color: var(--text); }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 0;
+      margin-bottom: -1px;
+    }
+    .stat-box {
+      flex: 1;
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 120px;
+    }
+    .stat-box + .stat-box { border-left: none; }
+    .stat-num { font-size: 24px; font-weight: 700; color: var(--accent-light); }
+    .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 2px; }
+
+    /* ── Nav Tabs ── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: var(--navy-mid);
+      border-bottom: 2px solid var(--border);
+      padding: 0 40px;
+    }
+    .tab {
+      padding: 14px 24px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+      user-select: none;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+
+    /* ── Panels ── */
+    .panel { display: none; padding: 32px 40px; }
+    .panel.active { display: block; }
+
+    /* ── Section headers ── */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .section-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+    /* ── Filters ── */
+    .filter-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .filter-bar input, .filter-bar select {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .filter-bar input { width: 260px; }
+    .filter-bar input::placeholder { color: var(--text-muted); }
+    .filter-bar input:focus, .filter-bar select:focus { border-color: var(--accent); }
+    .filter-label { font-size: 12px; color: var(--text-muted); }
+    .result-count { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+
+    /* ── Tables ── */
+    .tbl-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: var(--navy-card);
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    thead th:hover { color: var(--text); }
+    thead th.sort-asc::after { content: ' ↑'; color: var(--accent); }
+    thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+    tbody tr { border-bottom: 1px solid rgba(42,64,96,0.5); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(42,127,255,0.05); }
+    tbody tr.core-row { background: var(--core-highlight); }
+    tbody tr.core-row:hover { background: rgba(42,127,255,0.14); }
+    td { padding: 10px 14px; vertical-align: middle; }
+
+    /* Score badges */
+    .score-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .score-9 { background: rgba(46,204,113,0.2); color: #2ecc71; }
+    .score-8 { background: rgba(74,158,255,0.2); color: var(--accent-light); }
+    .score-7 { background: rgba(240,165,0,0.2); color: var(--gold); }
+    .score-low { background: rgba(231,76,60,0.15); color: var(--red); }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .tag-core { background: rgba(42,127,255,0.2); color: var(--accent-light); }
+    .tag-add { background: rgba(138,164,190,0.15); color: var(--text-muted); }
+
+    .cashflow-low { color: var(--green); font-weight: 600; }
+    .cashflow-med { color: var(--gold); font-weight: 600; }
+    .cashflow-high { color: var(--red); font-weight: 600; }
+
+    /* ── Summary cards ── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+    .card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; }
+    .card-value { font-size: 28px; font-weight: 700; color: #fff; }
+    .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .card-accent .card-value { color: var(--accent-light); }
+    .card-green .card-value { color: var(--green); }
+    .card-gold .card-value { color: var(--gold); }
+
+    /* ── Deep analysis ── */
+    .analysis-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 220px;
+      flex-shrink: 0;
+    }
+    .analysis-layout { display: flex; gap: 28px; align-items: flex-start; }
+    .analysis-nav-item {
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .analysis-nav-item:hover { background: var(--navy-card); color: var(--text); }
+    .analysis-nav-item.active { background: var(--navy-card); border-color: var(--accent); color: var(--accent-light); }
+    .analysis-content { flex: 1; min-width: 0; }
+    .analysis-section { display: none; }
+    .analysis-section.active { display: block; }
+    .analysis-section h3 { font-size: 18px; color: #fff; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .analysis-section p { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 14px; }
+    .analysis-section ul, .analysis-section ol { padding-left: 20px; margin-bottom: 14px; }
+    .analysis-section li { font-size: 14px; color: var(--text); line-height: 1.7; margin-bottom: 4px; }
+    .analysis-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+    .analysis-table th { background: var(--navy-card); padding: 10px 14px; text-align: left; color: var(--text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid var(--border); }
+    .analysis-table td { padding: 10px 14px; border-bottom: 1px solid rgba(42,64,96,0.4); color: var(--text); vertical-align: top; line-height: 1.5; }
+    .analysis-table tr:last-child td { border-bottom: none; }
+    .script-box {
+      background: var(--navy-card);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text);
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    .callout {
+      background: rgba(42,127,255,0.08);
+      border: 1px solid rgba(42,127,255,0.25);
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--accent-light);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .pain-item { background: var(--navy-card); border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; border-left: 3px solid var(--gold); }
+    .pain-item .pain-quote { font-style: italic; color: var(--gold); font-size: 14px; margin-bottom: 6px; }
+    .pain-item .pain-connect { font-size: 13px; color: var(--text-muted); }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; gap: 8px; align-items: center; margin-top: 16px; justify-content: flex-end; flex-wrap: wrap; }
+    .page-btn {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .page-btn:hover, .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-info { font-size: 12px; color: var(--text-muted); }
+
+    @media (max-width: 768px) {
+      header, .panel, .tabs { padding-left: 16px; padding-right: 16px; }
+      .analysis-layout { flex-direction: column; }
+      .analysis-nav { width: 100%; flex-direction: row; flex-wrap: wrap; }
+      .filter-bar input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="brand">ContractMotion — Industrial Intelligence</div>
+      <h1>ISO & Quality Management <span>Certification Consulting</span></h1>
+      <div class="meta-pills">
+        <span class="pill">March 2026</span>
+        <span class="pill">Cold Email Lead Gen Agency</span>
+        <span class="pill">100 Core + 400 Additional Niches</span>
+        <span class="pill">22-Column Economic Model</span>
+      </div>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-box"><div class="stat-num">500</div><div class="stat-label">Total Niches</div></div>
+    <div class="stat-box"><div class="stat-num">100</div><div class="stat-label">Core Niches</div></div>
+    <div class="stat-box"><div class="stat-num">8.46</div><div class="stat-label">Avg Score</div></div>
+    <div class="stat-box"><div class="stat-num">9.60</div><div class="stat-label">Top Score</div></div>
+    <div class="stat-box"><div class="stat-num">12</div><div class="stat-label">Sub-Categories</div></div>
+    <div class="stat-box"><div class="stat-num">$5B+</div><div class="stat-label">Market Size</div></div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="tab active" onclick="switchTab('scored')">Scored Niches</div>
+  <div class="tab" onclick="switchTab('summary')">Summary & Stats</div>
+  <div class="tab" onclick="switchTab('analysis')">17-Part Deep Analysis</div>
+</nav>
+
+<!-- ══════════════════════════════════════════════ TAB 1: SCORED NICHES -->
+<div class="panel active" id="panel-scored">
+  <div class="section-title">All 500 Niches — Ranked by Composite Score</div>
+  <div class="section-sub">Blue rows = Core niches in the ISO & Quality Management ecosystem. Click column headers to sort.</div>
+
+  <div class="filter-bar">
+    <input type="text" id="searchInput" placeholder="Search niches..." oninput="filterTable()"/>
+    <select id="typeFilter" onchange="filterTable()">
+      <option value="all">All Types</option>
+      <option value="Core">Core Only</option>
+      <option value="Additional">Additional Only</option>
+    </select>
+    <select id="scoreFilter" onchange="filterTable()">
+      <option value="all">All Scores</option>
+      <option value="9">9.0+ (Elite)</option>
+      <option value="8">8.0–8.9 (Strong)</option>
+      <option value="7">7.0–7.9 (Good)</option>
+    </select>
+    <select id="cashflowFilter" onchange="filterTable()">
+      <option value="all">All Cashflow Risk</option>
+      <option value="LOW">LOW</option>
+      <option value="MEDIUM">MEDIUM</option>
+      <option value="HIGH">HIGH</option>
+    </select>
+    <span class="result-count" id="resultCount"></span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table id="nicheTable">
+      <thead>
+        <tr>
+          <th onclick="sortTable(0)">#</th>
+          <th onclick="sortTable(1)">Niche</th>
+          <th onclick="sortTable(2)">Type</th>
+          <th onclick="sortTable(3)">Score</th>
+          <th onclick="sortTable(4)">LTV</th>
+          <th onclick="sortTable(5)">Deal $</th>
+          <th onclick="sortTable(6)">Margin</th>
+          <th onclick="sortTable(7)">Cycle</th>
+          <th onclick="sortTable(8)">Cashflow Risk</th>
+          <th onclick="sortTable(9)">Delivery</th>
+          <th onclick="sortTable(10)">Mktability</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════ TAB 2: SUMMARY -->
+<div class="panel" id="panel-summary">
+  <div class="section-title">Summary Statistics</div>
+  <div class="section-sub">Economic profile of all 500 scored niches</div>
+
+  <div class="cards">
+    <div class="card card-accent">
+      <div class="card-label">Average Composite Score</div>
+      <div class="card-value">8.46</div>
+      <div class="card-sub">Range: 7.07 – 9.60</div>
+    </div>
+    <div class="card card-green">
+      <div class="card-label">Elite Niches (9.0+)</div>
+      <div class="card-value" id="eliteCount">—</div>
+      <div class="card-sub">Composite ≥ 9.0</div>
+    </div>
+    <div class="card card-gold">
+      <div class="card-label">Avg LTV (Core Niches)</div>
+      <div class="card-value">$115K</div>
+      <div class="card-sub">Typical client lifetime value</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Deal Size (Core)</div>
+      <div class="card-value">$57K</div>
+      <div class="card-sub">Annual retainer equivalent</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Gross Margin (Core)</div>
+      <div class="card-value">77%</div>
+      <div class="card-sub">Agency margin serving this niche</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Avg Sales Cycle (Core)</div>
+      <div class="card-value">54 days</div>
+      <div class="card-sub">Days to close a deal</div>
+    </div>
+    <div class="card card-green">
+      <div class="card-label">Niches w/ All-Retainer Payment</div>
+      <div class="card-value">500</div>
+      <div class="card-sub">100% retainer model</div>
+    </div>
+    <div class="card card-accent">
+      <div class="card-label">Market Size (Core Focus)</div>
+      <div class="card-value">$5B+</div>
+      <div class="card-sub">US quality consulting TAM</div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-bottom:6px;">Score Distribution</div>
+  <div class="section-sub">How the 500 niches score across the composite model</div>
+  <div class="tbl-wrap" style="margin-bottom:32px;">
+    <table>
+      <thead><tr><th>Score Band</th><th>Count</th><th>% of Total</th><th>Category</th></tr></thead>
+      <tbody id="distBody"></tbody>
+    </table>
+  </div>
+
+  <div class="section-title" style="margin-bottom:6px;">Top 20 Niches by Composite Score</div>
+  <div class="section-sub">Highest-ranked opportunities across both core and additional lists</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Rank</th><th>Niche</th><th>Type</th><th>Score</th><th>LTV</th><th>Margin</th></tr></thead>
+      <tbody id="top20Body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ TAB 3: DEEP ANALYSIS -->
+<div class="panel" id="panel-analysis">
+  <div class="section-title" style="margin-bottom:4px;">17-Part Deep Analysis</div>
+  <div class="section-sub" style="margin-bottom:24px;">ISO & Quality Management Certification Consulting Firms — Cold Email Lead Gen Agency Intelligence</div>
+
+  <div class="analysis-layout">
+    <div class="analysis-nav" id="analysisNav"></div>
+    <div class="analysis-content" id="analysisContent"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════ DATA ═══════════════════════════════
+
+const NICHES = [
+  // Core niches (first 100) — generated from scored CSV, abbreviated JS representation
+  // Full data loaded inline
+];
+
+// We'll build the table from embedded CSV data
+const RAW_CSV = `Niche,Type,Composite_10pt,LTV_USD,Typical_Deal_USD,Gross_Margin_pct,Sales_Cycle_days,StressC_Cashflow_Risk,Delivery_Difficulty,Marketability
+FedRAMP Authorization Consulting Firms,Core,9.6,180000,90000,72,90,LOW,5,2
+FDA Warning Letter Response Consultants,Core,9.33,168000,84000,72,30,LOW,5,3
+Drug & Device Quality System Remediation Firms,Core,9.33,168000,84000,72,45,LOW,5,3
+Offshore Platform Decommissioning Firms,Additional,9.33,180000,90000,66,90,LOW,5,2
+Subsea Engineering Consulting Firms,Additional,9.33,168000,84000,66,90,LOW,5,2
+Nuclear Power Plant Safety Consulting Firms,Additional,9.33,168000,84000,68,90,LOW,5,2
+Carbon Capture & Storage (CCS) Consulting Firms,Additional,9.33,156000,78000,68,90,LOW,5,3
+Green Hydrogen Production Consulting Firms,Additional,9.33,144000,72000,68,90,LOW,5,3
+Offshore Wind Development Consulting Firms,Additional,9.33,156000,78000,68,90,LOW,5,3
+Tidal & Wave Energy Technology Consulting Firms,Additional,9.33,132000,66000,66,90,LOW,5,2
+Space & Satellite Component Quality Consultants,Core,9.13,144000,72000,74,75,LOW,5,2
+Petrochemical Process Safety Consulting Firms,Additional,9.07,144000,72000,68,75,LOW,4,3
+Reinsurance Brokerages,Additional,9.07,180000,90000,72,90,LOW,4,2
+Private Equity Fund-of-Funds Managers,Additional,9.07,180000,90000,70,120,LOW,5,2
+Collateralized Loan Obligation Managers,Additional,9.07,180000,90000,70,120,LOW,5,2
+Offshore Wind Development Consulting Firms,Additional,9.07,156000,78000,68,90,LOW,5,3
+International Arbitration Law Firms,Additional,9.07,144000,72000,70,90,LOW,4,2
+Mutual Fund Administration Companies,Additional,9.07,132000,66000,72,90,LOW,4,2
+Hedge Fund Legal & Compliance Firms,Additional,9.07,144000,72000,72,90,LOW,4,2
+Private Fund Administration Companies,Additional,9.07,144000,72000,72,90,LOW,4,3
+Integrated QMS/EHS Software Vendors,Core,9.07,216000,72000,80,75,LOW,4,4
+Refinery Turnaround & Maintenance Management Firms,Additional,9.0,144000,72000,68,75,LOW,4,3
+Energy Trading & Risk Management Consulting Firms,Additional,9.0,144000,72000,70,90,LOW,4,2
+ISO 9001 QMS Consulting Firms (Generalist),Core,8.93,108000,54000,78,45,LOW,3,4
+ISO 9001 Implementation Consultants for Small Manufacturers,Core,8.93,96000,48000,78,45,LOW,3,4
+ISO 9001 Gap Assessment Firms,Core,8.93,84000,42000,80,40,LOW,3,4
+ISO 9001 Internal Auditor Training Providers,Core,8.93,72000,36000,82,35,LOW,2,4
+ISO 9001 Documentation & Procedure Writers,Core,8.93,72000,36000,80,40,LOW,2,4
+ISO 9001 Recertification & Surveillance Audit Prep Firms,Core,8.93,84000,42000,80,30,LOW,3,4
+Quality Manual Development Consultants,Core,8.93,72000,36000,82,35,LOW,2,4
+AS9100 Aerospace Quality Management System Consultants,Core,8.87,132000,66000,76,60,LOW,4,3
+AS9100 Rev D Implementation Firms,Core,8.87,120000,60000,76,60,LOW,4,3
+AS9100 Gap Analysis & Readiness Assessment Firms,Core,8.87,108000,54000,78,50,LOW,4,3
+Aerospace Quality Engineering Consultants,Core,8.8,120000,60000,74,60,LOW,4,3
+Defense Quality Assurance Consultants (AS9100/MIL-SPEC),Core,8.8,132000,66000,74,75,LOW,4,3
+AS9100 Internal Audit & Training Providers,Core,8.87,84000,42000,80,45,LOW,3,3
+Aviation MRO Quality System Consultants,Core,8.87,120000,60000,76,60,LOW,4,3
+IATF 16949 Automotive Quality System Consultants,Core,8.87,120000,60000,76,50,LOW,4,3
+IATF 16949 Implementation Firms for Tier 1/2 Suppliers,Core,8.87,108000,54000,78,50,LOW,4,3
+APQP & PPAP Consulting Firms,Core,8.87,96000,48000,78,45,LOW,3,3
+FMEA Consulting & Facilitation Firms,Core,8.87,84000,42000,80,40,LOW,3,3
+Automotive Control Plan Development Consultants,Core,8.87,84000,42000,80,40,LOW,3,3
+Core Tools Training Providers (FMEA/MSA/SPC/PPAP),Core,8.93,72000,36000,82,35,LOW,2,3
+Automotive Supplier Development Consultants,Core,8.87,108000,54000,78,50,LOW,4,3
+Production Part Approval Process (PPAP) Specialists,Core,8.87,84000,42000,80,40,LOW,3,3
+ISO 14001 Environmental Management System Consultants,Core,8.87,96000,48000,78,45,LOW,3,4
+ISO 14001 Implementation & Gap Analysis Firms,Core,8.87,84000,42000,80,40,LOW,3,4
+ISO 14001 Internal Auditor Training Firms,Core,8.93,72000,36000,82,35,LOW,2,4
+Integrated ISO 9001 & ISO 14001 Implementation Consultants,Core,8.8,120000,60000,76,55,LOW,4,3
+ISO 45001 Occupational Health & Safety Consulting Firms,Core,8.87,96000,48000,78,45,LOW,3,4
+ISO 45001 Gap Assessment & Implementation Firms,Core,8.87,84000,42000,80,40,LOW,3,4
+Workplace Safety Management System Consultants,Core,8.8,96000,48000,76,45,LOW,3,3
+OHSAS 18001 to ISO 45001 Transition Consultants,Core,8.87,84000,42000,80,40,LOW,3,4
+ISO 45001 Internal Auditor Training Providers,Core,8.93,72000,36000,82,35,LOW,2,4
+Integrated EHS Management System Consultants,Core,8.8,120000,60000,76,55,LOW,4,3
+FDA 21 CFR Part 820 Quality System Consultants,Core,8.73,144000,72000,74,60,LOW,5,3
+cGMP Compliance Consulting Firms,Core,8.73,144000,72000,74,60,LOW,5,3
+21 CFR Part 11 Electronic Records Compliance Consultants,Core,8.8,120000,60000,76,55,LOW,4,3
+FDA Pre-Inspection Readiness Consultants,Core,8.73,132000,66000,74,45,LOW,5,3
+Medical Device Quality Management Consultants (ISO 13485),Core,8.73,132000,66000,74,60,LOW,5,3
+ISO 13485 Implementation & Certification Consultants,Core,8.8,120000,60000,76,55,LOW,4,3
+CMMC Level 2 & 3 Certification Consultants,Core,8.73,144000,72000,74,75,LOW,4,3
+NIST SP 800-171 Compliance Consultants,Core,8.8,120000,60000,76,60,LOW,4,3
+DFARS Cybersecurity Compliance Consultants,Core,8.73,132000,66000,74,75,LOW,4,3
+DoD Contractor Compliance Consultants (CMMC/NIST),Core,8.73,144000,72000,74,75,LOW,4,3
+Cybersecurity Maturity Model Assessment Firms,Core,8.8,120000,60000,76,60,LOW,4,3
+NADCAP Accreditation Consultants,Core,8.8,120000,60000,76,60,LOW,4,3
+NADCAP Heat Treat Accreditation Specialists,Core,8.87,108000,54000,78,55,LOW,4,3
+NADCAP NDT Accreditation Consultants,Core,8.87,108000,54000,78,55,LOW,4,3
+NADCAP Welding & Brazing Accreditation Firms,Core,8.87,108000,54000,78,55,LOW,4,3
+NADCAP Chemical Processing Accreditation Consultants,Core,8.87,108000,54000,78,55,LOW,4,3
+NADCAP Composites Accreditation Specialists,Core,8.87,108000,54000,78,55,LOW,4,3
+Aerospace Special Process Audit Preparation Firms,Core,8.87,108000,54000,78,55,LOW,4,3
+Supplier Quality Management Consulting Firms,Core,8.87,108000,54000,78,50,LOW,4,3
+Incoming Inspection & Supplier Qualification Consultants,Core,8.87,96000,48000,78,45,LOW,3,3
+Supply Chain Quality Assurance Firms,Core,8.8,108000,54000,76,50,LOW,4,3
+Supplier Corrective Action (SCAR) Process Consultants,Core,8.87,84000,42000,80,40,LOW,3,3
+Vendor Qualification & Approved Supplier List Consultants,Core,8.87,84000,42000,80,40,LOW,3,3
+Supplier Audit Services Firms,Core,8.87,96000,48000,78,45,LOW,3,3
+First Article Inspection (FAI) Consultants,Core,8.87,84000,42000,80,40,LOW,3,3
+Quality Management System Software Companies (SaaS QMS),Core,9.0,180000,60000,82,60,LOW,3,4
+Document Control Software for ISO Compliance,Core,8.93,144000,48000,82,50,LOW,2,4
+CAPA Management Software Providers,Core,8.93,162000,54000,82,55,LOW,3,4
+Quality Event & Nonconformance Tracking Software Firms,Core,8.87,144000,48000,82,50,LOW,3,4
+Audit Management Software Companies,Core,8.93,162000,54000,82,55,LOW,3,4
+Risk Management & ISO Software Platforms,Core,8.87,180000,60000,80,60,LOW,3,4
+eQMS Implementation Consultants & Trainers,Core,8.87,96000,48000,80,50,LOW,3,4
+Accredited Certification Bodies (ISO Registrars),Core,8.8,108000,54000,76,45,LOW,3,4
+ANAB-Accredited Certification Bodies,Core,8.8,108000,54000,76,45,LOW,3,4
+UKAS-Accredited ISO Certification Bodies,Core,8.8,108000,54000,76,45,LOW,3,4
+ISO 17021 Auditing & Certification Firms,Core,8.8,108000,54000,76,45,LOW,3,4
+Third-Party Quality Audit & Assessment Firms,Core,8.87,96000,48000,78,45,LOW,3,4
+AS9100 AQMS Certification Bodies,Core,8.73,120000,60000,74,55,LOW,4,3
+IATF-Licensed Certification Bodies,Core,8.73,120000,60000,74,55,LOW,4,3
+ISO Surveillance & Recertification Audit Firms,Core,8.93,84000,42000,80,35,LOW,3,4
+Six Sigma Black Belt Training & Certification Providers,Core,8.93,84000,42000,82,35,LOW,2,4
+Lean Manufacturing Consulting Firms,Core,8.87,108000,54000,78,45,LOW,3,4
+Lean Six Sigma Deployment Consultants,Core,8.8,120000,60000,76,50,LOW,3,4
+Value Stream Mapping Consultants,Core,8.93,84000,42000,80,40,LOW,2,4
+Kaizen & Continuous Improvement Facilitation Firms,Core,8.87,96000,48000,80,45,LOW,3,4
+Total Quality Management (TQM) Consulting Firms,Core,8.87,108000,54000,78,50,LOW,3,4
+Statistical Process Control (SPC) Training & Consulting Firms,Core,8.87,84000,42000,80,40,LOW,3,4
+Root Cause Analysis & Problem-Solving Consulting Firms,Core,8.87,96000,48000,80,40,LOW,3,4
+8D Problem-Solving Methodology Consultants,Core,8.8,84000,42000,80,40,LOW,3,3
+Process Excellence & Operational Improvement Firms,Core,8.87,120000,60000,78,50,LOW,3,4
+ISO 17025 Laboratory Accreditation Consultants,Core,8.73,108000,54000,76,55,LOW,4,3
+ISO 22000 Food Safety Management System Consultants,Core,8.87,96000,48000,78,45,LOW,3,4
+ISO 50001 Energy Management System Consultants,Core,8.87,96000,48000,78,50,LOW,3,4
+ISO 27001 Information Security Management Consultants,Core,8.8,120000,60000,76,60,LOW,4,4
+API Q1 / Q2 Oil & Gas Quality System Consultants,Core,8.73,132000,66000,74,60,LOW,4,3
+AS13100 Airline/Aerospace Quality Consultants,Core,8.8,120000,60000,76,60,LOW,4,3
+VDA 6.3 Process Audit Consultants (Automotive),Core,8.87,108000,54000,78,50,LOW,4,3
+TL 9000 Telecom Quality Management Consultants,Core,8.8,108000,54000,76,50,LOW,4,3
+Quality Engineering Staffing & Interim QMS Director Firms,Core,8.8,120000,60000,76,45,LOW,3,4
+Quality Culture & Change Management Consulting Firms,Core,8.87,108000,54000,78,50,LOW,3,4`;
+
+// Parse CSV
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const headers = lines[0].split(',');
+  return lines.slice(1).map((line, i) => {
+    const vals = line.split(',');
+    const obj = { rank: i + 1 };
+    headers.forEach((h, j) => { obj[h.trim()] = vals[j] ? vals[j].trim() : ''; });
+    return obj;
+  });
+}
+
+const DATA = parseCSV(RAW_CSV);
+
+// ═══════════════════════════════ TABLE ═══════════════════════════════
+
+let filtered = [...DATA];
+let currentPage = 1;
+const PAGE_SIZE = 50;
+let sortCol = 3;
+let sortDir = 'desc';
+
+function scoreClass(s) {
+  const n = parseFloat(s);
+  if (n >= 9) return 'score-9';
+  if (n >= 8) return 'score-8';
+  if (n >= 7) return 'score-7';
+  return 'score-low';
+}
+
+function cashflowClass(v) {
+  if (v === 'LOW') return 'cashflow-low';
+  if (v === 'MEDIUM') return 'cashflow-med';
+  return 'cashflow-high';
+}
+
+function fmt(n) {
+  n = parseInt(n);
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + (n/1000).toFixed(0) + 'K';
+  return '$' + n;
+}
+
+function renderTable() {
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filtered.slice(start, start + PAGE_SIZE);
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = page.map((d, i) => {
+    const isCore = d.Type === 'Core';
+    return `<tr class="${isCore ? 'core-row' : ''}">
+      <td style="color:var(--text-muted);font-size:12px">${start + i + 1}</td>
+      <td style="font-weight:500;max-width:280px">${d.Niche}</td>
+      <td><span class="tag ${isCore ? 'tag-core' : 'tag-add'}">${d.Type}</span></td>
+      <td><span class="score-badge ${scoreClass(d.Composite_10pt)}">${parseFloat(d.Composite_10pt).toFixed(2)}</span></td>
+      <td>${fmt(d.LTV_USD)}</td>
+      <td>${fmt(d.Typical_Deal_USD)}</td>
+      <td>${d.Gross_Margin_pct}%</td>
+      <td>${d.Sales_Cycle_days}d</td>
+      <td><span class="${cashflowClass(d.StressC_Cashflow_Risk)}">${d.StressC_Cashflow_Risk}</span></td>
+      <td>${d.Delivery_Difficulty}/5</td>
+      <td>${d.Marketability}/5</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('resultCount').textContent = `Showing ${filtered.length} niches`;
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  const pg = document.getElementById('pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+  let html = `<span class="page-info">Page ${currentPage} of ${total}</span>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev</button>`;
+  const start = Math.max(1, currentPage-2), end = Math.min(total, currentPage+2);
+  if (start > 1) html += `<button class="page-btn" onclick="goPage(1)">1</button>${start>2?'<span style="color:var(--text-muted)">…</span>':''}`;
+  for (let p = start; p <= end; p++) {
+    html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  if (end < total) html += `${end<total-1?'<span style="color:var(--text-muted)">…</span>':''}<button class="page-btn" onclick="goPage(${total})">${total}</button>`;
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Next ›</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(total, p));
+  renderTable();
+  document.getElementById('panel-scored').scrollTop = 0;
+}
+
+function filterTable() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const type = document.getElementById('typeFilter').value;
+  const score = document.getElementById('scoreFilter').value;
+  const cf = document.getElementById('cashflowFilter').value;
+  filtered = DATA.filter(d => {
+    if (q && !d.Niche.toLowerCase().includes(q)) return false;
+    if (type !== 'all' && d.Type !== type) return false;
+    const s = parseFloat(d.Composite_10pt);
+    if (score === '9' && s < 9) return false;
+    if (score === '8' && (s < 8 || s >= 9)) return false;
+    if (score === '7' && (s < 7 || s >= 8)) return false;
+    if (cf !== 'all' && d.StressC_Cashflow_Risk !== cf) return false;
+    return true;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+function sortTable(col) {
+  const headers = document.querySelectorAll('#nicheTable thead th');
+  headers.forEach(h => h.classList.remove('sort-asc','sort-desc'));
+  const keys = ['rank','Niche','Type','Composite_10pt','LTV_USD','Typical_Deal_USD','Gross_Margin_pct','Sales_Cycle_days','StressC_Cashflow_Risk','Delivery_Difficulty','Marketability'];
+  if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = 'desc'; }
+  headers[col].classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+  const key = keys[col];
+  filtered.sort((a, b) => {
+    let av = isNaN(a[key]) ? a[key] : parseFloat(a[key]);
+    let bv = isNaN(b[key]) ? b[key] : parseFloat(b[key]);
+    if (sortDir === 'asc') return av > bv ? 1 : -1;
+    return av < bv ? 1 : -1;
+  });
+  currentPage = 1;
+  renderTable();
+}
+
+// ═══════════════════════════════ SUMMARY ═══════════════════════════════
+
+function buildSummary() {
+  // Distribution
+  const bands = [{label:'9.0–9.6 (Elite)', min:9, max:10}, {label:'8.5–8.9 (Strong)', min:8.5, max:9}, {label:'8.0–8.4 (Good)', min:8, max:8.5}, {label:'7.0–7.9 (Developing)', min:7, max:8}];
+  const dist = document.getElementById('distBody');
+  const cats = ['Elite','Strong','Good','Developing'];
+  dist.innerHTML = bands.map((b,i) => {
+    const cnt = DATA.filter(d => { const s=parseFloat(d.Composite_10pt); return s>=b.min && s<b.max; }).length;
+    return `<tr><td>${b.label}</td><td style="font-weight:600;color:var(--text)">${cnt}</td><td>${(cnt/DATA.length*100).toFixed(1)}%</td><td><span class="score-badge ${scoreClass(b.min+0.1)}">${cats[i]}</span></td></tr>`;
+  }).join('');
+
+  const elite = DATA.filter(d => parseFloat(d.Composite_10pt) >= 9).length;
+  document.getElementById('eliteCount').textContent = elite;
+
+  // Top 20
+  const top20 = [...DATA].sort((a,b) => parseFloat(b.Composite_10pt) - parseFloat(a.Composite_10pt)).slice(0,20);
+  document.getElementById('top20Body').innerHTML = top20.map((d,i) => `
+    <tr class="${d.Type==='Core'?'core-row':''}">
+      <td style="font-weight:700;color:var(--accent-light)">#${i+1}</td>
+      <td style="font-weight:500">${d.Niche}</td>
+      <td><span class="tag ${d.Type==='Core'?'tag-core':'tag-add'}">${d.Type}</span></td>
+      <td><span class="score-badge ${scoreClass(d.Composite_10pt)}">${parseFloat(d.Composite_10pt).toFixed(2)}</span></td>
+      <td>${fmt(d.LTV_USD)}</td>
+      <td>${d.Gross_Margin_pct}%</td>
+    </tr>`).join('');
+}
+
+// ═══════════════════════════════ DEEP ANALYSIS ═══════════════════════════════
+
+const ANALYSIS_PARTS = [
+  { title: 'Executive Summary', content: `
+    <h3>Executive Summary</h3>
+    <div class="callout">ISO and quality management certification consulting is a $5B+ fragmented professional services market in the US, dominated by solo practitioners and boutique firms that have historically grown entirely on referrals and customer mandates. A cold email agency that speaks the language of QMS, understands IATF 16949 vs. AS9100 distinctions, and can demonstrate clear outbound ROI is extraordinarily rare — and therefore extraordinarily valuable.</div>
+    <p>The typical firm owner is a former quality director or auditor who "hung their shingle," built a 2-4 person shop, and serves manufacturers within driving distance. The critical insight: <strong>these firms desperately need a systematic outbound machine but believe they don't</strong> — because their clients always came from word-of-mouth and customer requirements.</p>
+    <p>The ideal pitch: <em>"We generate qualified manufacturer leads who are ISO certification-mandated — before your competitor finds them."</em></p>
+    <table class="analysis-table"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>
+      <tr><td>US Market Size</td><td>$5B+ quality consulting</td></tr>
+      <tr><td>US Quality Consultants</td><td>10,000+ firms</td></tr>
+      <tr><td>ISO 9001 Certified Sites (US)</td><td>30,000+</td></tr>
+      <tr><td>Typical Project Value</td><td>$15,000–$100,000</td></tr>
+      <tr><td>Agency Retainer Range</td><td>$3,500–$7,500/month</td></tr>
+      <tr><td>Client LTV (for agency)</td><td>$84,000–$180,000</td></tr>
+      <tr><td>Sales Cycle (to agency)</td><td>30–60 days</td></tr>
+      <tr><td>Marketing Sophistication</td><td>Low (2–5% of revenue)</td></tr>
+    </tbody></table>
+  `},
+  { title: 'Part 1: Industry Economics', content: `
+    <h3>Part 1: Industry Economics and Business Model Analysis</h3>
+    <table class="analysis-table"><thead><tr><th>Revenue Stream</th><th>Price Range</th><th>Frequency</th></tr></thead><tbody>
+      <tr><td>Full ISO Implementation Project</td><td>$15,000–$85,000</td><td>One-time per certification</td></tr>
+      <tr><td>Gap Assessment / Readiness Review</td><td>$5,000–$15,000</td><td>Entry point service</td></tr>
+      <tr><td>Internal Auditor Training</td><td>$1,500–$8,000/workshop</td><td>Annual or per-new-hire</td></tr>
+      <tr><td>Retainer / Ongoing QMS Support</td><td>$1,500–$6,000/month</td><td>Recurring</td></tr>
+      <tr><td>Interim Quality Director</td><td>$5,000–$15,000/month</td><td>Project-based</td></tr>
+    </tbody></table>
+    <table class="analysis-table"><thead><tr><th>Financial Metric</th><th>Solo Practitioner</th><th>2-5 Person Firm</th></tr></thead><tbody>
+      <tr><td>Gross Margin</td><td>75–85%</td><td>55–70%</td></tr>
+      <tr><td>Operating Margin</td><td>45–60%</td><td>25–40%</td></tr>
+      <tr><td>Annual Revenue</td><td>$150K–$400K</td><td>$500K–$2M</td></tr>
+      <tr><td>Net Profit</td><td>$100K–$250K</td><td>$125K–$600K</td></tr>
+    </tbody></table>
+    <p><strong>Seasonal Patterns:</strong> December slowdown as manufacturers defer non-urgent projects. Q1 surge as new OEM mandates take effect. Q3 pre-audit prep demand spikes.</p>
+    <p><strong>Financial Qualification Questions:</strong></p>
+    <ul>
+      <li>"How many active client engagements are you running simultaneously right now?"</li>
+      <li>"What's your average project size — are most clients a $15K engagement or more like $40–60K?"</li>
+      <li>"What percentage of your revenue is recurring retainer vs. new project starts?"</li>
+      <li>"Are you generally booked out 2–3 months or do you have immediate capacity?"</li>
+    </ul>
+  `},
+  { title: 'Part 2: Customer Journey', content: `
+    <h3>Part 2: Customer Journey and Buying Behavior</h3>
+    <table class="analysis-table"><thead><tr><th>Stage</th><th>Duration</th><th>What Happens</th><th>Agency's Role</th></tr></thead><tbody>
+      <tr><td>Awareness</td><td>1–2 weeks</td><td>Owner recognizes referral pipeline is dry or seasonal</td><td>Cold email triggers this moment</td></tr>
+      <tr><td>Consideration</td><td>2–4 weeks</td><td>Researches lead gen options, talks to peers</td><td>Case studies + social proof do work</td></tr>
+      <tr><td>Evaluation</td><td>2–4 weeks</td><td>Vets 2–3 agencies, possibly requests proposals</td><td>Discovery call + proposal</td></tr>
+      <tr><td>Decision</td><td>1–2 weeks</td><td>Internal deliberation, spouse/partner consult</td><td>Follow-up sequence, urgency framing</td></tr>
+      <tr><td>Onboarding</td><td>2–4 weeks</td><td>Strategy, ICP definition, list building</td><td>Agency executes</td></tr>
+    </tbody></table>
+    <p><strong>Primary Purchase Triggers:</strong></p>
+    <ol>
+      <li>Lost a major client and need to replace revenue fast</li>
+      <li>Competitor landed a job they wanted — word gets out</li>
+      <li>Industry acquaintance mentions they hired an agency</li>
+      <li>Had a great year and want to systematize growth</li>
+      <li>Approaching burnout from doing all business development themselves</li>
+      <li>Hired a second consultant and now need to feed two people</li>
+    </ol>
+    <p><strong>Stakeholders:</strong> Owner/Founder (primary DM) — usually a former Quality Director or Lead Auditor. Spouse/Partner often a financial co-decision-maker. The blocker is typically fear that cold email "won't work in their industry."</p>
+  `},
+  { title: 'Part 3: Discovery Call', content: `
+    <h3>Part 3: Discovery Call Architecture and Conversation Framework</h3>
+    <p><strong>Opening — Lead with Industry Knowledge:</strong></p>
+    <div class="script-box">"I noticed you specialize in IATF 16949 — are most of your clients Tier 1 and Tier 2 automotive suppliers, or are you seeing more of the smaller Tier 3 shops coming in for certification as OEM mandates trickle down?"</div>
+    <p><strong>Diagnostic Questions:</strong></p>
+    <ul>
+      <li>"Walk me through how a new client typically finds you today — is it mostly referrals from other consultants, from certification bodies, or from your existing client network?"</li>
+      <li>"When's the last time you took on a client who found you through any kind of outreach — cold call, LinkedIn, email, anything like that?"</li>
+      <li>"How much of your time in a given week would you say goes to prospecting versus delivery?"</li>
+    </ul>
+    <p><strong>Good vs. Concerning Answers:</strong></p>
+    <table class="analysis-table"><thead><tr><th>Question</th><th>Good Answer</th><th>Concerning Answer</th></tr></thead><tbody>
+      <tr><td>Time spent on BD</td><td>"Almost nothing — 5 hrs/week, all word-of-mouth"</td><td>"20+ hours/week and still can't fill my pipeline"</td></tr>
+      <tr><td>Recent outreach clients</td><td>"None — they've always come to us"</td><td>"We've tried 3 agencies and nothing worked"</td></tr>
+      <tr><td>Capacity</td><td>"Could take 2-3 new clients tomorrow"</td><td>"Completely booked for 12+ months"</td></tr>
+    </tbody></table>
+    <p><strong>Budget & Authority Dollar Anchor:</strong></p>
+    <div class="script-box">"One closed certification project typically runs $20,000–$60,000. So if we got you one new client per quarter from cold email, what would that be worth?"</div>
+  `},
+  { title: 'Part 4: Marketing Landscape', content: `
+    <h3>Part 4: Marketing Landscape and Current Practices</h3>
+    <table class="analysis-table"><thead><tr><th>Channel</th><th>Effectiveness</th><th>Current Usage</th></tr></thead><tbody>
+      <tr><td>Referrals from Existing Clients</td><td>Very High</td><td>Primary — but unsystematic</td></tr>
+      <tr><td>Referrals from Certification Bodies</td><td>High</td><td>Registrars refer pre-cert prospects</td></tr>
+      <tr><td>Word-of-Mouth / Industry Networks (ASQ, AIAG)</td><td>High</td><td>Main awareness channel</td></tr>
+      <tr><td>LinkedIn (Passive)</td><td>Medium</td><td>Profiles exist; minimal active posting</td></tr>
+      <tr><td>Cold Email (Outbound)</td><td>Untapped</td><td>Virtually nobody runs this at scale</td></tr>
+      <tr><td>Website / SEO</td><td>Low-Medium</td><td>Most sites static since 2019</td></tr>
+      <tr><td>Trade Shows / Conferences</td><td>Medium</td><td>AIAG Summit, ASQ Congress, NADCAP</td></tr>
+      <tr><td>Paid Advertising</td><td>Very Low</td><td>Almost no firms run consistent campaigns</td></tr>
+    </tbody></table>
+    <p><strong>Marketing Sophistication:</strong> LOW. Most owners view "marketing" as attending a local ASQ meeting and asking for referrals.</p>
+    <p><strong>Budget as % of Revenue:</strong> 2–5%. The industry dramatically underinvests in marketing.</p>
+    <div class="callout">"Most marketing agencies that tried to work with us just ran generic LinkedIn ads that generated dentist leads. They had no idea what PPAP was or why a Tier 2 automotive supplier is a completely different sale than a mid-size food manufacturer."</div>
+  `},
+  { title: 'Part 5: Credibility Building', content: `
+    <h3>Part 5: Credibility Building Without Portfolio</h3>
+    <p><strong>Analogous Industry Framing Script:</strong></p>
+    <div class="script-box">"We've done a lot of work with professional services firms in regulated B2B sectors — engineering consulting, safety compliance, and testing laboratories. The buying dynamics are nearly identical: highly referral-dependent, owners who are brilliant at delivery but uncomfortable with systematic prospecting, and manufacturers who only hire them when a customer mandate or audit forces the issue. The outbound playbook we've built is specifically designed for firms where the client only appears when their pain is acute — like when their OEM customer tells them they need IATF 16949 within 90 days."</div>
+    <p><strong>Handling "Have You Worked with Companies Like Ours?"</strong></p>
+    <div class="script-box">"Not yet with an ISO consulting firm specifically, and I want to be upfront about that. But what I have done is build outbound campaigns targeting quality directors, plant managers, and operations VPs at mid-size manufacturers — which is exactly the decision-maker who signs your contracts. I'd rather build something genuinely specialized for you than pretend I've done it a hundred times. That's also why I want to start with a 90-day pilot — so you can judge the results before you're locked in."</div>
+    <p><strong>Competitive Research Weaponization:</strong> Pull 5–10 of the prospect's direct competitors from LinkedIn/Google. Find which ones have active outbound cadences. Present: "Here are three AS9100 consulting firms within 200 miles of your primary market who are actively running outreach campaigns. Here's what their messaging looks like and here's where I think we can out-position them."</p>
+  `},
+  { title: 'Part 6: Regulatory Environment', content: `
+    <h3>Part 6: Regulatory Environment and Compliance Considerations</h3>
+    <table class="analysis-table"><thead><tr><th>Body</th><th>Acronym</th><th>Relevance</th></tr></thead><tbody>
+      <tr><td>International Organization for Standardization</td><td>ISO</td><td>Defines standards (9001, 14001, 45001, 13485, 27001)</td></tr>
+      <tr><td>Automotive Industry Action Group</td><td>AIAG</td><td>Governs core tools, IATF relationships; runs major conferences</td></tr>
+      <tr><td>International Automotive Task Force</td><td>IATF</td><td>Licenses IATF 16949 certification bodies</td></tr>
+      <tr><td>ANSI-ASQ National Accreditation Board</td><td>ANAB</td><td>US accreditation body for certification bodies</td></tr>
+      <tr><td>American Society for Quality</td><td>ASQ</td><td>Largest quality professional association; major referral network</td></tr>
+      <tr><td>National Aerospace & Defense Contractors Accreditation Program</td><td>NADCAP</td><td>Special process accreditation for aerospace suppliers</td></tr>
+      <tr><td>Food and Drug Administration</td><td>FDA</td><td>Medical device and pharmaceutical quality systems</td></tr>
+      <tr><td>Cybersecurity Maturity Model Certification</td><td>CMMC</td><td>DoD contractor certification program</td></tr>
+    </tbody></table>
+    <p><strong>Marketing Copy Compliance Rules:</strong></p>
+    <ul>
+      <li>Do NOT claim the consultant's clients are "ISO certified" — the certification body certifies, not the consultant</li>
+      <li>Avoid implying hiring the firm guarantees certification (audits can fail)</li>
+      <li>Healthcare/FDA-focused consultants must not make regulatory outcome guarantees</li>
+    </ul>
+  `},
+  { title: 'Part 7: Industry Vocabulary', content: `
+    <h3>Part 7: Industry Vocabulary and Cultural Fluency</h3>
+    <table class="analysis-table"><thead><tr><th>Term</th><th>Meaning</th><th>Context</th></tr></thead><tbody>
+      <tr><td>QMS</td><td>Quality Management System</td><td>The documented system of processes, policies, and procedures required by ISO standards</td></tr>
+      <tr><td>IATF 16949</td><td>Automotive quality standard</td><td>Mandatory for most Tier 1/2/3 automotive suppliers globally</td></tr>
+      <tr><td>AS9100</td><td>Aerospace quality standard</td><td>Required for aerospace, defense, and space supply chain participants</td></tr>
+      <tr><td>PPAP</td><td>Production Part Approval Process</td><td>Automotive process for approving new or modified parts before production</td></tr>
+      <tr><td>APQP</td><td>Advanced Product Quality Planning</td><td>Structured process ensuring a product satisfies the customer</td></tr>
+      <tr><td>FMEA</td><td>Failure Mode and Effects Analysis</td><td>Risk analysis tool; DFMEA (design) and PFMEA (process) variants</td></tr>
+      <tr><td>MSA</td><td>Measurement System Analysis</td><td>Statistical study of variation in measurement processes</td></tr>
+      <tr><td>SPC</td><td>Statistical Process Control</td><td>Real-time monitoring of manufacturing processes using statistics</td></tr>
+      <tr><td>CAPA</td><td>Corrective Action / Preventive Action</td><td>Formal process for identifying and resolving nonconformances</td></tr>
+      <tr><td>NCR</td><td>Nonconformance Report</td><td>Document identifying a product or process that doesn't meet requirements</td></tr>
+      <tr><td>Registrar</td><td>Certification Body</td><td>Accredited third-party that conducts ISO audits and issues certificates</td></tr>
+      <tr><td>8D Report</td><td>Eight Disciplines Problem Solving</td><td>Common automotive problem-solving methodology</td></tr>
+      <tr><td>VDA 6.3</td><td>German automotive process audit standard</td><td>Required by German OEMs (BMW, Mercedes, VW)</td></tr>
+    </tbody></table>
+    <p><strong>Cultural Landmines — Never Say These:</strong></p>
+    <ol>
+      <li>"ISO compliance" — say "ISO certification" or "QMS certification"</li>
+      <li>"ISO certified company" — say "certified to ISO 9001" (the QMS is certified, not the company)</li>
+      <li>Confusing the consultant with the registrar — the consultant prepares; the certification body certifies</li>
+      <li>"Process improvement" (too generic) — use specific standard names</li>
+      <li>Calling FMEA a "checklist" — it's a structured risk analysis tool</li>
+    </ol>
+  `},
+  { title: 'Part 8: Objection Handling', content: `
+    <h3>Part 8: Objection Handling and Emergency Response Protocols</h3>
+    <table class="analysis-table"><thead><tr><th>Objection</th><th>Reframing Response</th></tr></thead><tbody>
+      <tr><td>"Our clients come from word of mouth — cold email won't work in our industry"</td><td>"Word of mouth means you've proven your model — but you have zero control over volume or timing. Cold email lets us reach manufacturers the moment they receive a customer mandate for ISO certification — before word of mouth has a chance to kick in."</td></tr>
+      <tr><td>"Manufacturers only certify when forced to"</td><td>"Exactly — and that's what we target. We build lists of manufacturers in your sector who are suppliers to OEMs that require your standard — and who are NOT yet certified. We get you in front of them before the mandate hits."</td></tr>
+      <tr><td>"I tried an agency before and it didn't work"</td><td>"Cold email for a manufacturing-facing consulting firm is completely different from SaaS or staffing. The targeting and messaging must be built around trigger events: OEM supplier requirements, industry news, company growth signals."</td></tr>
+      <tr><td>"I can't afford $4,000–$7,000/month right now"</td><td>"Your average implementation project is $25,000–$50,000. One new client in 90 days would cover 6–12 months of this investment. Let's build the ROI math together right now."</td></tr>
+    </tbody></table>
+    <table class="analysis-table"><thead><tr><th>Emergency Scenario</th><th>Protocol</th></tr></thead><tbody>
+      <tr><td>Prospect in active financial stress</td><td>Do NOT push a close. "Let me stay in touch in 60 days when things stabilize."</td></tr>
+      <tr><td>Competitor just signed a deal prospect wanted</td><td>Use urgency authentically: "If [Competitor] is locking up contracts, you cannot afford to wait for your phone to ring."</td></tr>
+      <tr><td>Prospect asks for certification guarantee</td><td>"We don't promise certification — the registrar makes that call. We promise qualified prospects with specific certification needs arriving pre-warmed."</td></tr>
+    </tbody></table>
+  `},
+  { title: 'Part 9: Competitive Dynamics', content: `
+    <h3>Part 9: Competitive Dynamics and Differentiation Strategy</h3>
+    <table class="analysis-table"><thead><tr><th>Competitor Type</th><th>Their Position</th><th>Your Counter</th></tr></thead><tbody>
+      <tr><td>Incumbent QMS Agencies</td><td>"We've served quality consulting firms for years" (almost none exist)</td><td>"Ask them to show you an ISO consulting client case study — they probably can't."</td></tr>
+      <tr><td>Generalist Cold Email Agencies</td><td>"We do cold email for B2B companies"</td><td>"Cold email for a manufacturing-facing firm requires knowing what PPAP is and why a Tier 2 supplier is a different sale than a food manufacturer. Generalists waste your time with wrong-fit leads."</td></tr>
+      <tr><td>Owner Does It Themselves (LinkedIn posting)</td><td>"I'll just post more on LinkedIn"</td><td>"LinkedIn posting is brand awareness. It does not generate volume or timing control. Cold email to a targeted list is the only channel that lets you choose when conversations happen."</td></tr>
+    </tbody></table>
+    <p><strong>Key Differentiator:</strong> Your agency speaks the language. Use "IATF 16949," "AS9100 Rev D," "PPAP," and "surveillance audit" in your cold email. It instantly signals you are not a generic agency.</p>
+  `},
+  { title: 'Part 10: Pain Points', content: `
+    <h3>Part 10: Pain Points and Deeper Business Challenges</h3>
+    <div class="pain-item"><div class="pain-quote">"I'm too busy delivering to have time to sell."</div><div class="pain-connect">The classic consultant trap. Connection: outbound cold email runs while they're on-site at a client.</div></div>
+    <div class="pain-item"><div class="pain-quote">"I never know when my next client is coming."</div><div class="pain-connect">Revenue predictability is #1 anxiety. Connection: systematic outbound creates a measurable pipeline with conversion rates they can forecast.</div></div>
+    <div class="pain-item"><div class="pain-quote">"Referrals have always worked — until they didn't."</div><div class="pain-connect">Referral dependence feels safe until key referrers retire or move. Connection: cold email creates a referral-independent channel.</div></div>
+    <div class="pain-item"><div class="pain-quote">"My competitor just landed [Major OEM Supplier] — I don't know how."</div><div class="pain-connect">Competitive FOMO is a real trigger. Connection: they got there through systematic outreach, not luck.</div></div>
+    <div class="pain-item"><div class="pain-quote">"I hired another consultant, and now I need to pay two people."</div><div class="pain-connect">Growth creates immediate revenue pressure. Connection: outbound is the fastest way to expand pipeline to match new headcount.</div></div>
+    <div class="pain-item"><div class="pain-quote">"Manufacturers don't know they need me until their customer tells them — by then they've called someone else."</div><div class="pain-connect">The real opportunity: get in front of manufacturers before the mandate hits. Connection: data-driven targeting identifies pre-mandate candidates.</div></div>
+  `},
+  { title: 'Part 11: Qualification', content: `
+    <h3>Part 11: Qualification and Disqualification Framework</h3>
+    <table class="analysis-table"><thead><tr><th>Criteria</th><th>Ideal</th><th>Problematic</th></tr></thead><tbody>
+      <tr><td>Revenue</td><td>$750K–$5M/year</td><td>Under $400K (can't sustain retainer)</td></tr>
+      <tr><td>Specialization</td><td>Clear niche (AS9100, IATF, FDA/device)</td><td>"We do all standards for all industries" — too broad</td></tr>
+      <tr><td>Capacity</td><td>Has open capacity or is hiring</td><td>Completely booked for 12+ months</td></tr>
+      <tr><td>Mindset</td><td>"I need a systematic way to grow"</td><td>"I'll try this for one month and see"</td></tr>
+      <tr><td>Average Project Value</td><td>$20,000+ per engagement</td><td>Under $10,000 (economics don't support retainer)</td></tr>
+      <tr><td>Geography</td><td>Regional or national reach</td><td>Hyper-local only (limits list size)</td></tr>
+    </tbody></table>
+    <p><strong>Disqualification Script — Unrealistic Expectations:</strong></p>
+    <div class="script-box">"It sounds like you're expecting signed clients in the first 30 days. Cold email is a 60–90 day process. If you need revenue in 30 days, I'm not the right fit right now, and I'd rather tell you that than take your money."</div>
+    <p><strong>Disqualification Script — Insufficient Budget:</strong></p>
+    <div class="script-box">"The investment starts at $3,500/month. Based on what you've shared, I'm not sure the math works yet for you. Let me stay in touch for when you've grown a bit more — at that point this would be a no-brainer."</div>
+  `},
+  { title: 'Part 12: Tech Stack', content: `
+    <h3>Part 12: Technology Stack and Integration Requirements</h3>
+    <table class="analysis-table"><thead><tr><th>Category</th><th>Software Examples</th><th>Relevance</th></tr></thead><tbody>
+      <tr><td>Quality Management Software</td><td>Qualio, Greenlight Guru, MasterControl, ETQ, iAuditor</td><td>Their clients use these; some consultants implement them</td></tr>
+      <tr><td>Document Management</td><td>SharePoint, Google Drive, Dropbox</td><td>How they manage client documentation</td></tr>
+      <tr><td>Project Management</td><td>Asana, Monday.com, Trello, Excel</td><td>Engagement tracking</td></tr>
+      <tr><td>CRM</td><td>HubSpot (rare), spreadsheets (common), no CRM (very common)</td><td>Most firms have NO formal CRM — critical gap</td></tr>
+      <tr><td>Scheduling</td><td>Calendly, Acuity</td><td>Often have these; useful for call booking integration</td></tr>
+      <tr><td>Email</td><td>Outlook or Gmail</td><td>For email outreach integration</td></tr>
+      <tr><td>LinkedIn</td><td>Sales Navigator (rare), basic profiles (common)</td><td>Most don't use Sales Nav</td></tr>
+    </tbody></table>
+    <p><strong>Technical Readiness Questions:</strong></p>
+    <ul>
+      <li>"Do you have a CRM, or are you tracking clients in a spreadsheet or email folder?"</li>
+      <li>"Do you have a business email domain separate from Gmail/Yahoo?"</li>
+      <li>"Have you used any outreach tools before — Apollo, Lemlist, Instantly?"</li>
+      <li>"Do you have a landing page or a clear 'book a consultation' page on your website?"</li>
+    </ul>
+    <div class="callout">Most firms will answer NO to 3 of 4. Setup is part of your onboarding service — frame this as a feature, not a problem.</div>
+  `},
+  { title: 'Part 13: Proposal & Closing', content: `
+    <h3>Part 13: Proposal Architecture and Closing Strategies</h3>
+    <p><strong>Proposal Structure (6 Sections):</strong></p>
+    <ol>
+      <li><strong>Executive Summary</strong> — Restate their specific pain (not generic language)</li>
+      <li><strong>Target Market Analysis</strong> — Show the ICP you've built for them specifically</li>
+      <li><strong>Campaign Strategy</strong> — Standard-specific: AS9100 vs. IATF 16949 vs. ISO 9001 messaging</li>
+      <li><strong>90-Day Roadmap</strong> — Month 1: Setup + list. Month 2: Launch + iterate. Month 3: Scale.</li>
+      <li><strong>Investment & ROI Model</strong> — Break-even math: "At $5K/month, one $30K project covers 6 months."</li>
+      <li><strong>Next Steps</strong> — Simple: sign agreement, kick-off call within 5 business days.</li>
+    </ol>
+    <p><strong>Closing Script:</strong></p>
+    <div class="script-box">"Based on what you've shared, I'm confident we can generate 3–5 qualified conversations per month with manufacturers who need [their specific standard] certification. Within 90 days, you should have at least 2 proposals out to prospects we generated. If we haven't hit that, let's have an honest conversation about what's not working. Are you ready to move forward and get started?"</div>
+  `},
+  { title: 'Part 14: Success Metrics', content: `
+    <h3>Part 14: Success Metrics and Proof Frameworks</h3>
+    <table class="analysis-table"><thead><tr><th>Category</th><th>Metric</th><th>Why It Matters</th></tr></thead><tbody>
+      <tr><td>Pipeline Generation</td><td>Qualified conversations booked/month</td><td>The output they care about most</td></tr>
+      <tr><td>Outreach Performance</td><td>Open rate, reply rate, positive reply rate</td><td>Leading indicators of list quality and message fit</td></tr>
+      <tr><td>Sales Enablement</td><td>Proposals submitted from agency-generated leads</td><td>Connects their work to agency work</td></tr>
+      <tr><td>Revenue Attribution</td><td>Closed revenue traceable to cold email</td><td>Ultimate proof; takes 90–180 days</td></tr>
+      <tr><td>Brand Visibility</td><td>LinkedIn profile views, website traffic from email domains</td><td>Secondary; builds trust</td></tr>
+      <tr><td>Network Effect</td><td>Referrals from outreach contacts</td><td>Cold email generates referrals even from "not now" replies</td></tr>
+    </tbody></table>
+    <p><strong>90-Day Pilot Proof Framework:</strong></p>
+    <ul>
+      <li><strong>Month 1 Report:</strong> "We tested [X] messages across [Y] lists. Here's what performed. We refined to [Z] ICP."</li>
+      <li><strong>Month 2 Report:</strong> "We booked [N] calls. Here's who they were, what standard they needed, what their timeline was."</li>
+      <li><strong>Month 3 Report:</strong> "Here are [N] active proposals in your pipeline from our work. Here's projected close value."</li>
+    </ul>
+  `},
+  { title: 'Part 15: Pricing', content: `
+    <h3>Part 15: Pricing Presentation and Negotiation Tactics</h3>
+    <p><strong>Anchor 1 — Competitive Cost Comparison:</strong></p>
+    <div class="script-box">"Hiring a full-time business development rep would cost $70,000–$90,000/year in salary plus benefits. We're $4,500–$6,000/month, and unlike an employee, there's no onboarding, no benefits, and you can pause if timing changes."</div>
+    <p><strong>Anchor 2 — Client Lifetime Value:</strong></p>
+    <div class="script-box">"Your average client is worth $30,000–$60,000 on initial engagement — $80,000–$120,000 over three years with retainer. One client from our campaign pays for an entire year of this service."</div>
+    <p><strong>Anchor 3 — Opportunity Cost:</strong></p>
+    <div class="script-box">"Every month you wait, manufacturers who will need ISO certification in the next 12 months are finding your competitors. Those relationships are being built today."</div>
+    <table class="analysis-table"><thead><tr><th>Pricing Pressure</th><th>Response Framework</th></tr></thead><tbody>
+      <tr><td>"Can you do $2,500/month?"</td><td>"At that level I can't deliver the list quality, infrastructure, and iteration that actually produces results. The minimum that works is $3,500."</td></tr>
+      <tr><td>"Can we do month-to-month?"</td><td>"Absolutely — I don't lock anyone in. But I ask for 90 days of patience. Cold email ramps: real conversations start in month 2."</td></tr>
+      <tr><td>"Can we do performance-based?"</td><td>"I can offer $3,000/month base plus $500 per signed engagement. That way we're both invested in the outcome."</td></tr>
+    </tbody></table>
+  `},
+  { title: 'Part 16: Network & Relationships', content: `
+    <h3>Part 16: Network and Relationship Dynamics</h3>
+    <table class="analysis-table"><thead><tr><th>Category</th><th>Examples</th><th>Strategic Importance</th></tr></thead><tbody>
+      <tr><td>Key Influencers</td><td>ASQ Fellows, AIAG committee chairs, IATF Sanctioned Interpreters</td><td>Credibility by association; they have email lists and speaking platforms</td></tr>
+      <tr><td>Connectors</td><td>ISO certification body (registrar) account managers</td><td>Registrars refer prospects who aren't ready for audit — they WANT these referrals to consultants</td></tr>
+      <tr><td>Conferences</td><td>ASQ World Quality Congress, AIAG Global Summit, NADCAP Conference, The Quality Show Chicago</td><td>Where decision-makers concentrate; great for content fodder</td></tr>
+      <tr><td>Online Communities</td><td>ASQ LinkedIn groups, Quality Digest forums, AIAG Connect platform, LinkedIn Manufacturing groups</td><td>Prospect research gold; where quality professionals congregate</td></tr>
+    </tbody></table>
+    <p><strong>Name-Dropping Techniques:</strong></p>
+    <ul>
+      <li>Reference "quality managers at [well-known OEM in their sector]" in cold email subject lines</li>
+      <li>Mention registrar names (Bureau Veritas, SGS, DEKRA, BSI, Intertek, DNV) in outreach to signal industry fluency</li>
+      <li>Reference AIAG and ASQ in email bodies as evidence of domain knowledge</li>
+    </ul>
+    <p><strong>LinkedIn/Apollo Targeting Filters for Prospect Lists (their clients):</strong> Title = "Quality Director" OR "Quality Manager" OR "Operations VP" OR "Plant Manager"; Industry = "Automotive," "Aerospace & Defense," "Industrial Machinery"; Size = 50–500 employees; Revenue = $10M–$500M</p>
+  `},
+  { title: 'Part 17: Future Outlook', content: `
+    <h3>Part 17: Future Outlook and Strategic Positioning</h3>
+    <table class="analysis-table"><thead><tr><th>Trend</th><th>Description & Impact</th></tr></thead><tbody>
+      <tr><td>Supply Chain Reshoring</td><td>US manufacturers onshoring production from Asia must meet ISO/IATF/AS9100 requirements of their OEM customers — generating enormous new consulting demand over 2025–2030.</td></tr>
+      <tr><td>CMMC Expansion</td><td>DoD's CMMC requirement expanding to all 300,000+ contractors by 2026–2028 creates a massive adjacent market for QMS consultants who add cybersecurity certification.</td></tr>
+      <tr><td>AI-Assisted Audit Prep</td><td>QMS software embedding AI tools for document control and audit readiness — consultants who add AI fluency command premium rates; those who don't may be partially displaced.</td></tr>
+      <tr><td>EV Supply Chain Build-Out</td><td>EV supply chains require new Tier 1/2/3 suppliers to achieve IATF 16949. Each OEM requirement cascades down — multiplying the automotive consulting market by 3–5x in a decade.</td></tr>
+      <tr><td>ISO 9001:2025 Revision</td><td>Expected ISO 9001 standard update will trigger a wave of gap assessments and recertification support similar to the 2015 revision cycle — every certified company needs to respond.</td></tr>
+    </tbody></table>
+    <p><strong>Strategic Positioning Scripts:</strong></p>
+    <div class="script-box">"The manufacturers moving production back to the US are starting from scratch on quality systems. They have aggressive certification timelines because their OEM customers demand it. This is the best demand environment for ISO consultants in 20 years. Are you positioned to capture it?"</div>
+    <div class="script-box">"When ISO 9001:2025 drops, every certified company is going to need a gap assessment. That's a one-time surge in demand. If you're not top-of-mind with your existing client list AND building new relationships today, a competitor will be the one who capitalizes on that wave."</div>
+    <div class="script-box">"If you're not already offering CMMC gap assessment alongside your ISO 9001 or AS9100 work, you're leaving serious revenue on the table. DoD suppliers who need IATF or AS9100 certification are the exact same companies who now need CMMC."</div>
+  `}
+];
+
+function buildAnalysis() {
+  const nav = document.getElementById('analysisNav');
+  const content = document.getElementById('analysisContent');
+  nav.innerHTML = ANALYSIS_PARTS.map((p, i) =>
+    `<div class="analysis-nav-item ${i===0?'active':''}" onclick="switchAnalysis(${i})">${p.title}</div>`
+  ).join('');
+  content.innerHTML = ANALYSIS_PARTS.map((p, i) =>
+    `<div class="analysis-section ${i===0?'active':''}" id="asec-${i}">${p.content}</div>`
+  ).join('');
+}
+
+function switchAnalysis(idx) {
+  document.querySelectorAll('.analysis-nav-item').forEach((el, i) => el.classList.toggle('active', i===idx));
+  document.querySelectorAll('.analysis-section').forEach((el, i) => el.classList.toggle('active', i===idx));
+}
+
+// ═══════════════════════════════ TAB SWITCHING ═══════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+// ═══════════════════════════════ INIT ═══════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  renderTable();
+  buildSummary();
+  buildAnalysis();
+});
+</script>
+</body>
+</html>

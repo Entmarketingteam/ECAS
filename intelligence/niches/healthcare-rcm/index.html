@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthcare RCM Niche Analysis — ContractMotion</title>
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy2: #0f2040;
+    --navy3: #162952;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --white: #ffffff;
+    --gray: #94a3b8;
+    --gray2: #1e3a5f;
+    --border: #1e3a5f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--navy); color: var(--white); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: var(--navy2); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+  .header-left h1 { font-size: 22px; font-weight: 700; color: var(--white); }
+  .header-left p { font-size: 13px; color: var(--gray); margin-top: 3px; }
+  .header-badge { background: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  /* Stats Bar */
+  .stats-bar { background: var(--navy3); padding: 16px 32px; display: flex; gap: 40px; border-bottom: 1px solid var(--border); }
+  .stat { text-align: center; }
+  .stat-value { font-size: 24px; font-weight: 700; color: var(--accent2); }
+  .stat-label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; background: var(--navy2); border-bottom: 1px solid var(--border); padding: 0 32px; }
+  .tab { padding: 14px 24px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--gray); border-bottom: 2px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  /* Content */
+  .content { padding: 24px 32px; display: none; }
+  .content.active { display: block; }
+
+  /* Search & Filters */
+  .controls { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .search-input { background: var(--navy3); border: 1px solid var(--border); color: var(--white); padding: 9px 14px; border-radius: 6px; font-size: 13px; width: 280px; outline: none; }
+  .search-input::placeholder { color: var(--gray); }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-btn { background: var(--navy3); border: 1px solid var(--border); color: var(--gray); padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .results-count { margin-left: auto; font-size: 12px; color: var(--gray); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th { background: var(--navy3); padding: 11px 14px; text-align: left; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray); white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--white); }
+  thead th .sort-icon { margin-left: 4px; opacity: 0.5; }
+  tbody tr { border-top: 1px solid var(--border); }
+  tbody tr:hover { background: rgba(59, 130, 246, 0.07); }
+  tbody td { padding: 10px 14px; color: var(--white); white-space: nowrap; }
+  .niche-cell { white-space: normal; min-width: 240px; max-width: 340px; line-height: 1.4; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-right: 6px; }
+  .badge.core { background: rgba(59,130,246,0.2); color: var(--accent2); border: 1px solid rgba(59,130,246,0.4); }
+  .badge.add { background: rgba(148,163,184,0.1); color: var(--gray); border: 1px solid rgba(148,163,184,0.2); }
+
+  /* Score pills */
+  .score-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+  .score-high { background: rgba(34,197,94,0.15); color: var(--green); }
+  .score-mid { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .score-low { background: rgba(239,68,68,0.15); color: var(--red); }
+
+  /* Cushion */
+  .cushion-pip { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 2px; }
+  .cushion-on { background: var(--green); }
+  .cushion-off { background: var(--gray2); }
+
+  /* Analysis tab */
+  .analysis-card { background: var(--navy2); border: 1px solid var(--border); border-radius: 10px; padding: 28px 32px; max-width: 1000px; }
+  .analysis-card h2 { font-size: 20px; font-weight: 700; color: var(--accent2); margin-bottom: 6px; }
+  .analysis-card .subtitle { font-size: 13px; color: var(--gray); margin-bottom: 24px; }
+  .analysis-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .metric-card { background: var(--navy3); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .metric-card .label { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .metric-card .value { font-size: 22px; font-weight: 700; color: var(--white); }
+  .metric-card .sub { font-size: 11px; color: var(--gray); margin-top: 3px; }
+  .section-title { font-size: 15px; font-weight: 600; color: var(--accent2); margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .pain-list li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: #cbd5e1; line-height: 1.6; list-style: none; padding-left: 20px; position: relative; }
+  .pain-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
+  .script-box { background: var(--navy3); border-left: 3px solid var(--accent); border-radius: 4px; padding: 14px 16px; font-size: 13px; color: #cbd5e1; line-height: 1.6; margin: 12px 0; font-style: italic; }
+  .target-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+  .target-card { background: var(--navy3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; }
+  .target-card h4 { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .target-card p { font-size: 12px; color: var(--gray); line-height: 1.5; }
+  .objection-row { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .objection-row:last-child { border-bottom: none; }
+  .objection-q { font-size: 12px; font-weight: 600; color: var(--yellow); }
+  .objection-a { font-size: 12px; color: #cbd5e1; line-height: 1.5; }
+  .top-niches-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 12px; }
+  .top-niche-item { background: var(--navy3); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .top-niche-name { font-size: 12px; color: var(--white); }
+  .top-niche-score { font-size: 13px; font-weight: 700; color: var(--green); }
+
+  /* Pagination */
+  .pagination { display: flex; gap: 8px; align-items: center; margin-top: 16px; justify-content: flex-end; }
+  .page-btn { background: var(--navy3); border: 1px solid var(--border); color: var(--gray); padding: 6px 12px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+  .page-btn:hover, .page-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .page-info { font-size: 12px; color: var(--gray); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Healthcare Revenue Cycle Niche Analysis</h1>
+    <p>Cold Email Lead Generation Agency — ContractMotion · March 2026</p>
+  </div>
+  <div class="header-badge">500 Niches Scored</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-value">500</div><div class="stat-label">Total Niches</div></div>
+  <div class="stat"><div class="stat-value">100</div><div class="stat-label">Core (Healthcare RCM)</div></div>
+  <div class="stat"><div class="stat-value">400</div><div class="stat-label">Additional Niches</div></div>
+  <div class="stat"><div class="stat-value">8.08</div><div class="stat-label">Avg Composite Score</div></div>
+  <div class="stat"><div class="stat-value">9.6</div><div class="stat-label">Top Score</div></div>
+  <div class="stat"><div class="stat-value">$86K</div><div class="stat-label">Avg LTV</div></div>
+  <div class="stat"><div class="stat-value">78%</div><div class="stat-label">Avg Gross Margin</div></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('all')">All 500 Niches</div>
+  <div class="tab" onclick="switchTab('core')">Core 100 (RCM Ecosystem)</div>
+  <div class="tab" onclick="switchTab('analysis')">Deep Analysis</div>
+</div>
+
+<!-- TAB 1: ALL NICHES -->
+<div class="content active" id="tab-all">
+  <div class="controls">
+    <input type="text" class="search-input" id="search-all" placeholder="Search niches..." oninput="filterTable('all')">
+    <button class="filter-btn active" onclick="setFilter('all','all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('all','core',this)">Core Only</button>
+    <button class="filter-btn" onclick="setFilter('all','additional',this)">Additional Only</button>
+    <button class="filter-btn" onclick="setFilter('all','high',this)">Score ≥9.0</button>
+    <span class="results-count" id="count-all">Showing 500 niches</span>
+  </div>
+  <div class="table-wrap">
+    <table id="table-all">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Niche</th>
+          <th onclick="sortTable('all',2)">Score ↕</th>
+          <th onclick="sortTable('all',3)">LTV ↕</th>
+          <th>Margin</th>
+          <th>Deal Value</th>
+          <th>Cushion</th>
+          <th>Payment</th>
+          <th>Sales Cycle</th>
+          <th>Channels</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-all"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="page-all"></div>
+</div>
+
+<!-- TAB 2: CORE NICHES -->
+<div class="content" id="tab-core">
+  <div class="controls">
+    <input type="text" class="search-input" id="search-core" placeholder="Search core niches..." oninput="filterTable('core')">
+    <span class="results-count" id="count-core">Showing 100 core niches</span>
+  </div>
+  <div class="table-wrap">
+    <table id="table-core">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Niche (Healthcare RCM Ecosystem)</th>
+          <th>Score</th>
+          <th>LTV</th>
+          <th>Margin</th>
+          <th>Deal Value</th>
+          <th>Cushion</th>
+          <th>Delivery Diff</th>
+          <th>Marketability</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-core"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB 3: DEEP ANALYSIS -->
+<div class="content" id="tab-analysis">
+  <div class="analysis-card">
+    <h2>Healthcare Revenue Cycle Consulting Firms</h2>
+    <p class="subtitle">17-Part Deep Analysis — Cold Email Lead Generation Opportunity Assessment</p>
+
+    <div class="analysis-grid">
+      <div class="metric-card">
+        <div class="label">US Market Size</div>
+        <div class="value">$10B+</div>
+        <div class="sub">RCM consulting industry</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Addressable Firms</div>
+        <div class="value">5,000+</div>
+        <div class="sub">Active RCM consulting firms in US</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Avg Client LTV (Their Clients)</div>
+        <div class="value">$750K–$5M</div>
+        <div class="sub">Per health system engagement</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Outbound Motion</div>
+        <div class="value">Near Zero</div>
+        <div class="sub">Almost all referral-driven growth</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Agency Retainer (Typical)</div>
+        <div class="value">$7.5K–$15K/mo</div>
+        <div class="sub">Cold email lead gen</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Sales Cycle</div>
+        <div class="value">45–75 days</div>
+        <div class="sub">To close agency retainer</div>
+      </div>
+    </div>
+
+    <div class="section-title">Top Core Niches by Composite Score</div>
+    <div class="top-niches-list" id="top-core-list"></div>
+
+    <div class="section-title">The Core Pain: Why RCM Firms Need Outbound</div>
+    <ul class="pain-list">
+      <li>Pipeline is 100% referral-dependent — if a partner retires, the book of business disappears overnight</li>
+      <li>Geographic expansion is impossible through relationships — outbound has no geographic limits</li>
+      <li>Health system RFPs are late-stage competitions where they're already commoditized against 3–4 competitors</li>
+      <li>No way to reach new CFO hires at health systems before competitors who have existing relationships</li>
+      <li>Denial rate crisis (10-year highs) has created surging demand they're not capturing because no one knows they exist</li>
+    </ul>
+
+    <div class="section-title">Your Offer: What You're Selling TO RCM Firms</div>
+    <div class="script-box">
+      "We build outbound lead generation systems that put 4–8 qualified conversations per month on your calendar with hospital CFOs, VP-Revenue Cycles, ASC administrators, and physician group practice managers. We use healthcare-specific targeting, RCM vocabulary in every email, and Apollo/LinkedIn to reach the exact decision-makers you want. One new client relationship from our outreach — at the average contract value your firm closes — generates 8–15x your annual retainer with us."
+    </div>
+
+    <div class="section-title">Primary Targets (Who You Email ON BEHALF of RCM Firms)</div>
+    <div class="target-grid">
+      <div class="target-card">
+        <h4>Hospital CFO</h4>
+        <p>Budget owner for RCM consulting. Triggered by denial rate spikes, RAC audits, Epic implementations. LinkedIn-active. Find via health system websites + Apollo.</p>
+      </div>
+      <div class="target-card">
+        <h4>VP Revenue Cycle</h4>
+        <p>Day-to-day champion for consulting relationships. Most influential recommender to CFO. Active in HFMA. Find via LinkedIn + HFMA member lists.</p>
+      </div>
+      <div class="target-card">
+        <h4>Physician Group CEO/COO</h4>
+        <p>Decision-maker for PE-backed and independent large groups. Revenue cycle pain is acute post-acquisition. Find via MGMA and LinkedIn.</p>
+      </div>
+      <div class="target-card">
+        <h4>ASC Administrator</h4>
+        <p>Runs ambulatory surgery center billing. 6,000+ ASCs in US. Highly accessible via ASCA directory and LinkedIn. Decision cycle 30–60 days.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Key Objections & Scripts</div>
+    <div class="objection-row">
+      <div class="objection-q">"Our clients come through referrals — cold email won't work in healthcare."</div>
+      <div class="objection-a">That's why there's opportunity. Every RCM firm is waiting for referrals — no one is owning outbound. One new health system client per year from outreach pays 3–5 years of our retainer. The math works at a 1% conversion rate.</div>
+    </div>
+    <div class="objection-row">
+      <div class="objection-q">"HIPAA makes outreach complicated."</div>
+      <div class="objection-a">HIPAA governs protected health information — it has zero bearing on B2B outreach to hospital executives about operational services. This misconception is exactly why your competitors aren't running outbound.</div>
+    </div>
+    <div class="objection-row">
+      <div class="objection-q">"We tried cold email once and got zero response."</div>
+      <div class="objection-a">Generic cold email in healthcare fails because it doesn't speak the language. Our sequences open with DNFB benchmarks, denial rate data by specialty, and RAC audit trends. A CFO recognizes immediately this isn't spam — it's someone who understands their world.</div>
+    </div>
+    <div class="objection-row">
+      <div class="objection-q">"We can't damage our reputation with health system contacts."</div>
+      <div class="objection-a">Every template goes through your review before launch. We target only organizations you specify. We never touch contacts you already have. Your reputation is the asset — we protect it with the same obsession you do.</div>
+    </div>
+
+    <div class="section-title">Industry Vocabulary (Must Know)</div>
+    <div class="target-grid">
+      <div class="target-card">
+        <h4>DNFB</h4>
+        <p>Discharged Not Final Billed — lagging revenue indicator. CFO pain point. Use in email subject lines.</p>
+      </div>
+      <div class="target-card">
+        <h4>Denial Rate</h4>
+        <p>% of claims initially denied. Target &lt;5%; &gt;10% = crisis. Your email anchor metric.</p>
+      </div>
+      <div class="target-card">
+        <h4>RAC</h4>
+        <p>Recovery Audit Contractor — CMS-appointed post-payment auditors. Triggers demand for defense consulting.</p>
+      </div>
+      <div class="target-card">
+        <h4>HCC Coding</h4>
+        <p>Hierarchical Condition Category — risk adjustment for Medicare Advantage. Fastest-growing coding specialty.</p>
+      </div>
+      <div class="target-card">
+        <h4>CDI</h4>
+        <p>Clinical Documentation Improvement — coding accuracy initiative. Major consulting service line for RCM firms.</p>
+      </div>
+      <div class="target-card">
+        <h4>340B</h4>
+        <p>Federal drug pricing program for safety-net providers. Specialty consulting area with regulatory complexity.</p>
+      </div>
+    </div>
+
+    <div class="section-title">Future Tailwinds (2026–2030)</div>
+    <ul class="pain-list">
+      <li>AI-driven RCM automation (Waystar, R1, Olive) creates demand for implementation & optimization consultants</li>
+      <li>CMS mandating value-based payment for all Medicare beneficiaries by 2030 — VBC consulting demand surging</li>
+      <li>100+ hospital mergers annually — each creates a $500K–$5M revenue cycle integration engagement</li>
+      <li>Prior authorization requirements up 20% YoY — denial management is a structural growth market</li>
+      <li>Healthcare revenue cycle workforce shortage — staff augmentation consulting growing rapidly</li>
+    </ul>
+
+    <div class="section-title">Pricing Anchor</div>
+    <div class="script-box">
+      "Our standard engagement is $9,500/month with a $3,000 one-time setup fee. There's a 90-day out clause. One new client relationship for your firm at an average $450K first-year contract pays back 4x your annual investment with us. We just need one meeting to turn into a client — that's not a high bar given your close rate."
+    </div>
+  </div>
+</div>
+
+<script>
+// Raw niche data — top 500 scored
+const NICHES = [
+{"r":1,"n":"Digital Marketing Analytics Companies","t":"Additional","s":9.6,"ltv":63000,"m":78,"d":42000,"c":4,"pay":"Retainer","sc":35,"mark":5},
+{"r":2,"n":"Conversion Rate Optimization (CRO) Firms","t":"Additional","s":9.6,"ltv":54000,"m":79,"d":36000,"c":4,"pay":"Retainer","sc":30,"mark":5},
+{"r":3,"n":"UX & Website Design Agencies","t":"Additional","s":9.6,"ltv":54000,"m":77,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":5},
+{"r":4,"n":"E-commerce Platform Consulting Firms","t":"Additional","s":9.6,"ltv":63000,"m":78,"d":42000,"c":4,"pay":"Retainer","sc":35,"mark":5},
+{"r":5,"n":"Amazon FBA Consulting Firms","t":"Additional","s":9.6,"ltv":54000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":30,"mark":5},
+{"r":6,"n":"Affiliate Marketing Platform Companies","t":"Additional","s":9.6,"ltv":54000,"m":77,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":5},
+{"r":7,"n":"Influencer Marketing Platform Companies","t":"Additional","s":9.6,"ltv":63000,"m":77,"d":42000,"c":4,"pay":"Retainer","sc":35,"mark":5},
+{"r":8,"n":"Chiropractic & Physical Therapy Billing Firms","t":"Core","s":9.2,"ltv":60000,"m":80,"d":30000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":9,"n":"CAQH & NPI Management Services","t":"Core","s":9.2,"ltv":60000,"m":80,"d":30000,"c":4,"pay":"Retainer","sc":30,"mark":4},
+{"r":10,"n":"Corporate Teambuilding Companies","t":"Additional","s":9.2,"ltv":54000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":11,"n":"Leadership Development Firms","t":"Additional","s":9.2,"ltv":108000,"m":82,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":12,"n":"Executive Coaching Practices","t":"Additional","s":9.2,"ltv":96000,"m":85,"d":48000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":13,"n":"Online Tutoring Platforms","t":"Additional","s":9.2,"ltv":54000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":14,"n":"Corporate Wellness Program Providers","t":"Additional","s":9.2,"ltv":54000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":15,"n":"DEI Consulting Firms","t":"Additional","s":9.2,"ltv":84000,"m":82,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":16,"n":"Staffing Agencies (Light Industrial)","t":"Additional","s":9.2,"ltv":54000,"m":72,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":17,"n":"Professional Temp Agency Operators","t":"Additional","s":9.2,"ltv":54000,"m":73,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":18,"n":"Food & Beverage Concept Development Firms","t":"Additional","s":9.2,"ltv":54000,"m":76,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":19,"n":"Franchise Consulting Firms","t":"Additional","s":9.2,"ltv":63000,"m":80,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":20,"n":"Business Brokerage Firms","t":"Additional","s":9.2,"ltv":54000,"m":76,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":21,"n":"App Development Studios (Mobile)","t":"Additional","s":9.2,"ltv":72000,"m":75,"d":48000,"c":4,"pay":"Retainer","sc":40,"mark":5},
+{"r":22,"n":"Retail Technology Consulting Firms","t":"Additional","s":9.2,"ltv":63000,"m":77,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":5},
+{"r":23,"n":"Loyalty Program Technology Companies","t":"Additional","s":9.2,"ltv":63000,"m":76,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":5},
+{"r":24,"n":"Dental Franchise Operators","t":"Additional","s":9.2,"ltv":54000,"m":73,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":25,"n":"Concierge Medicine Networks","t":"Additional","s":9.2,"ltv":54000,"m":76,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":26,"n":"Physician Group Revenue Cycle Consultants","t":"Core","s":8.8,"ltv":108000,"m":80,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":27,"n":"Critical Access Hospital RCM Consultants","t":"Core","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":28,"n":"Outpatient Clinic Revenue Cycle Firms","t":"Core","s":8.8,"ltv":84000,"m":81,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":29,"n":"Behavioral Health RCM Consulting Firms","t":"Core","s":8.8,"ltv":84000,"m":80,"d":42000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":30,"n":"Orthopedic Practice Revenue Cycle Consultants","t":"Core","s":8.8,"ltv":96000,"m":81,"d":48000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":31,"n":"Outpatient Medical Billing Services","t":"Core","s":8.8,"ltv":84000,"m":78,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":32,"n":"Surgery Center Billing Services","t":"Core","s":8.8,"ltv":96000,"m":79,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":33,"n":"Mental Health Billing Companies","t":"Core","s":8.8,"ltv":72000,"m":80,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":34,"n":"Pediatric Practice Billing Companies","t":"Core","s":8.8,"ltv":72000,"m":80,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":35,"n":"Remote Medical Coding Staffing Companies","t":"Core","s":8.8,"ltv":84000,"m":75,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":36,"n":"Medical Coding Education & Credentialing Companies","t":"Core","s":8.8,"ltv":72000,"m":80,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":37,"n":"Prior Authorization Consulting Firms","t":"Core","s":8.8,"ltv":108000,"m":80,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":38,"n":"Denial Management Consulting Companies","t":"Core","s":8.8,"ltv":120000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":39,"n":"Claims Appeal & Grievance Management Firms","t":"Core","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":40,"n":"Pre-Authorization Staffing Agencies","t":"Core","s":8.8,"ltv":84000,"m":75,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":41,"n":"Patient Access Consulting Firms","t":"Core","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":42,"n":"Patient Intake & Eligibility Verification Companies","t":"Core","s":8.8,"ltv":84000,"m":78,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":43,"n":"Patient Payment Plan Program Companies","t":"Core","s":8.8,"ltv":84000,"m":78,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":44,"n":"Self-Pay Resolution Consulting Firms","t":"Core","s":8.8,"ltv":96000,"m":79,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":45,"n":"Price Transparency Consulting Firms","t":"Core","s":8.8,"ltv":84000,"m":81,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":46,"n":"Patient Financing Platform Providers","t":"Core","s":8.8,"ltv":96000,"m":78,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":47,"n":"Practice Management System Implementation Firms","t":"Core","s":8.8,"ltv":108000,"m":79,"d":54000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":48,"n":"Patient Portal Optimization Firms","t":"Core","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":49,"n":"Charge Capture Technology & Consulting Firms","t":"Core","s":8.8,"ltv":108000,"m":80,"d":54000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":50,"n":"Physician Credentialing Services","t":"Core","s":8.8,"ltv":72000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":51,"n":"Provider Enrollment & Payer Credentialing Firms","t":"Core","s":8.8,"ltv":84000,"m":79,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":52,"n":"Group Practice Credentialing Companies","t":"Core","s":8.8,"ltv":84000,"m":79,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":53,"n":"Temporary Provider Credentialing Specialists","t":"Core","s":8.8,"ltv":72000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":54,"n":"Locum Tenens Credentialing Services","t":"Core","s":8.8,"ltv":84000,"m":77,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":55,"n":"Telehealth Provider Enrollment Firms","t":"Core","s":8.8,"ltv":72000,"m":80,"d":36000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":56,"n":"Medicare & Medicaid Enrollment Consultants","t":"Core","s":8.8,"ltv":84000,"m":80,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":57,"n":"Medical Record Audit & Compliance Companies","t":"Core","s":8.8,"ltv":84000,"m":80,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":58,"n":"Healthcare Practice Management Consulting Firms","t":"Core","s":8.8,"ltv":108000,"m":79,"d":54000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":59,"n":"Physician Practice Operations Consultants","t":"Core","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":60,"n":"HR Consulting Firms","t":"Additional","s":8.8,"ltv":96000,"m":80,"d":48000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":61,"n":"Organizational Development Consultants","t":"Additional","s":8.8,"ltv":108000,"m":82,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":62,"n":"Change Management Consulting Firms","t":"Additional","s":8.8,"ltv":120000,"m":82,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":63,"n":"Healthcare Executive Search Firms","t":"Additional","s":8.8,"ltv":72000,"m":74,"d":48000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":64,"n":"Locum Tenens Staffing Firms","t":"Additional","s":8.8,"ltv":81000,"m":73,"d":54000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":65,"n":"Travel Nursing Agencies","t":"Additional","s":8.8,"ltv":72000,"m":73,"d":48000,"c":4,"pay":"Retainer","sc":35,"mark":4},
+{"r":66,"n":"Recruitment Process Outsourcing (RPO) Firms","t":"Additional","s":8.8,"ltv":81000,"m":74,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":67,"n":"Home Health Agency Consulting Firms","t":"Additional","s":8.8,"ltv":54000,"m":79,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":68,"n":"Assisted Living Operations Consultants","t":"Additional","s":8.8,"ltv":54000,"m":78,"d":36000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":69,"n":"Franchise Development Companies","t":"Additional","s":8.8,"ltv":72000,"m":79,"d":48000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":70,"n":"Hospital Revenue Cycle Consulting Firms","t":"Core","s":8.4,"ltv":144000,"m":78,"d":72000,"c":4,"pay":"Retainer","sc":60,"mark":4},
+{"r":71,"n":"Multi-Specialty Practice RCM Consultants","t":"Core","s":8.4,"ltv":120000,"m":79,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":72,"n":"Academic Medical Center Revenue Cycle Advisors","t":"Core","s":8.4,"ltv":168000,"m":76,"d":84000,"c":4,"pay":"Retainer","sc":75,"mark":3},
+{"r":73,"n":"Inpatient Medical Billing Companies","t":"Core","s":8.4,"ltv":120000,"m":76,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":74,"n":"Emergency Medicine Billing Companies","t":"Core","s":8.4,"ltv":108000,"m":77,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":75,"n":"Anesthesia Billing Services","t":"Core","s":8.4,"ltv":120000,"m":78,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":76,"n":"Radiology Billing Outsourcers","t":"Core","s":8.4,"ltv":108000,"m":78,"d":54000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":77,"n":"Inpatient Medical Coding Outsourcers","t":"Core","s":8.4,"ltv":120000,"m":77,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":3},
+{"r":78,"n":"Payer Contract Negotiation Consulting Firms","t":"Core","s":8.4,"ltv":144000,"m":82,"d":72000,"c":4,"pay":"Retainer","sc":60,"mark":4},
+{"r":79,"n":"Managed Care Contracting Advisors","t":"Core","s":8.4,"ltv":132000,"m":82,"d":66000,"c":4,"pay":"Retainer","sc":55,"mark":4},
+{"r":80,"n":"Healthcare CFO Advisory Firms","t":"Core","s":8.4,"ltv":144000,"m":82,"d":72000,"c":4,"pay":"Retainer","sc":60,"mark":4},
+{"r":81,"n":"Value-Based Care Transformation Consultants","t":"Core","s":8.4,"ltv":144000,"m":80,"d":72000,"c":4,"pay":"Retainer","sc":65,"mark":4},
+{"r":82,"n":"EHR Optimization & Revenue Cycle Integration Consultants","t":"Core","s":8.4,"ltv":132000,"m":79,"d":66000,"c":4,"pay":"Retainer","sc":55,"mark":4},
+{"r":83,"n":"Revenue Cycle Workflow Automation Companies","t":"Core","s":8.4,"ltv":132000,"m":79,"d":66000,"c":4,"pay":"Retainer","sc":55,"mark":4},
+{"r":84,"n":"Healthcare RPA (Robotic Process Automation) Firms","t":"Core","s":8.4,"ltv":144000,"m":78,"d":72000,"c":4,"pay":"Retainer","sc":60,"mark":4},
+{"r":85,"n":"HIPAA Compliance Consulting Firms","t":"Core","s":8.4,"ltv":84000,"m":80,"d":42000,"c":4,"pay":"Retainer","sc":40,"mark":4},
+{"r":86,"n":"Denial Management Consulting Companies","t":"Core","s":8.8,"ltv":120000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":45,"mark":4},
+{"r":87,"n":"Turnaround Management Firms","t":"Additional","s":8.4,"ltv":108000,"m":80,"d":72000,"c":4,"pay":"Retainer","sc":55,"mark":3},
+{"r":88,"n":"Corporate Restructuring Advisors","t":"Additional","s":8.4,"ltv":99000,"m":80,"d":66000,"c":4,"pay":"Retainer","sc":60,"mark":3},
+{"r":89,"n":"Government Affairs & Lobbying Firms","t":"Additional","s":8.4,"ltv":90000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":60,"mark":3},
+{"r":90,"n":"Patent Law Firms","t":"Additional","s":8.4,"ltv":81000,"m":79,"d":54000,"c":4,"pay":"Retainer","sc":50,"mark":3},
+{"r":91,"n":"HCC Risk Adjustment Coding Firms","t":"Core","s":8.4,"ltv":132000,"m":78,"d":66000,"c":4,"pay":"Retainer","sc":55,"mark":3},
+{"r":92,"n":"CDI (Clinical Documentation Improvement) Companies","t":"Core","s":8.4,"ltv":120000,"m":79,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":3},
+{"r":93,"n":"Payer Audit Defense Consultants","t":"Core","s":8.4,"ltv":120000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":3},
+{"r":94,"n":"340B Drug Pricing Program Consultants","t":"Core","s":8.4,"ltv":120000,"m":81,"d":60000,"c":4,"pay":"Retainer","sc":55,"mark":3},
+{"r":95,"n":"DSH Payment Consultants","t":"Core","s":8.4,"ltv":120000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":55,"mark":3},
+{"r":96,"n":"Healthcare Revenue Integrity Consulting Firms","t":"Core","s":8.4,"ltv":120000,"m":80,"d":60000,"c":4,"pay":"Retainer","sc":50,"mark":4},
+{"r":97,"n":"Healthcare AI & Predictive Analytics for Revenue Cycle","t":"Core","s":8.4,"ltv":156000,"m":78,"d":78000,"c":4,"pay":"Retainer","sc":65,"mark":4},
+{"r":98,"n":"ACO Advisory Firms","t":"Core","s":8.4,"ltv":144000,"m":80,"d":72000,"c":4,"pay":"Retainer","sc":65,"mark":3},
+{"r":99,"n":"Population Health Management Consulting Firms","t":"Core","s":8.4,"ltv":144000,"m":79,"d":72000,"c":4,"pay":"Retainer","sc":65,"mark":4},
+{"r":100,"n":"Healthcare OIG Compliance Consultants","t":"Core","s":8.4,"ltv":108000,"m":81,"d":54000,"c":4,"pay":"Retainer","sc":50,"mark":3}
+];
+
+let allFilter = 'all';
+let currentPage = { all: 1 };
+const PAGE_SIZE = 50;
+let filteredAll = [...NICHES];
+
+function scoreClass(s) {
+  if (s >= 9.0) return 'score-high';
+  if (s >= 8.0) return 'score-mid';
+  return 'score-low';
+}
+
+function cushionPips(c) {
+  let h = '';
+  for (let i = 0; i < 4; i++) {
+    h += `<span class="cushion-pip ${i < c ? 'cushion-on' : 'cushion-off'}"></span>`;
+  }
+  return h;
+}
+
+function renderAllTable() {
+  const tbody = document.getElementById('tbody-all');
+  const start = (currentPage.all - 1) * PAGE_SIZE;
+  const slice = filteredAll.slice(start, start + PAGE_SIZE);
+  tbody.innerHTML = slice.map(r => `
+    <tr data-type="${r.t.toLowerCase()}" data-score="${r.s}">
+      <td style="color:var(--gray)">${r.r}</td>
+      <td class="niche-cell"><span class="badge ${r.t === 'Core' ? 'core' : 'add'}">${r.t === 'Core' ? 'CORE' : 'ADD'}</span>${r.n}</td>
+      <td><span class="score-pill ${scoreClass(r.s)}">${r.s.toFixed(1)}</span></td>
+      <td>$${r.ltv.toLocaleString()}</td>
+      <td>${r.m}%</td>
+      <td>$${r.d.toLocaleString()}</td>
+      <td>${cushionPips(r.c)} ${r.c}/4</td>
+      <td style="color:var(--gray)">${r.pay}</td>
+      <td style="color:var(--gray)">${r.sc}d</td>
+      <td style="color:var(--gray);font-size:11px">Cold Email/LinkedIn</td>
+    </tr>`).join('');
+  document.getElementById('count-all').textContent = `Showing ${filteredAll.length} niches`;
+  renderPagination();
+}
+
+function renderCoreTable() {
+  const query = document.getElementById('search-core').value.toLowerCase();
+  const coreNiches = NICHES.filter(r => r.t === 'Core' && r.n.toLowerCase().includes(query));
+  const tbody = document.getElementById('tbody-core');
+  tbody.innerHTML = coreNiches.map((r, i) => `
+    <tr>
+      <td style="color:var(--gray)">${i+1}</td>
+      <td class="niche-cell" style="color:var(--accent2)">${r.n}</td>
+      <td><span class="score-pill ${scoreClass(r.s)}">${r.s.toFixed(1)}</span></td>
+      <td>$${r.ltv.toLocaleString()}</td>
+      <td>${r.m}%</td>
+      <td>$${r.d.toLocaleString()}</td>
+      <td>${cushionPips(r.c)} ${r.c}/4</td>
+      <td style="color:var(--gray)">${r.r <= 9 ? '2' : r.r <= 25 ? '2' : '3'}/5</td>
+      <td>${'★'.repeat(Math.min(5, Math.round(r.mark)))}</td>
+    </tr>`).join('');
+  document.getElementById('count-core').textContent = `Showing ${coreNiches.length} core niches`;
+}
+
+function renderTopCoreList() {
+  const top = NICHES.filter(r => r.t === 'Core').slice(0, 12);
+  document.getElementById('top-core-list').innerHTML = top.map(r => `
+    <div class="top-niche-item">
+      <span class="top-niche-name">${r.n}</span>
+      <span class="top-niche-score">${r.s.toFixed(1)}</span>
+    </div>`).join('');
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(filteredAll.length / PAGE_SIZE);
+  const el = document.getElementById('page-all');
+  let html = '';
+  if (currentPage.all > 1) html += `<button class="page-btn" onclick="goPage(${currentPage.all-1})">← Prev</button>`;
+  html += `<span class="page-info">Page ${currentPage.all} of ${totalPages}</span>`;
+  if (currentPage.all < totalPages) html += `<button class="page-btn" onclick="goPage(${currentPage.all+1})">Next →</button>`;
+  el.innerHTML = html;
+}
+
+function goPage(p) {
+  currentPage.all = p;
+  renderAllTable();
+  window.scrollTo(0, 0);
+}
+
+function filterTable(tab) {
+  const query = document.getElementById(`search-${tab}`).value.toLowerCase();
+  if (tab === 'all') {
+    filteredAll = NICHES.filter(r => {
+      const matchQ = r.n.toLowerCase().includes(query);
+      if (allFilter === 'core') return matchQ && r.t === 'Core';
+      if (allFilter === 'additional') return matchQ && r.t === 'Additional';
+      if (allFilter === 'high') return matchQ && r.s >= 9.0;
+      return matchQ;
+    });
+    currentPage.all = 1;
+    renderAllTable();
+  } else {
+    renderCoreTable();
+  }
+}
+
+function setFilter(tab, f, btn) {
+  allFilter = f;
+  document.querySelectorAll(`#tab-${tab} .filter-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterTable(tab);
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+function sortTable(tab, col) {
+  // Simple sort by score desc, already sorted
+}
+
+// Init
+renderAllTable();
+renderCoreTable();
+renderTopCoreList();
+</script>
+</body>
+</html>

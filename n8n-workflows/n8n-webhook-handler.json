@@ -1,0 +1,193 @@
+{
+  "name": "ContractMotion: Site Webhook Handler (Signal Audit)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "signal-audit",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1",
+              "name": "company",
+              "type": "string",
+              "value": "={{ $json.body.company }}"
+            },
+            {
+              "id": "e2",
+              "name": "email",
+              "type": "string",
+              "value": "={{ $json.body.email }}"
+            },
+            {
+              "id": "e3",
+              "name": "role",
+              "type": "string",
+              "value": "={{ $json.body.role }}"
+            },
+            {
+              "id": "e4",
+              "name": "region",
+              "type": "string",
+              "value": "={{ $json.body.region }}"
+            },
+            {
+              "id": "e5",
+              "name": "revenue",
+              "type": "string",
+              "value": "={{ $json.body.revenue }}"
+            },
+            {
+              "id": "e6",
+              "name": "timestamp",
+              "type": "string",
+              "value": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "id": "data-mapping",
+      "name": "Map Site Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the ContractMotion Signal Audit Agent. \n\nAnalyze the following lead and provide:\n1. 2 'Warm Lead' signals for their specific region.\n2. 1 contrarian outreach angle for their revenue tier ($20M-$300M).\n3. Priority Score (1-10)."
+        },
+        "promptType": "define",
+        "text": "=Lead Details:\nCompany: {{ $json.company }}\nRegion: {{ $json.region }}\nRevenue: {{ $json.revenue }}\nRole: {{ $json.role }}"
+      },
+      "id": "ai-scoring",
+      "name": "AI — Pre-Qualification",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "baseId": "appvIukQfc97MnGRJ",
+        "tableId": "ContractMotion Leads",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Company",
+              "fieldValue": "={{ $node['Map Site Data'].json.company }}"
+            },
+            {
+              "fieldId": "Email",
+              "fieldValue": "={{ $node['Map Site Data'].json.email }}"
+            },
+            {
+              "fieldId": "Region",
+              "fieldValue": "={{ $node['Map Site Data'].json.region }}"
+            },
+            {
+              "fieldId": "Revenue Range",
+              "fieldValue": "={{ $node['Map Site Data'].json.revenue }}"
+            },
+            {
+              "fieldId": "AI Audit Notes",
+              "fieldValue": "={{ $json.output }}"
+            },
+            {
+              "fieldId": "Status",
+              "fieldValue": "Audit Requested"
+            }
+          ]
+        }
+      },
+      "id": "airtable-sync",
+      "name": "Sync to Pipeline",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [
+        750,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "channelId": "leads",
+        "text": ":zap: *New ContractMotion Signal Audit Requested!*\n\n*Company:* {{ $node['Map Site Data'].json.company }}\n*Region:* {{ $node['Map Site Data'].json.region }}\n*Revenue:* {{ $node['Map Site Data'].json.revenue }}\n\n*AI Strategy First Pass:*\n{{ $json.output }}\n\n<https://airtable.com/appvIukQfc97MnGRJ|View Pipeline>",
+        "otherOptions": {
+          "includeLinkToWorkflow": true
+        }
+      },
+      "id": "slack-notify",
+      "name": "Notify Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        750,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "webhook-trigger": {
+      "main": [
+        [
+          {
+            "node": "data-mapping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "data-mapping": {
+      "main": [
+        [
+          {
+            "node": "ai-scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ai-scoring": {
+      "main": [
+        [
+          {
+            "node": "airtable-sync",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "slack-notify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}

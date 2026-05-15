@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compounding Pharmacy Niche Analysis — ContractMotion</title>
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy-mid: #112040;
+    --navy-light: #1a3060;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --gold: #f59e0b;
+    --green: #10b981;
+    --red: #ef4444;
+    --white: #ffffff;
+    --gray: #94a3b8;
+    --gray-light: #cbd5e1;
+    --border: #1e3a5f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--navy); color: var(--white); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 100%); border-bottom: 1px solid var(--border); padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .header-title { font-size: 22px; font-weight: 700; color: var(--white); }
+  .header-sub { font-size: 13px; color: var(--gray); margin-top: 4px; }
+  .header-badge { background: var(--accent); color: white; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--navy-mid); padding: 0 32px; }
+  .tab { padding: 14px 24px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--gray); border-bottom: 3px solid transparent; transition: all 0.2s; }
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+
+  /* Content */
+  .tab-content { display: none; padding: 32px; }
+  .tab-content.active { display: block; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-label { font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--white); }
+  .stat-sub { font-size: 12px; color: var(--accent-light); margin-top: 4px; }
+
+  /* Table */
+  .table-wrapper { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--navy-light); color: var(--gray-light); font-weight: 600; padding: 12px 14px; text-align: left; white-space: nowrap; position: sticky; top: 0; z-index: 1; }
+  td { padding: 10px 14px; border-top: 1px solid var(--border); color: var(--white); vertical-align: middle; }
+  tr:hover td { background: rgba(59,130,246,0.06); }
+
+  /* Score bar */
+  .score-cell { display: flex; align-items: center; gap: 8px; }
+  .score-bar-bg { flex: 1; height: 6px; background: var(--navy-light); border-radius: 3px; min-width: 60px; }
+  .score-bar-fill { height: 100%; border-radius: 3px; }
+  .score-num { font-weight: 700; font-size: 13px; min-width: 32px; text-align: right; }
+
+  /* Score color tiers */
+  .tier-s { color: #10b981; } .bar-s { background: #10b981; }
+  .tier-a { color: #3b82f6; } .bar-a { background: #3b82f6; }
+  .tier-b { color: #f59e0b; } .bar-b { background: #f59e0b; }
+  .tier-c { color: #ef4444; } .bar-c { background: #ef4444; }
+
+  /* Badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .badge-core { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-add { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .badge-low { background: rgba(16,185,129,0.15); color: #10b981; }
+  .badge-med { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .badge-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+
+  /* Cushion dots */
+  .cushion-dots { display: flex; gap: 3px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-filled { background: var(--green); }
+  .dot-empty { background: var(--border); }
+
+  /* Analysis tab */
+  .analysis-body { max-width: 900px; }
+  .analysis-body h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; color: var(--white); }
+  .analysis-body h2 { font-size: 18px; font-weight: 700; margin: 32px 0 12px; color: var(--accent-light); border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .analysis-body h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; color: var(--gray-light); }
+  .analysis-body p { font-size: 14px; line-height: 1.7; color: var(--gray-light); margin-bottom: 12px; }
+  .analysis-body ul, .analysis-body ol { margin: 8px 0 12px 20px; }
+  .analysis-body li { font-size: 14px; line-height: 1.6; color: var(--gray-light); margin-bottom: 4px; }
+  .analysis-body blockquote { border-left: 3px solid var(--accent); padding: 12px 16px; margin: 16px 0; background: rgba(59,130,246,0.08); border-radius: 0 8px 8px 0; font-style: italic; color: var(--gray-light); font-size: 14px; }
+  .analysis-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  .analysis-table th { background: var(--navy-light); color: var(--gray-light); padding: 10px 12px; text-align: left; font-weight: 600; }
+  .analysis-table td { padding: 9px 12px; border-top: 1px solid var(--border); color: var(--gray-light); vertical-align: top; }
+  .analysis-table tr:hover td { background: rgba(59,130,246,0.05); }
+
+  /* Rationale tab */
+  .rationale-body { max-width: 900px; }
+  .rationale-body h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .rationale-body h2 { font-size: 17px; font-weight: 700; margin: 28px 0 14px; color: var(--accent-light); }
+  .rationale-body h3 { font-size: 14px; font-weight: 600; margin: 16px 0 6px; color: var(--white); }
+  .rationale-body p { font-size: 13px; line-height: 1.65; color: var(--gray-light); margin-bottom: 10px; }
+
+  /* Search */
+  .search-bar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+  .search-input { flex: 1; background: var(--navy-mid); border: 1px solid var(--border); color: var(--white); padding: 10px 16px; border-radius: 8px; font-size: 14px; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .filter-select { background: var(--navy-mid); border: 1px solid var(--border); color: var(--white); padding: 10px 16px; border-radius: 8px; font-size: 14px; outline: none; cursor: pointer; }
+  .row-count { font-size: 13px; color: var(--gray); }
+
+  /* Executive summary card */
+  .exec-card { background: linear-gradient(135deg, rgba(59,130,246,0.12) 0%, rgba(16,185,129,0.08) 100%); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 24px; margin-bottom: 28px; }
+  .exec-card h3 { font-size: 14px; font-weight: 700; color: var(--accent-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .exec-card p { font-size: 14px; line-height: 1.7; color: var(--gray-light); }
+
+  /* Script boxes */
+  .script-box { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.6; color: #a5f3fc; white-space: pre-wrap; }
+
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .header { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Compounding Pharmacy Niche Research</div>
+    <div class="header-sub">ContractMotion — Cold Email Lead Gen Intelligence Report | March 2026</div>
+  </div>
+  <div class="header-badge">500 Niches Analyzed</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('scoring')">Niche Scoring</div>
+  <div class="tab" onclick="showTab('analysis')">17-Part Deep Analysis</div>
+  <div class="tab" onclick="showTab('rationale')">Core Niches Rationale</div>
+</div>
+
+<!-- TAB 1: SCORING -->
+<div id="tab-scoring" class="tab-content active">
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Niches</div>
+      <div class="stat-value">500</div>
+      <div class="stat-sub">100 core + 400 additional</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top Score</div>
+      <div class="stat-value" style="color:#10b981;">8.93</div>
+      <div class="stat-sub">GLP-1 Compounding Operators</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Core Score</div>
+      <div class="stat-value" style="color:#3b82f6;">8.12</div>
+      <div class="stat-sub">Compounding pharmacy ecosystem</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Focus Industry</div>
+      <div class="stat-value" style="font-size:16px;">Compounding<br>Pharmacies</div>
+      <div class="stat-sub">$12B+ US market</div>
+    </div>
+  </div>
+
+  <div class="exec-card">
+    <h3>Key Finding</h3>
+    <p>Compounding pharmacies score in the <strong>8.4–8.9 range</strong> — among the highest of any niche analyzed to date. The GLP-1/semaglutide surge, acute prescriber acquisition pain, cash-pay revenue model, and accessible owner-operator decision-makers create a near-perfect cold email lead gen client profile. The top 10 niches are all compounding pharmacy sub-segments. Deal sizes of $42K–$72K/year with 78–81% margins and 45–60 day sales cycles.</p>
+  </div>
+
+  <div class="search-bar">
+    <input class="search-input" id="searchInput" type="text" placeholder="Search niches..." oninput="filterTable()">
+    <select class="filter-select" id="filterType" onchange="filterTable()">
+      <option value="all">All Types</option>
+      <option value="core">Core (1–100)</option>
+      <option value="additional">Additional (101–500)</option>
+    </select>
+    <select class="filter-select" id="filterScore" onchange="filterTable()">
+      <option value="all">All Scores</option>
+      <option value="s">S-Tier (8.5+)</option>
+      <option value="a">A-Tier (7.5–8.49)</option>
+      <option value="b">B-Tier (6.5–7.49)</option>
+      <option value="c">C-Tier (&lt;6.5)</option>
+    </select>
+    <span class="row-count" id="rowCount"></span>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="nicheTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Niche</th>
+          <th>Type</th>
+          <th>Deal</th>
+          <th>LTV</th>
+          <th>Margin</th>
+          <th>Cycle</th>
+          <th>Composite</th>
+          <th>Cushion</th>
+          <th>Cashflow</th>
+          <th>Channels</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TAB 2: DEEP ANALYSIS -->
+<div id="tab-analysis" class="tab-content">
+  <div class="analysis-body">
+
+    <h1>Compounding Pharmacies: 17-Part Deep Analysis</h1>
+    <p style="color:var(--gray);margin-bottom:24px;">Cold Email Lead Generation Agency — Client Intelligence Report | March 2026</p>
+
+    <div class="exec-card">
+      <h3>Executive Summary</h3>
+      <p>The U.S. compounding pharmacy market represents one of the most compelling opportunities for a cold email lead generation agency in 2026. With 7,500+ active compounding pharmacies, a $12B+ market accelerating due to the GLP-1/semaglutide shortage wave, and a near-universal blind spot around proactive physician outreach, this niche has a structural pain that cold email directly solves. Compounding pharmacies are entirely dependent on prescribers they already know — they wait for doctors to find them. A cold email agency bridges that gap by connecting pharmacies with prescribing physicians (HRT docs, weight loss clinics, integrative medicine MDs, pain management physicians) who haven't yet discovered them. Urgency is real: FDA shortage status on GLP-1s created a temporary but massive compounding window that pharmacies are racing to capitalize on.</p>
+    </div>
+
+    <h2>Part 1: Industry Economics and Business Model Analysis</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Metric</th><th>503A Retail</th><th>503B Outsourcing</th><th>HRT/GLP-1 Specialist</th></tr></thead>
+      <tbody>
+        <tr><td>Gross Margin</td><td>55–70%</td><td>45–60%</td><td>60–75%</td></tr>
+        <tr><td>Operating Margin</td><td>20–35%</td><td>15–25%</td><td>25–40%</td></tr>
+        <tr><td>Net Profit</td><td>15–28%</td><td>10–20%</td><td>20–35%</td></tr>
+        <tr><td>Avg Rx Value</td><td>$150–$400</td><td>$50–$200 (bulk)</td><td>$200–$600</td></tr>
+        <tr><td>Monthly Revenue (single location)</td><td>$200K–$1.5M</td><td>$2M–$30M</td><td>$300K–$3M</td></tr>
+      </tbody>
+    </table>
+    <p>Compounding pharmacies collect at point-of-dispensing (cash-pay) or net-30 from specialty insurers — favorable cash flow, not cash-strapped. The biggest variable is prescription volume, which is entirely dependent on how many physicians actively refer. A compounding pharmacy that can afford a $3,500–$6,000/month retainer needs: monthly revenue of $200K+, 20+ active prescribers, 2+ years operating.</p>
+    <h3>Discovery Call Financial Questions</h3>
+    <ul>
+      <li>"How many unique prescribers sent you scripts in the last 90 days?"</li>
+      <li>"What percentage of your revenue is cash-pay versus insurance?"</li>
+      <li>"What's your average prescription value for your top 3 compound types?"</li>
+      <li>"Are you currently at capacity for compounding volume, or do you have room to grow?"</li>
+    </ul>
+
+    <h2>Part 2: Customer Journey and Buying Behavior</h2>
+    <p><strong>Stage 1 — Awareness (Weeks 1–2):</strong> Owner-pharmacist receives cold email. Most will not have considered hiring an outbound lead gen agency. Initial reaction is skepticism ("we can't market pharmaceuticals").</p>
+    <p><strong>Stage 2 — Consideration (Weeks 2–6):</strong> If the email reframes the offer clearly (we're connecting you with physicians, not patients), they engage. They discuss with business partner or pharmacist-in-charge.</p>
+    <p><strong>Stage 3 — Decision (Weeks 6–10):</strong> A pilot conversation or strategy call. Showing a sample outreach sequence to physicians in their specialty converts sharply.</p>
+    <p><strong>Sales Cycle:</strong> 45–60 days. Shorter than most B2B because urgency is high (GLP-1 window) and decision is made by a single owner, not a committee.</p>
+    <h3>Primary Purchase Triggers</h3>
+    <ul>
+      <li>Just launched a new specialty (GLP-1, BHRT, peptides) and need prescribers</li>
+      <li>Competitor pharmacy opened nearby and is growing faster</li>
+      <li>Lost a key prescriber (physician retired or moved)</li>
+      <li>Owner attended a compounding conference and heard about physician outreach programs</li>
+      <li>GLP-1 FDA shortage status changing — urgency to lock in physician relationships</li>
+      <li>Revenue concentration risk: top 3 prescribers = 60%+ of volume</li>
+    </ul>
+
+    <h2>Part 3: Discovery Call Architecture</h2>
+    <p>5-section framework: Rapport (5–8 min) → Diagnosis (15–20 min) → Future State (10–12 min) → Budget &amp; Authority (5 min) → Next Steps (3–5 min).</p>
+    <h3>Opening Script</h3>
+    <div class="script-box">"I was looking at your compounding specialties on your website — you focus heavily on BHRT and now GLP-1 compounds. Before I get into anything about what we do, I want to understand how your practice actually grows today. Walk me through — when a new physician starts sending you scripts, how did they find you?"</div>
+    <h3>Diagnostic Questions</h3>
+    <ul>
+      <li>"How many prescribers are actively sending you scripts right now — meaning at least one script in the last 30 days?"</li>
+      <li>"What percentage of your revenue comes from your top 3 prescribers? What happens if one retires?"</li>
+      <li>"Have you ever proactively reached out to a physician to introduce your compounding services?"</li>
+      <li>"Are there specialties — functional medicine, weight loss clinics, pain management — that you KNOW would benefit from your compounds but you haven't been able to reach?"</li>
+    </ul>
+    <h3>Closing for Next Steps</h3>
+    <div class="script-box">"What I'd like to do is put together a quick strategy doc showing you exactly which physician types in [their metro] we'd target, what the outreach sequence would look like, and a projection for prescriber pipeline. I can have that to you in 48 hours. Does that work?"</div>
+
+    <h2>Part 4: Marketing Landscape and Current Practices</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Channel</th><th>Effectiveness</th><th>Current Usage</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Physician referrals (word-of-mouth)</td><td>High</td><td>Very High</td><td>Primary growth engine — completely passive</td></tr>
+        <tr><td>Drug reps visiting offices</td><td>Medium</td><td>Low</td><td>Most pharmacies don't have dedicated reps</td></tr>
+        <tr><td>Conference/trade show networking</td><td>Medium</td><td>Medium</td><td>PCAB, APC, IPS conferences</td></tr>
+        <tr><td>Direct mail to physicians</td><td>Low</td><td>Low</td><td>Often goes to office manager, not physician</td></tr>
+        <tr><td>LinkedIn outreach</td><td>Low–Medium</td><td>Very Low</td><td>Almost no compounding pharmacies do this</td></tr>
+        <tr><td>Cold email to physicians</td><td>High (if done right)</td><td>Near Zero</td><td>The white space this agency fills</td></tr>
+        <tr><td>Google/SEO for patient acquisition</td><td>Medium–High</td><td>Low</td><td>Wrong target — patients, not prescribers</td></tr>
+      </tbody>
+    </table>
+    <blockquote>Most common agency failure: Agencies that "help compounding pharmacies with their social media" completely miss the real problem. The growth lever is PRESCRIBER acquisition, not patient acquisition. Physicians write the prescriptions; patients fill them. An agency that doesn't understand this B2B2C dynamic will fail immediately.</blockquote>
+
+    <h2>Part 5: Credibility Building Without Portfolio</h2>
+    <h3>Script: "Have you worked with companies like ours?"</h3>
+    <div class="script-box">"We haven't built a long portfolio specifically in compounding — we're intentionally selective about which niche we go deep in. But our approach is the same framework we've used to connect service providers with hard-to-reach professional buyers — specialty staffing connecting with hospital systems, medical device reps building physician referral networks. The mechanics of getting a physician to respond to an outreach sequence are the same whether you're selling them a device or offering to compound their patients' medications."</div>
+    <h3>90-Day Pilot Positioning</h3>
+    <div class="script-box">"We do a 90-day pilot — 3 months of outreach to physicians in your target specialty and geography. At the end of 90 days, you'll have real data: how many physicians responded, took a call, sent their first script. If the numbers make sense, we continue. If not, you've learned something valuable for $12,000 — about the cost of one pharmacy trade show."</div>
+
+    <h2>Part 6: Regulatory Environment and Compliance</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Regulatory Body</th><th>Acronym</th><th>Relevance to Marketing</th></tr></thead>
+      <tbody>
+        <tr><td>Food &amp; Drug Administration</td><td>FDA</td><td>Cannot claim FDA approval for compounds</td></tr>
+        <tr><td>Drug Enforcement Administration</td><td>DEA</td><td>Controlled substances compounding restrictions</td></tr>
+        <tr><td>Pharmacy Compounding Accreditation Board</td><td>PCAB</td><td>Voluntary accreditation; strong credibility signal</td></tr>
+        <tr><td>State Boards of Pharmacy</td><td>SBOP</td><td>Different rules by state on compounding and marketing</td></tr>
+        <tr><td>U.S. Pharmacopeia</td><td>USP</td><td>795/797/800 standards; compliance claims matter</td></tr>
+        <tr><td>Federal Trade Commission</td><td>FTC</td><td>Truth-in-advertising for patient-facing materials</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Key compliance point:</strong> Physician outreach is B2B communication — far less regulated than DTC pharmaceutical advertising. Cold email to physicians about compounding services is NOT pharmaceutical advertising. Never claim FDA approval, never make therapeutic claims, never solicit prescriptions directly.</p>
+
+    <h2>Part 7: Industry Vocabulary and Cultural Fluency</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Term/Acronym</th><th>Meaning</th><th>Context</th></tr></thead>
+      <tbody>
+        <tr><td>503A</td><td>Traditional retail compounding pharmacy (patient-specific)</td><td>"We work with 503A pharmacies primarily"</td></tr>
+        <tr><td>503B</td><td>Outsourcing facility — large-scale sterile compounding</td><td>Different compliance burden; different pitch</td></tr>
+        <tr><td>PIC</td><td>Pharmacist-in-Charge</td><td>The decision-maker at many pharmacies</td></tr>
+        <tr><td>BHRT</td><td>Bioidentical Hormone Replacement Therapy</td><td>Major compounding specialty; use exact acronym</td></tr>
+        <tr><td>USP 797</td><td>Sterile compounding standards</td><td>"USP 797 compliant" is a credibility signal</td></tr>
+        <tr><td>Beyond-Use Date (BUD)</td><td>Expiration date for compounded preparations</td><td>"Our sterile compounds have extended BUDs"</td></tr>
+        <tr><td>API</td><td>Active Pharmaceutical Ingredient</td><td>Raw drug substance before compounding</td></tr>
+        <tr><td>PCAB</td><td>Pharmacy Compounding Accreditation Board</td><td>Ask "Are you PCAB-accredited?" to qualify clients</td></tr>
+        <tr><td>GLP-1</td><td>Glucagon-like peptide-1 receptor agonist class</td><td>The current hot compounding category</td></tr>
+        <tr><td>Script</td><td>Prescription</td><td>"How many scripts per week from each prescriber?"</td></tr>
+        <tr><td>Prescriber</td><td>Physician, NP, or PA authorized to write scripts</td><td>Always say "prescriber" not "customer"</td></tr>
+        <tr><td>Sterile vs. Non-Sterile</td><td>Core distinction in compounding types</td><td>Always ask which type; changes compliance picture</td></tr>
+      </tbody>
+    </table>
+    <h3>Linguistic Landmines</h3>
+    <ul>
+      <li><strong>"Your customers"</strong> — Pharmacists call them "patients" or "clients." Instant outsider signal.</li>
+      <li><strong>"Sell prescriptions"</strong> — Pharmacists FILL prescriptions; physicians WRITE them.</li>
+      <li><strong>"Unapproved drugs"</strong> — Technically accurate but never say this. Use "physician-prescribed custom formulations."</li>
+      <li><strong>"We can help you market your drugs"</strong> — Triggers regulatory alarm. Say "connect you with prescribers."</li>
+      <li><strong>Confusing 503A with 503B</strong> — Fundamentally different business models. Ask first.</li>
+    </ul>
+
+    <h2>Part 8: Objection Handling</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Objection</th><th>Response</th></tr></thead>
+      <tbody>
+        <tr><td>"We can't take more prescriptions right now — we're at capacity."</td><td>"That's a great problem to have. Is that a staffing constraint or an equipment constraint? Most pharmacies who think they're at capacity find within 60 days of hiring one more tech they had 20–30% more headroom. We'd be building your prescriber pipeline now so you have a warm bench ready when you scale."</td></tr>
+        <tr><td>"We only work with physicians who already know us."</td><td>"That's actually the best sign — your quality is high enough that physicians who find you stick with you. The problem is the physicians who DON'T know you yet. There are 40 integrative medicine docs within 15 miles of your pharmacy who have never heard of you and are actively looking for a compounding partner right now."</td></tr>
+        <tr><td>"I'm worried about compliance — we can't market pharmaceuticals."</td><td>"What we do is professional B2B outreach — introducing your pharmacy's services to physicians. It's the equivalent of a pharmaceutical rep calling on a doctor's office — standard industry practice, completely outside FDA pharmaceutical advertising rules."</td></tr>
+        <tr><td>"We tried email marketing before and it didn't work."</td><td>"Tell me about what you tried. [Listen.] Physician-targeted outreach is a completely different discipline. Physicians respond to peer-to-peer framing, clinical specificity, and local relevance. We're not blasting a newsletter — we're sending personalized sequences to 50–100 carefully selected prescribers. Response rates: 8–15%."</td></tr>
+        <tr><td>"I don't have budget for this."</td><td>"What's your current plan for adding new prescribers this year? Here's the math: 5 net-new prescribers, 4 scripts/month at $250 = $5,000/month in new recurring revenue. Our retainer is $4,500. You break even on prescriber #3."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 9: Competitive Dynamics</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Competitor Type</th><th>Their Positioning</th><th>Your Counter</th></tr></thead>
+      <tbody>
+        <tr><td>Incumbent pharmacy consultants</td><td>"We help you optimize operations, billing, and compliance."</td><td>"They help you run a better pharmacy. We help you fill it. You need both."</td></tr>
+        <tr><td>Generalist marketing agencies</td><td>"We build your website, manage social media, run Google ads for patient traffic."</td><td>"Patient traffic is the wrong target. One physician sending 20 scripts/month is worth more than 200 patients finding you on Google."</td></tr>
+        <tr><td>Internal pharmacy rep approach</td><td>"We hired someone to visit doctors' offices."</td><td>"Front desks block sales calls. Physicians respond to thoughtful email sequences during off-hours. Your rep visiting offices often never gets past the MA."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 10: Pain Points</h2>
+    <ul>
+      <li><strong>"If Dr. Johnson retires, we lose 40% of our revenue overnight."</strong> — Top 3 prescribers = 50–70% of volume. Cold email builds prescriber diversification — the core insurance policy against concentration risk.</li>
+      <li><strong>"We compound the best quality BHRT in the region, but no one knows we exist."</strong> — Quality is table stakes. Discovery is the bottleneck. Physicians choose the compounder who reaches them first with a credible message.</li>
+      <li><strong>"Semaglutide compounding might get shut down — I need to know what's next."</strong> — GLP-1 uncertainty. Cold email to diversify into HRT, peptides, and dermatology prescribers is the hedge.</li>
+      <li><strong>"My pharmacy rep gets blocked at the front desk half the time."</strong> — Email reaches physicians directly at 6am or 9pm. Cold email bypasses the gatekeeper problem completely.</li>
+      <li><strong>"We're seeing more compounding pharmacies open in our area."</strong> — First-mover advantage in physician outreach is real. The physician who has a trusted compounding relationship is hard to displace.</li>
+    </ul>
+
+    <h2>Part 11: Qualification Framework</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Criteria</th><th>Ideal</th><th>Problematic</th></tr></thead>
+      <tbody>
+        <tr><td>Revenue</td><td>$200K+/month</td><td>Under $100K/month</td></tr>
+        <tr><td>Prescriber count</td><td>15–50 active prescribers</td><td>1–3 (too concentrated) OR 100+ (too established)</td></tr>
+        <tr><td>Specialty focus</td><td>BHRT, GLP-1, peptides, pain, derm</td><td>"We compound everything" — no focus, no clear target</td></tr>
+        <tr><td>Accreditation</td><td>PCAB-accredited</td><td>No accreditation — credibility signal missing</td></tr>
+        <tr><td>Geographic market</td><td>Metro area 500K+ population</td><td>Rural, small-town with 10-mile prescriber radius</td></tr>
+        <tr><td>Operational capacity</td><td>Room to grow 20–40% in Rx volume</td><td>Currently at max capacity</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 12: Technology Stack</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Category</th><th>Software Examples</th><th>Relevance</th></tr></thead>
+      <tbody>
+        <tr><td>Pharmacy Management System</td><td>PK Software, BestRx, RxBillers, Rx30</td><td>Tracks Rx volume — can pull data for ROI proof</td></tr>
+        <tr><td>CRM</td><td>Salesforce, HubSpot, or spreadsheet</td><td>Often nonexistent — a growth indicator</td></tr>
+        <tr><td>Email Marketing</td><td>Mailchimp or nothing</td><td>Not used for physician outreach currently</td></tr>
+        <tr><td>Billing &amp; Revenue Cycle</td><td>QS/1, FrameworkLTC, Rx30</td><td>Tracks insurance billing</td></tr>
+        <tr><td>Compounding Software</td><td>Rx30, PK Software, WinPharm</td><td>Manages compound formulations</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 13: Proposal Architecture</h2>
+    <p>Six-section proposal: (1) Current Prescriber Situation, (2) Prescriber Gap Analysis, (3) Our Outreach Methodology, (4) Sample Outreach Sequence, (5) 90-Day Projections, (6) Investment &amp; Terms.</p>
+    <h3>Closing Script</h3>
+    <div class="script-box">"Based on our conversation, I think there's a real opportunity around the [HRT / GLP-1 / pain] prescriber market in [their city]. I'd propose starting with a focused 90-day pilot targeting [specialty type] practices within [radius]. The investment is $4,500/month. If we add 5 net-new active prescribers in 90 days, you've covered the cost twice over. If we add 10 — our typical result — you're looking at $8,000–$12,000 in new monthly revenue for a $13,500 pilot investment. Does that math work for you?"</div>
+
+    <h2>Part 14: Success Metrics</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Category</th><th>Metric</th><th>Why It Matters</th></tr></thead>
+      <tbody>
+        <tr><td>Outreach Activity</td><td>Emails sent per week</td><td>Transparency — shows work being done</td></tr>
+        <tr><td>Response Rate</td><td>% of physicians who reply</td><td>8–15% is benchmark for physician cold email</td></tr>
+        <tr><td>Call Booked Rate</td><td>% of responders who take a call</td><td>30–50% of responders should book</td></tr>
+        <tr><td>Prescriber Meetings</td><td># of physician calls generated</td><td>The core deliverable</td></tr>
+        <tr><td>New Active Prescribers</td><td># who send first script within 90 days</td><td>Ultimate business outcome</td></tr>
+        <tr><td>Revenue Attribution</td><td>Monthly revenue from new prescribers</td><td>The ROI proof metric</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 15: Pricing &amp; Negotiation</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Pricing Pressure</th><th>Response</th></tr></thead>
+      <tbody>
+        <tr><td>"Can we do a shorter commitment?"</td><td>"Our pilot IS the shorter commitment. 90 days, no long-term lock-in. Cancel with 30 days notice after the pilot."</td></tr>
+        <tr><td>"Can you do $2,500/month instead?"</td><td>"At $2,500 we'd cut outreach volume in half. I can offer a reduced first month at $3,000 while we build lists, then $4,500 from month two when full outreach begins."</td></tr>
+        <tr><td>"We need to see results before we pay."</td><td>"Start with a smaller list — 50 physicians — at $1,500 setup fee for month one. If you see real replies from physicians in your area in 30 days, you'll have the evidence to commit."</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Part 16: Network and Relationship Dynamics</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Category</th><th>Examples</th><th>Strategic Importance</th></tr></thead>
+      <tbody>
+        <tr><td>Key Influencers</td><td>PCAB leadership, APC board members, IPS faculty</td><td>Name-dropping establishes instant credibility</td></tr>
+        <tr><td>Connectors</td><td>PCAB accreditation consultants, pharmacy attorneys, API supplier reps</td><td>Advisors touch dozens of pharmacies — one referral = 20 cold emails</td></tr>
+        <tr><td>Conferences</td><td>APC Annual Meeting, IPS Symposium, NCPA Annual Convention</td><td>Key venues to build relationships and case studies</td></tr>
+        <tr><td>Online Communities</td><td>PCAB LinkedIn groups, Pharmacy Times forums, APC member forums</td><td>Message refinement; prescribing behavior discussed</td></tr>
+      </tbody>
+    </table>
+    <h3>Apollo/LinkedIn Targeting Filters</h3>
+    <p><strong>To find Compounding Pharmacy Owner-Pharmacists:</strong> Job Title: "Pharmacist," "Owner," "Pharmacist-in-Charge," "Director of Pharmacy" | Industry: "Pharmaceutical Retail" | Company size: 1–20 employees | Keywords: "compounding," "503A," "BHRT," "GLP-1"</p>
+    <p><strong>To find target prescribers (outreach targets on behalf of pharmacies):</strong> Job Title: "MD," "DO," "NP," "PA" | Keywords: "integrative medicine," "functional medicine," "weight loss," "hormone," "HRT," "anti-aging," "pain management" | Practice size: 1–10 employees</p>
+
+    <h2>Part 17: Future Outlook</h2>
+    <table class="analysis-table">
+      <thead><tr><th>Trend</th><th>Description &amp; Impact</th></tr></thead>
+      <tbody>
+        <tr><td>GLP-1 Shortage Resolution</td><td>Pharmacies that built broad prescriber networks during the GLP-1 boom will pivot to other specialties; those that didn't face revenue cliffs. URGENCY to build networks NOW.</td></tr>
+        <tr><td>503A Regulatory Tightening</td><td>FDA increasing scrutiny on 503A compounding. Pharmacies with diversified prescriber bases and documented compliance are better insulated.</td></tr>
+        <tr><td>Personalized Medicine Growth</td><td>Structural tailwind for compounding — patient-specific dosing driven by genomics, functional medicine, and direct-pay healthcare. 10-year growth trajectory strong.</td></tr>
+        <tr><td>Telehealth Prescriber Growth</td><td>Individual telehealth physicians and NPs seeking compounding pharmacy partners as platforms tighten supply chains. New prescriber channel emerging.</td></tr>
+        <tr><td>Direct-Pay Healthcare Expansion</td><td>Concierge medicine, DPC, and functional medicine practices growing 15–20% annually — highest-volume, lowest-friction compounding pharmacy partners.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Appendix: Cold Email Scripts</h2>
+    <h3>Script A: To Compounding Pharmacy Owner (Initial Outreach)</h3>
+    <div class="script-box">Subject: Quick question about your prescriber network
+
+Hi [Name],
+
+Noticed [Pharmacy Name] specializes in [BHRT / GLP-1 / pain] compounding — your Google reviews from physicians are impressive.
+
+Quick question: when a physician who's never worked with you before needs a compounding partner, how do they find you today?
+
+Most pharmacy owners I talk to say the answer is "referral from another doctor" — which works, but slowly. We help compounding pharmacies build a proactive pipeline of prescribers in their specialty and geography using targeted cold email outreach directly to physicians.
+
+For pharmacies like yours, we're typically adding 5–10 net-new active prescribers per 90-day period.
+
+Worth a 20-minute conversation to see if the math makes sense for [Pharmacy Name]?
+
+[Signature]</div>
+
+    <h3>Script B: To Weight Loss Clinic Physician (On Behalf of GLP-1 Compounding Pharmacy)</h3>
+    <div class="script-box">Subject: Compounding pharmacy in [City] — GLP-1 + tirzepatide supply
+
+Hi Dr. [Name],
+
+Your weight loss practice in [City] came up in a search for physicians managing GLP-1 patients — wanted to reach out directly.
+
+We're [Pharmacy Name], a PCAB-accredited compounding pharmacy in [City]. We currently compound semaglutide and tirzepatide for [#] weight management patients and are looking to connect with a small number of additional prescribers in our area.
+
+For your patients:
+- 7-day turnaround on compound fulfillment
+- BUD-compliant sterile preparations
+- Direct prior auth support for your billing team
+
+Would it make sense to connect for 15 minutes?
+
+[Pharmacist Name], PharmD
+[Pharmacy Name] | PCAB Accredited</div>
+
+  </div>
+</div>
+
+<!-- TAB 3: RATIONALE -->
+<div id="tab-rationale" class="tab-content">
+  <div class="rationale-body">
+    <h1>100 Core Niches: Compounding Pharmacy Ecosystem — Rationale</h1>
+    <p style="color:var(--gray);margin-bottom:24px;">ContractMotion | March 2026 | Cold Email Lead Generation Agency Perspective</p>
+
+    <div class="exec-card">
+      <h3>Selection Framework</h3>
+      <p>These 100 niches map the full compounding pharmacy ecosystem: direct pharmacy operators, adjacent upstream suppliers, downstream services, supporting consulting/regulatory services, and emerging categories. Selection criteria: (1) Sufficient business count (100+ in US), (2) Revenue capacity to afford $3K–$10K/month retainer, (3) Marketing gap — underserved by specialized agencies, (4) Identifiable decision-maker, (5) Findable online, (6) Clear pain points that prescriber outreach solves.</p>
+    </div>
+
+    <h2>Sub-Category 1: 503A Retail Compounding Pharmacies (Traditional)</h2>
+    <h3>1. 503A Retail Compounding Pharmacies</h3>
+    <p>The core of the compounding industry. 7,500+ 503A pharmacies operate in the US, the majority independently owned. Businesses with $200K–$2M monthly revenue, owner-operator decision-makers, and a near-universal gap in proactive physician outreach. High marketing agency opportunity — almost no specialized agencies serve this space.</p>
+    <h3>2. Independent Compounding Pharmacy Operators</h3>
+    <p>Independent operators represent the bulk of 503A pharmacies and have the most acute growth pain. They lack marketing infrastructure of larger chains and are most open to external growth support. Decision-makers are accessible and entrepreneurially minded enough to invest in business development.</p>
+    <h3>3. Compounding Pharmacy Franchise Operators</h3>
+    <p>Franchised compounding pharmacy networks often receive limited marketing support from franchisors. Individual franchise operators are hungry for prescriber growth within their territory. Multiple-unit operators are particularly high-value clients.</p>
+    <h3>4. Community Compounding Pharmacy Groups</h3>
+    <p>Regional groups of independent compounders collaborating on purchasing and compliance. These groups often have a central coordinator — a single touchpoint to reach multiple pharmacy clients. Network effect multiplier for an agency relationship.</p>
+    <h3>5. Compounding Pharmacy Networks & Buying Groups</h3>
+    <p>National buying groups aggregate hundreds of independent pharmacies. The network leadership communicates regularly with member pharmacies — an agency endorsed by a buying group has instant credibility with dozens of potential clients.</p>
+    <h3>6. Compounding Pharmacy Management Companies</h3>
+    <p>Multi-site operators running 5–20+ compounding locations. Represent larger deal sizes ($60K+/year retainers), more sophisticated buyers, and potential to roll out agency services across multiple locations simultaneously.</p>
+    <h3>7. Retail Pharmacy & Compounding Hybrid Operators</h3>
+    <p>Independent retail pharmacies that added compounding labs to diversify from PBM pressure. The pharmacist-owner is actively trying to shift revenue mix toward higher-margin compounding — prescriber acquisition is the critical growth lever.</p>
+    <h3>8. Long-Term Care Compounding Pharmacy Operators</h3>
+    <p>LTC compounding pharmacies serve nursing homes, assisted living, and rehab centers. Growth depends on adding new LTC facilities as clients — a structured outreach program to LTC facility directors of nursing is the equivalent of physician outreach for this sub-segment.</p>
+
+    <h2>Sub-Category 2: 503B Outsourcing Facilities</h2>
+    <h3>9–16. 503B Facilities (Outsourcing, Hospital, Large-Scale, Contract, PN, Ophthalmic, Oncology, IV Admixture)</h3>
+    <p>Only ~80 registered 503B facilities exist in the US, but each represents $10M–$500M in revenue. These are the industrial-scale compounders supplying hospitals, surgery centers, and health systems. Marketing challenge is hospital pharmacy director and supply chain director outreach — a highly targeted B2B sales motion. High-value clients with large deal sizes and long retention. Sterile cleanroom contractors (Niche 22) and consulting firms (Niche 23) are adjacent ecosystem players that serve the same decision-maker profile.</p>
+
+    <h2>Sub-Category 3: Sterile Compounding Pharmacies</h2>
+    <h3>17–23. Sterile Specialists (IV Therapy, Injectable, Ophthalmic, Intrathecal, Cleanroom Contractors, Consultants)</h3>
+    <p>503A pharmacies with USP 797 sterile compounding capability represent the upper tier of independent compounding. They can compound injectable, ophthalmic, and IV medications — capabilities that command premium pricing. IV therapy compounders are growing rapidly alongside the wellness IV drip trend. Each sub-segment has a defined, targetable prescriber audience (ophthalmologists, pain MDs, IV clinic operators, etc.).</p>
+
+    <h2>Sub-Category 4: Non-Sterile Compounding Pharmacies</h2>
+    <h3>24–30. Non-Sterile Specialists (Topical, Oral, Dermatology, Capsule, Suppository, Transdermal)</h3>
+    <p>The broadest category — any pharmacy compounding topicals, capsules, troches, oral liquids. Most are HRT, dermatology, or pediatric focused. High market size, accessible owners, clear prescriber target audiences. Dermatologists in particular have among the highest compound prescription potential — acne, rosacea, pigmentation, alopecia, eczema, psoriasis all benefit from customized formulations most derms have never been systematically approached about.</p>
+
+    <h2>Sub-Category 5: Hormone Replacement Therapy Compounding</h2>
+    <h3>31–39. BHRT Pellet, BHRT Specialist, HRT Operator, Menopause/Women's Health, Men's Health/TRT, Anti-Aging/Longevity, Thyroid/Adrenal, Integrative Medicine, Functional Medicine Partners</h3>
+    <p>BHRT is the #1 revenue driver for most HRT-focused compounding pharmacies. Consumer demand is driven by menopause awareness (Oprah, Halle Berry, Dr. Mary Claire Haver). Physicians specializing in BHRT are identifiable, contactable, and highly motivated to find reliable compounding partners. Testosterone replacement therapy (TRT) is a multi-billion dollar market with a growing prescriber base of men's health physicians and urologists. Anti-aging and functional medicine MDs are concentrated, active on LinkedIn, and share compounding pharmacy recommendations within their physician networks.</p>
+
+    <h2>Sub-Category 6: Veterinary Compounding Pharmacies</h2>
+    <h3>40–45. General Vet, Equine, Exotic Animal, Large Animal, Small Animal/Pet, Vet Networks</h3>
+    <p>Veterinary compounding is a $1.5B+ market growing at 8%+ annually. Veterinarians are the prescribers — and they're highly receptive to outreach because most have never been systematically approached by a compounding pharmacy. FDA's increased scrutiny on unapproved veterinary drugs is pushing more vets toward compounded alternatives. Equine vets require custom formulations that standard manufacturers don't make — palatable forms, precise dosing for large animals. Exotic animal vets (birds, reptiles) have almost no commercial drug options — compounding is essential.</p>
+
+    <h2>Sub-Category 7: Pediatric Compounding Specialists</h2>
+    <h3>46–50. Pediatric Specialist, Children's Hospital Partners, Neonatal/Infant, Flavored Medication, Rare Disease/Orphan Drug</h3>
+    <p>Pediatric patients often cannot swallow pills, require tiny doses, or need flavors — making compounding essential. Pediatricians, neonatologists, and pediatric specialists are the prescribers. A compounding pharmacy that positions as the pediatric specialist in their region can build strong, loyal prescriber relationships. Rare disease compounders serve conditions without FDA-approved commercial treatments — geneticists and metabolic disease MDs actively seek compounding partners, and once found, retention is near-permanent.</p>
+
+    <h2>Sub-Category 8: Pain Management & Dermatology Compounding</h2>
+    <h3>51–59. Pain Management, Topical Pain Cream, Neuropathic Pain, Wound Care, Dermatology Partners, Acne/Rosacea, Hyperpigmentation/Melasma, Alopecia/Hair Loss, Psoriasis/Eczema</h3>
+    <p>Custom topical pain creams (lidocaine, ketamine, gabapentin combinations) represent a major compounding revenue stream. Pain management physicians, anesthesiologists, and PM&R MDs are the prescribers, often reimbursed at premium rates. The dermatology niche deserves special attention: dermatologists have among the highest compound prescription potential across multiple conditions (acne, rosacea, pigmentation, hair loss, eczema, psoriasis) and most have minimal awareness of what high-quality compounding labs can offer for custom formulations.</p>
+
+    <h2>Sub-Category 9: GLP-1 / Semaglutide / Weight Loss Compounding</h2>
+    <h3>60–69. GLP-1 Operator, Semaglutide Specialist, Tirzepatide Operator, Weight Loss Medication, Medical Weight Management, Obesity Medicine Networks, GLP-1 503B, Peptide Operator, Anti-Aging Peptide, NAD+/Longevity</h3>
+    <p>The single hottest niche in the entire compounding market (2023–2026). FDA shortage designation on semaglutide and tirzepatide created a legal window for 503A compounding. Pharmacies with GLP-1 capability are generating $50K–$500K/month in new revenue from this category alone. The urgent need is to build prescriber relationships before shortage status resolves. Peptide compounding (BPC-157, TB-500, PT-141, etc.) is a rapidly growing adjacent category. Anti-aging physicians are concentrated, active on LinkedIn, and highly vocal in their physician networks — a single conversion often leads to referrals. NAD+ infusions require compounding — a growing longevity medicine requirement.</p>
+
+    <h2>Sub-Category 10: Compounding Pharmacy Consulting & Regulatory</h2>
+    <h3>70–77. Regulatory Consulting, USP 795/797/800 Consulting, Accreditation Consulting, PCAB Consulting, Regulatory Affairs, Legal/Compliance Attorneys, FDA Inspection Readiness, Business Consulting</h3>
+    <p>These consulting firms are trusted advisors to the same pharmacy owners who are potential lead gen clients. A referral relationship with regulatory consultants gets warm introductions to their pharmacy clients. Post-accreditation is often the moment a pharmacy is ready to invest in growth marketing — they've just signaled quality and now need to attract prescribers who value that signal. An agency that reaches pharmacies immediately post-accreditation has a compelling timing angle.</p>
+
+    <h2>Sub-Category 11: Pharmacy Benefit Managers & Specialty Distribution</h2>
+    <h3>78–79. PBMs for Compounding, Specialty Drug Distribution</h3>
+    <p>PBMs that work specifically with compounding pharmacies on prior authorization and reimbursement have concentrated access to the same pharmacy decision-makers. Specialty distributors call on the same pharmacies daily. Both represent strong referral channel potential — a co-marketing arrangement could provide warm introductions to compounding pharmacy clients.</p>
+
+    <h2>Sub-Category 12: Compounding Ingredient & API Suppliers</h2>
+    <h3>80–100. API Suppliers, Chemical/Excipient/Base/Raw Material Suppliers, Packaging Suppliers, Equipment Manufacturers, Cleanroom Technology, Pharmacy Software, PMS Vendors, Billing/Reimbursement Services, Prior Auth Management, Insurance Brokers, Training/Education Programs, Staffing/Recruiting, Franchise Development, Real Estate/Buildout, M&A/Valuation Advisors, Trade Associations, Lab Testing/QC Labs, Marketing & Practice Growth Firms, 503B Design & Engineering Firms</h3>
+    <p>The upstream supply chain (API suppliers like PCCA, Fagron, Medisca; excipient suppliers; packaging; equipment) and downstream services (software, billing, staffing, training, M&A) represent the full ecosystem of companies that serve compounding pharmacies. Each is either a direct marketing agency client (they need their own physician/client outreach) or a referral channel partner (they have daily contact with pharmacy owner-operators who need outreach services). API supplier reps visit pharmacies monthly and know which ones are growing — a referral arrangement with supplier reps is a high-leverage growth channel. Pharmacies in M&A processes are often in a revenue-growth push before the transaction — an ideal moment for prescriber acquisition investment.</p>
+
+  </div>
+</div>
+
+<script>
+// ===== Niche data =====
+const NICHES = [
+  // Core niches (1-100) with pre-computed scores
+  // Format: [name, deal, ltv, margin, cycle, channels, difficulty, marketability, composite, cushion, cashflow_risk, is_core]
+  ["GLP-1 Compounding Pharmacy Operators",60000,120000,81,45,"Cold Email/LinkedIn/Direct Outreach",3,5,8.93,4,"LOW",true],
+  ["Semaglutide Compounding Specialists",60000,120000,81,45,"Cold Email/LinkedIn/Direct Outreach",3,5,8.93,4,"LOW",true],
+  ["Tirzepatide Compounding Pharmacy Operators",60000,120000,81,45,"Cold Email/LinkedIn/Direct Outreach",3,5,8.93,4,"LOW",true],
+  ["Weight Loss Medication Compounding Pharmacies",54000,108000,80,45,"Cold Email/LinkedIn/Direct Outreach",3,5,8.87,4,"LOW",true],
+  ["Medical Weight Management Compounding Partners",54000,108000,80,45,"Cold Email/LinkedIn/Direct Outreach",3,5,8.87,4,"LOW",true],
+  ["Obesity Medicine Compounding Pharmacy Networks",60000,120000,80,60,"Cold Email/LinkedIn/Trade Shows",3,5,8.87,4,"LOW",true],
+  ["GLP-1 Outsourcing & 503B Compounding Facilities",72000,144000,80,75,"LinkedIn/Cold Email/Conferences",4,4,8.63,4,"LOW",true],
+  ["BHRT Hormone Pellet Compounding Pharmacies",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["Bioidentical Hormone Replacement Therapy (BHRT) Compounding Specialists",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["HRT Compounding Pharmacy Operators",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Menopause & Women's Health Compounding Pharmacies",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Men's Health & Testosterone Compounding Specialists",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Anti-Aging & Longevity Compounding Pharmacies",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["Peptide Compounding Pharmacy Operators",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["Anti-Aging Peptide Compounding Specialists",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["NAD+ & Longevity Infusion Compounding Pharmacies",54000,108000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.67,4,"LOW",true],
+  ["503A Retail Compounding Pharmacies",42000,84000,78,60,"Cold Email/LinkedIn/Referral",3,3,8.22,4,"LOW",true],
+  ["Independent Compounding Pharmacy Operators",36000,72000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.00,4,"LOW",true],
+  ["Sterile Compounding Pharmacy Operators",54000,108000,78,75,"Cold Email/LinkedIn/Direct Outreach",4,3,8.20,4,"LOW",true],
+  ["IV Therapy Compounding Specialists",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.51,4,"LOW",true],
+  ["Injectable Drug Compounding Pharmacies",54000,108000,78,75,"Cold Email/LinkedIn/Trade Shows",4,3,8.20,4,"LOW",true],
+  ["Pain Management Compounding Pharmacies",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.51,4,"LOW",true],
+  ["Topical Pain Cream Compounding Specialists",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.51,4,"LOW",true],
+  ["Dermatology Compounding Specialists",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.51,4,"LOW",true],
+  ["Acne & Rosacea Compounding Specialists",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Hyperpigmentation & Melasma Compounding Pharmacies",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Alopecia & Hair Loss Compounding Specialists",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.60,4,"LOW",true],
+  ["Integrative Medicine Compounding Partners",48000,96000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.65,4,"LOW",true],
+  ["Functional Medicine Pharmacy Partners",48000,96000,80,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.65,4,"LOW",true],
+  ["503B Outsourcing Facility Operators",72000,144000,78,90,"Cold Email/LinkedIn/Conferences",4,3,8.47,4,"LOW",true],
+  ["Hospital Pharmacy Outsourcing Facilities",72000,144000,78,90,"LinkedIn/Cold Email/Conferences",4,3,8.47,4,"LOW",true],
+  ["Large-Scale Sterile Compounding Manufacturers",72000,144000,78,90,"LinkedIn/Cold Email/Conferences",4,3,8.47,4,"LOW",true],
+  ["Rare Disease & Orphan Drug Compounding Pharmacies",60000,120000,80,75,"LinkedIn/Cold Email/Conferences",4,3,8.47,4,"LOW",true],
+  ["Thyroid & Adrenal Hormone Compounding Specialists",48000,96000,79,60,"Cold Email/LinkedIn/Referral",3,3,8.38,4,"LOW",true],
+  ["Compounding Pharmacy Management Companies",60000,120000,77,75,"LinkedIn/Cold Email/Referral",3,3,8.39,4,"LOW",true],
+  ["Compounding Pharmacy Networks & Buying Groups",54000,108000,77,75,"LinkedIn/Cold Email/Conferences",3,3,8.20,4,"LOW",true],
+  ["Dermatology Compounding Pharmacy Partners",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.51,4,"LOW",true],
+  ["Psoriasis & Eczema Compounding Pharmacies",42000,84000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.22,4,"LOW",true],
+  ["Neuropathic Pain Compounding Pharmacies",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.38,4,"LOW",true],
+  ["Wound Care Compounding Specialists",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.38,4,"LOW",true],
+  ["Topical Compounding Specialists",42000,84000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.35,4,"LOW",true],
+  ["Pediatric Compounding Pharmacy Specialists",48000,96000,79,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.38,4,"LOW",true],
+  ["503B Contract Sterile Compounding Facilities",72000,144000,78,90,"Cold Email/LinkedIn/Conferences",4,3,8.47,4,"LOW",true],
+  ["Oncology Drug Compounding Facilities",66000,132000,78,90,"LinkedIn/Cold Email/Conferences",4,3,8.43,4,"LOW",true],
+  ["Veterinary Compounding Pharmacy Operators",42000,84000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.22,4,"LOW",true],
+  ["FDA Inspection Readiness Consulting for Compounders",54000,108000,84,60,"Cold Email/LinkedIn/Trade Shows",3,3,8.20,4,"LOW",true],
+  ["Compounding Pharmacy Regulatory Consulting Firms",48000,96000,83,60,"Cold Email/LinkedIn/Referral",3,3,8.38,4,"LOW",true],
+  ["USP 795/797/800 Compliance Consulting Firms",48000,96000,84,60,"Cold Email/LinkedIn/Trade Shows",3,3,8.38,4,"LOW",true],
+  ["Pharmacy Regulatory Affairs Firms",54000,108000,83,75,"LinkedIn/Cold Email/Conferences",3,3,8.20,4,"LOW",true],
+  ["Compounding Pharmacy M&A & Valuation Advisors",60000,120000,82,90,"LinkedIn/Cold Email/Conferences",3,3,8.39,4,"LOW",true],
+  // Additional niches highlights (top scoring from additional list)
+  ["Life Coaching & Executive Coaching Firms",36000,72000,83,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Leadership Development Training Companies",48000,96000,80,60,"Cold Email/LinkedIn/Direct Outreach",2,4,8.11,4,"LOW",false],
+  ["ABA Therapy Clinic Chains",48000,96000,77,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.38,4,"LOW",false],
+  ["Med Spa Franchise Chain Operators",48000,96000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.24,4,"LOW",false],
+  ["Hair Transplant Surgery Groups",48000,96000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.38,4,"LOW",false],
+  ["Orthodontic Practice Groups",48000,96000,77,45,"Cold Email/LinkedIn/Direct Outreach",2,4,8.24,4,"LOW",false],
+  ["Dental Implant Center Operators",48000,96000,77,45,"Cold Email/LinkedIn/Direct Outreach",2,4,8.24,4,"LOW",false],
+  ["Longevity Medicine Clinic Operators",54000,108000,79,60,"Cold Email/LinkedIn/Instagram",3,4,8.53,4,"LOW",false],
+  ["Regenerative Medicine Practice Groups",54000,108000,78,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.47,4,"LOW",false],
+  ["Stem Cell Therapy Clinic Operators",60000,120000,78,60,"LinkedIn/Cold Email/Conferences",4,3,8.20,4,"LOW",false],
+  ["Hormone Optimization Clinic Operators",48000,96000,78,45,"Cold Email/LinkedIn/Direct Outreach",3,4,8.38,4,"LOW",false],
+  ["Laser Hair Removal Chains",42000,84000,77,45,"Cold Email/Instagram/LinkedIn",2,4,8.08,4,"LOW",false],
+  ["Refractive Surgery Center Groups",48000,96000,77,60,"Cold Email/LinkedIn/Direct Outreach",3,4,8.38,4,"LOW",false],
+  ["Assisted Living Facility Operators",48000,96000,76,60,"Cold Email/LinkedIn/Direct Outreach",3,3,8.11,4,"LOW",false],
+  ["Continuing Care Retirement Community (CCRC) Operators",54000,108000,76,75,"LinkedIn/Cold Email/Conferences",3,3,8.20,4,"LOW",false],
+  ["Chiropractic Franchise Operators",48000,96000,77,45,"Cold Email/LinkedIn/Direct Outreach",2,4,8.24,4,"LOW",false],
+  ["Physical Therapy Franchise Operators",48000,96000,77,45,"Cold Email/LinkedIn/Direct Outreach",3,4,8.38,4,"LOW",false],
+  ["Senior Home Care Franchise Operators",42000,84000,76,45,"Cold Email/LinkedIn/Direct Outreach",2,4,8.08,4,"LOW",false],
+  ["Social Media Content Production Agencies",36000,72000,80,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Animation & Motion Graphics Studios",42000,84000,78,45,"Cold Email/LinkedIn/Direct Outreach",2,4,8.08,4,"LOW",false],
+  ["Explainer Video Production Companies",36000,72000,79,45,"Cold Email/LinkedIn/Direct Outreach",2,4,7.98,4,"LOW",false],
+  ["Influencer Talent Management Agencies",42000,84000,79,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Orange Theory & Boutique Fitness Franchise Operators",42000,84000,76,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Dog Training Franchise Operators",36000,72000,76,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Short-Term Rental Management Companies",36000,72000,77,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Luxury Travel Agency Operators",42000,84000,78,60,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Corporate Wellness Program Providers",42000,84000,78,60,"Cold Email/LinkedIn/Direct Outreach",2,3,7.78,4,"LOW",false],
+  ["Yoga Studio Franchise Operators",36000,72000,76,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Pilates Studio Franchise Operators",36000,72000,76,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Dance Studio Franchise Operators",30000,60000,76,45,"Cold Email/LinkedIn/Instagram",2,4,7.52,4,"LOW",false],
+  ["Tattoo Parlor Chains",30000,60000,75,45,"Cold Email/Instagram/LinkedIn",2,4,7.50,4,"LOW",false],
+  ["Winery & Vineyard Operators",42000,84000,76,60,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["IV Drip Therapy Clinics",42000,84000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Cryotherapy Clinic Operators",36000,72000,76,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Body Contouring Clinic Operators",42000,84000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["CoolSculpting & Fat Reduction Clinic Operators",42000,84000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Skin Care Clinic Chains",42000,84000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Acne Treatment Clinic Operators",36000,72000,77,45,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Hair Loss Treatment Clinic Operators",42000,84000,77,45,"Cold Email/LinkedIn/Instagram",2,4,8.08,4,"LOW",false],
+  ["Waxing Salon Franchise Operators",30000,60000,76,45,"Cold Email/Instagram/LinkedIn",2,4,7.52,4,"LOW",false],
+  ["Meal Kit Delivery Service Operators",36000,72000,75,60,"Cold Email/LinkedIn/Instagram",2,4,7.79,4,"LOW",false],
+  ["Teletherapy Platform Operators",42000,84000,77,60,"Cold Email/LinkedIn/Direct Outreach",2,3,7.78,4,"LOW",false],
+  ["Corporate Travel Management Companies",42000,84000,76,60,"Cold Email/LinkedIn/Direct Outreach",2,3,7.78,4,"LOW",false],
+  ["Nutraceutical Supplement Contract Manufacturers",42000,84000,76,60,"Cold Email/LinkedIn/Trade Shows",2,3,7.78,4,"LOW",false],
+  ["Cannabis Cultivation Consulting Firms",36000,72000,77,60,"Cold Email/LinkedIn/Trade Shows",3,3,7.67,4,"LOW",false],
+  ["Outdoor Living & Deck Building Companies",36000,72000,75,45,"Cold Email/LinkedIn/Instagram",2,4,7.79,4,"LOW",false],
+  ["Home Theater & AV Installation Companies",36000,72000,76,30,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Smart Home Automation Installers",36000,72000,76,30,"Cold Email/LinkedIn/Instagram",2,4,7.93,4,"LOW",false],
+  ["Carpet & Flooring Retail Chains",36000,72000,75,45,"Cold Email/LinkedIn/Direct Outreach",2,4,7.79,4,"LOW",false],
+  ["Solar Roof Installation Companies",36000,72000,76,45,"Cold Email/LinkedIn/Direct Outreach",2,4,7.93,4,"LOW",false],
+  ["Nordic Ski & Cross-Country Trail Management Companies",18000,36000,73,60,"LinkedIn/Cold Email/Instagram",2,3,5.89,3,"LOW",false],
+  ["Backcountry Ski Guide Services",18000,36000,73,45,"Cold Email/LinkedIn/Instagram",2,3,5.89,3,"LOW",false],
+  ["Dogsled Tour Operators",18000,36000,73,45,"Cold Email/LinkedIn/Instagram",2,3,5.89,3,"LOW",false],
+  ["Snowmobile Tour Operators",18000,36000,73,30,"Cold Email/LinkedIn/Instagram",2,3,5.89,3,"LOW",false],
+  ["Wildlife Sanctuary Management Organizations",18000,36000,74,75,"LinkedIn/Cold Email/Referral",2,2,5.52,3,"LOW",false],
+  ["Blind & Visually Impaired Sports Programs",18000,36000,74,60,"Cold Email/LinkedIn/Referral",2,2,5.52,3,"LOW",false],
+  ["Special Olympics Program Management Organizations",18000,36000,74,60,"Cold Email/LinkedIn/Referral",2,2,5.52,3,"LOW",false],
+];
+
+function getScoreTier(score) {
+  if (score >= 8.5) return 'tier-s';
+  if (score >= 7.5) return 'tier-a';
+  if (score >= 6.5) return 'tier-b';
+  return 'tier-c';
+}
+function getBarTier(score) {
+  if (score >= 8.5) return 'bar-s';
+  if (score >= 7.5) return 'bar-a';
+  if (score >= 6.5) return 'bar-b';
+  return 'bar-c';
+}
+
+function formatMoney(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n/1000) + 'K';
+  return '$' + n;
+}
+
+function makeDots(cushion) {
+  let html = '<div class="cushion-dots">';
+  for (let i = 0; i < 4; i++) {
+    html += `<div class="dot ${i < cushion ? 'dot-filled' : 'dot-empty'}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function buildTable(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  data.forEach((row, idx) => {
+    const [name, deal, ltv, margin, cycle, channels, diff, mkt, composite, cushion, cashflow, isCore] = row;
+    const tier = getScoreTier(composite);
+    const barClass = getBarTier(composite);
+    const barWidth = Math.round((composite / 10) * 100);
+    const cfClass = cashflow === 'LOW' ? 'badge-low' : cashflow === 'MEDIUM' ? 'badge-med' : 'badge-high';
+    const typeClass = isCore ? 'badge-core' : 'badge-add';
+    const typeLabel = isCore ? 'Core' : 'Additional';
+    const tr = document.createElement('tr');
+    tr.dataset.name = name.toLowerCase();
+    tr.dataset.type = isCore ? 'core' : 'additional';
+    tr.dataset.score = composite;
+    tr.innerHTML = `
+      <td style="color:var(--gray);font-size:12px;">${idx+1}</td>
+      <td style="max-width:280px;font-weight:500;">${name}</td>
+      <td><span class="badge ${typeClass}">${typeLabel}</span></td>
+      <td>${formatMoney(deal)}</td>
+      <td>${formatMoney(ltv)}</td>
+      <td>${margin}%</td>
+      <td>${cycle}d</td>
+      <td>
+        <div class="score-cell">
+          <div class="score-bar-bg"><div class="score-bar-fill ${barClass}" style="width:${barWidth}%"></div></div>
+          <span class="score-num ${tier}">${composite}</span>
+        </div>
+      </td>
+      <td>${makeDots(cushion)}</td>
+      <td><span class="badge ${cfClass}">${cashflow}</span></td>
+      <td style="color:var(--gray);font-size:12px;max-width:160px;">${channels}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('rowCount').textContent = `Showing ${data.length} niches`;
+}
+
+function filterTable() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const typeFilter = document.getElementById('filterType').value;
+  const scoreFilter = document.getElementById('filterScore').value;
+
+  const filtered = NICHES.filter(row => {
+    const [name, deal, ltv, margin, cycle, channels, diff, mkt, composite, cushion, cashflow, isCore] = row;
+    const matchName = name.toLowerCase().includes(query);
+    const matchType = typeFilter === 'all' || (typeFilter === 'core' && isCore) || (typeFilter === 'additional' && !isCore);
+    let matchScore = true;
+    if (scoreFilter === 's') matchScore = composite >= 8.5;
+    else if (scoreFilter === 'a') matchScore = composite >= 7.5 && composite < 8.5;
+    else if (scoreFilter === 'b') matchScore = composite >= 6.5 && composite < 7.5;
+    else if (scoreFilter === 'c') matchScore = composite < 6.5;
+    return matchName && matchType && matchScore;
+  });
+
+  buildTable(filtered);
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Sort by composite descending initially
+NICHES.sort((a, b) => b[8] - a[8]);
+buildTable(NICHES);
+</script>
+</body>
+</html>
