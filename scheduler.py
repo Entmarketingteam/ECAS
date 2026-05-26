@@ -439,6 +439,44 @@ def job_populate_projects():
         logger.error(f"Populate projects job failed: {e}", exc_info=True)
 
 
+def job_h1b_pipeline():
+    """
+    H-1B intent signal → projects, end to end.
+
+    1. Discover EPC leads from H-1B LCA filings for pipeline/revenue roles
+       (signals/h1b_signal_engine.py) → Supabase epc_company_leads.
+    2. Bridge ALL new Supabase leads (h1b + epc_lead_engine) into Airtable
+       projects (populate_projects.py).
+
+    Runs daily 4am UTC — before ICP hunt (5am) and enrichment (10am), so
+    fresh leads are in the pipeline before enrichment + Smartlead enrollment.
+    Also runs on demand via /admin/run/h1b_pipeline.
+    """
+    logger.info("=== JOB: H-1B Pipeline (discover + bridge) ===")
+    try:
+        from datetime import date
+        from signals.h1b_signal_engine import run as run_h1b, ROLE_KEYWORDS
+        from populate_projects import run as run_bridge
+
+        this_year = date.today().year
+        years = [this_year - 3, this_year - 2, this_year - 1]
+        discovered = run_h1b(roles=list(ROLE_KEYWORDS), years=years, min_score=60,
+                             epc_only=True, dry_run=False)
+        bridged = run_bridge(source="all", min_score=0, dry_run=False)
+
+        logger.info("H-1B pipeline: %s discovered, %s bridged to projects",
+                    discovered.get("new"), bridged.get("upserted"))
+
+        if SLACK_ACCESS_TOKEN and bridged.get("upserted", 0) > 0:
+            _send_slack(
+                f":briefcase: *H-1B Intent Pipeline*\n"
+                f"{discovered.get('new', 0)} new EPC leads from H-1B filings\n"
+                f"{bridged.get('upserted', 0)} leads bridged → Airtable projects"
+            )
+    except Exception as e:
+        logger.error(f"H-1B pipeline job failed: {e}", exc_info=True)
+
+
 def job_dedup_projects():
     """Weekly safety net: delete duplicate project records (same owner_company)."""
     logger.info("=== JOB: Dedup Projects ===")
@@ -1098,6 +1136,9 @@ def create_scheduler() -> BackgroundScheduler:
     # ── ICP company population (daily 5am — before enrichment at 10am) ──────
     scheduler.add_job(job_populate_projects, CronTrigger(hour=5, minute=0), id="populate_projects")
 
+    # ── H-1B intent pipeline (daily 4am — discover + bridge before ICP/enrich) ─
+    scheduler.add_job(job_h1b_pipeline, CronTrigger(hour=4, minute=0), id="h1b_pipeline")
+
     # ── Discovery layer (contract data + hiring signals + conference exhibitors) ─
     # USASpending: Saturdays 5am — federal contract winners, revenue-proxied ICP list
     scheduler.add_job(job_usaspending_hunt, CronTrigger(day_of_week="sat", hour=5, minute=0), id="usaspending_hunt")
@@ -1280,6 +1321,7 @@ def run_job_now(job_id: str) -> dict:
         "hot_signal_check": job_hot_signal_check,
         "budget_window_monitor": job_budget_window_monitor,
         "populate_projects": job_populate_projects,
+        "h1b_pipeline": job_h1b_pipeline,
         "directory_hunt": job_directory_hunt,
         "dedup_projects": job_dedup_projects,
         "usaspending_hunt": job_usaspending_hunt,

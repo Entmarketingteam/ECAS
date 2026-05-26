@@ -9,7 +9,7 @@ Brand: **ContractMotion.com**
 - 12/14 ContractMotion inboxes warming at 99–100% reputation
 - 2 SMTP failures need new Google app passwords: `karlee@contractmotionai.com`, `ethan.atchley@contractmotion.com`
 - 365 leads/run from USASpending + SAM.gov across 5 sectors
-- **Critical gap:** `epc_company_leads` (Supabase) → Airtable `projects` bridge does not exist — leads are not flowing to enrichment yet
+- **Bridge LIVE (2026-05-25):** `populate_projects.py` moves `epc_company_leads` (Supabase) → Airtable `projects`. Wired as scheduler job `h1b_pipeline` (daily 4am UTC: discover H-1B leads → bridge all sources → projects, before ICP hunt 5am + enrichment 10am). Also CLI: `--source h1b_lca|all`, `--min-score`, `--dry-run`. Trigger on demand: `POST /admin/run/h1b_pipeline`.
 
 ## Code & Deploy
 - **Local:** `~/projects/ECAS/`
@@ -90,8 +90,8 @@ epc_lead_engine.py (5 sectors)
   ▼
 Supabase: epc_company_leads
   │
-  ✗ BRIDGE MISSING — build populate_projects.py
-  │  (reads epc_company_leads, upserts to Airtable projects by sector)
+  ✓ BRIDGE: populate_projects.py (built 2026-05-25)
+  │  (reads epc_company_leads, upserts to Airtable projects; tier→priority/icp_fit)
   ▼
 Airtable: projects  ◄── also populated by scheduler.job_populate_projects()
   │                      (via Apollo ICP hunt from sector heat scores)
@@ -156,7 +156,8 @@ Output: SQLite `database/tracker.db` (dedup) + Supabase `epc_company_leads` + `s
 ## Job IDs (13)
 `politician_trades`, `sec_13f`, `gov_contracts`, `ferc_poller`, `rss_feeds`,
 `claude_extraction`, `sector_scoring`, `enrichment`, `smartlead`,
-`weekly_digest`, `earnings_transcripts`, `budget_window_monitor`, `populate_projects`
+`weekly_digest`, `earnings_transcripts`, `budget_window_monitor`, `populate_projects`,
+`h1b_pipeline` (daily 4am — H-1B discover + Supabase→projects bridge)
 
 ## Secrets (Doppler: `ecas/dev`)
 **Active:**
