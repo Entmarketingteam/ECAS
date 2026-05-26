@@ -1,0 +1,90 @@
+{
+  "niche": "General EPC / Commercial Construction",
+  "persona": "ContractMotion money-voice",
+  "campaign_id": "3399657",
+  "sequences": [
+    {
+      "seq_number": 1,
+      "seq_delay_details": {
+        "delay_in_days": 0
+      },
+      "subject": "The $50M project forming in {{city}}",
+      "subject_b": "{{biggest_project}} — and who got the room first",
+      "email_body": "{{company}} — you run a real commercial GC. So why did the biggest job in {{city}} get handed to whoever was in the room first, and it wasn't you?\n\nWe tracked {{permit_count}} commercial projects over $10M forming in your market right now — {{biggest_project}} is the headline. Across 5 metros we've mapped 191 of these, 55 of them over $50M ($730M O'Hare, $120M Aligned Data Centers, $84M Baylor medical).\n\nThe owners win these before the RFP exists. Want your market's map?\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 2,
+      "seq_delay_details": {
+        "delay_in_days": 4
+      },
+      "subject": "re: the {{city}} map",
+      "subject_b": "You're not losing on price",
+      "email_body": "{{company}} — you didn't build a real shop to fight 8 bidders on a public board for work that was decided months ago.\n\nThe GCs winning the $10M–$50M jobs aren't better bidders. They're earlier — in the room at the permit filing, 6–9 months before procurement opens. That's the whole game.\n\n{{permit_count}} of those projects are forming in {{city}} now, {{biggest_project}} at the top. We put your name in front of the owner first.\n\nReply \"map\" and I'll send {{city}}'s.\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 3,
+      "seq_delay_details": {
+        "delay_in_days": 9
+      },
+      "subject": "55 projects over $50M",
+      "subject_b": "Before it's an RFP in {{city}}",
+      "email_body": "{{company}} — quick context on why this isn't another lead list.\n\nWe pulled 191 commercial projects over $10M across 5 metros — 55 over $50M: a $730M terminal at O'Hare, a $120M Aligned data center, an $84M Baylor medical build. Medical, warehouse, data center, civic. Real permits, real owners, real capital committed.\n\n{{permit_count}} are forming in {{city}}. We get you to the owner before the bid goes competitive.\n\nWant the {{city}} cut?\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 4,
+      "seq_delay_details": {
+        "delay_in_days": 15
+      },
+      "subject": "Closing the {{city}} map",
+      "subject_b": "Last one",
+      "email_body": "{{company}} — last note, then I'll stop.\n\nThis is built for GCs winning $10M+ commercial work — not one-crew subs chasing $50k jobs. If that's you, here's the offer straight: we put your name on the $10M+ projects forming in {{city}} before the RFP, and you don't pay on results until you sign one. We carry the risk.\n\n{{permit_count}} are forming right now, {{biggest_project}} the biggest. Reply \"map\" and it's yours — work together or not.\n\n— Ethan, ContractMotion"
+    }
+  ],
+  "scorecard": {
+    "touch_1": {
+      "specificity": 9,
+      "pain_resonance": 9,
+      "proof": 9,
+      "cta_clarity": 8,
+      "brevity": 8,
+      "personalization_hook": 9,
+      "non_spammy": 9,
+      "total": 61,
+      "money_voice_fit": "Strong. Leads money+status ('biggest job handed to whoever was in the room first, not you'), real $ proof inventory ($730M/$120M/$84M) beneath the hook, deliverable CTA. Mechanism is implied, not led."
+    },
+    "touch_2": {
+      "specificity": 9,
+      "pain_resonance": 9,
+      "proof": 8,
+      "cta_clarity": 9,
+      "brevity": 9,
+      "personalization_hook": 8,
+      "non_spammy": 9,
+      "total": 61,
+      "money_voice_fit": "Strong. Identity/ambition jolt ('didn't build a real shop to fight 8 bidders'), enemy = public bid board race-to-bottom. 'Earlier, not better bidders' reframe."
+    },
+    "touch_3": {
+      "specificity": 10,
+      "pain_resonance": 8,
+      "proof": 10,
+      "cta_clarity": 9,
+      "brevity": 8,
+      "personalization_hook": 8,
+      "non_spammy": 9,
+      "total": 62,
+      "money_voice_fit": "Strong. Proof-led touch — full verified inventory does the work, broadened across medical/warehouse/data center/civic. Named $ anchors carry credibility."
+    },
+    "touch_4": {
+      "specificity": 9,
+      "pain_resonance": 8,
+      "proof": 8,
+      "cta_clarity": 8,
+      "brevity": 8,
+      "personalization_hook": 8,
+      "non_spammy": 9,
+      "total": 58,
+      "money_voice_fit": "Strong. Explicit down-market disqualifier ('$10M+, not one-crew subs') + bold pay-on-results guarantee at the close ('don't pay until you sign one, we carry the risk'). Guarantee held to Touch 4 per rule."
+    }
+  },
+  "notes": "REPOSITION: medical-only neutral copy -> ContractMotion MONEY-VOICE, broadened to commercial construction generally (medical/warehouse/data center/civic). Recipient = established commercial/federal GC winning $10M+ permitted jobs. Permit engine folds INTO ContractMotion as the proof feed for campaign 3399657 (General EPC / Commercial Construction, currently DRAFTED). Hero hook = owner's money+status gap, NOT the permit mechanism. PROOF (real, verified — zero fabrication beyond this): 191 commercial projects >=$10M / 55 >=$50M across 5 metros, anchors $730M O'Hare, $120M Aligned Data Centers, $84M Baylor medical. Vars: first_name (available but openers stay COMPANY-LED for info@ rows), company, city, permit_count, biggest_project. Money-voice rubric applied: (1) lead money/status (2) speak to already-winning owner (3) explicit down-market disqualifier in T4 (4) identity hook in T1/T2 (5) pay-on-results guarantee at close T4 (6) operator peer voice + contractions (7) avoids saturated claims ('more leads','AI outbound','win more bids','book meetings'). Cadence Day 0/4/9/15, snake_case delay_in_days. Signed 'Ethan, ContractMotion'. Sender = ContractMotion warmed domains (aicontractmotion/getcontractmotion/usecontractmotion) per ECAS campaign 3399657 -- NOT a neutral domain (this is now first-party brand voice)."
+}

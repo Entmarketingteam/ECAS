@@ -1,0 +1,86 @@
+{
+  "niche": "C&I Solar/EV/Audits",
+  "persona": "ContractMotion",
+  "sequences": [
+    {
+      "seq_number": 1,
+      "seq_delay_details": {
+        "delay_in_days": 0
+      },
+      "subject": "Your $15M shop, after July 4",
+      "email_body": "{{first_name}} — you run a real C&I shop in {{city}}. Crews deployed, projects in the ground, a name owners actually call.\n\nIn 40 days that stops mattering. July 4 the OBBBA safe-harbor window closes, the 30% ITC is gone for new starts, and the only EPCs eating for the next two years are the ones who locked their pipeline before the cliff. The owners who moved early take your market share and keep it.\n\nWe pulled the {{city}} CRE owners and REIT portfolios already committing capex now — the projects forming before they're public. Want the list?\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 2,
+      "seq_delay_details": {
+        "delay_in_days": 4
+      },
+      "subject": "The work's spoken for before the RFP",
+      "email_body": "{{first_name}} — you didn't build {{company}} to fight six other EPCs to the bottom on a bid that was decided months ago.\n\nThe owners winning the fat C&I jobs aren't better bidders. They're earlier. They're in the CRE owner's office while it's still a retrofit idea, not yet a public RFP. By the time it hits a bid board the shortlist's set and you're racing on price.\n\nWe put you in the room first — REIT facilities VPs and multi-site owners with capex committed, framed on payback and FEOC compliance, not the dead ESG pitch.\n\nWorth seeing who's forming in {{city}}?\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 3,
+      "seq_delay_details": {
+        "delay_in_days": 9
+      },
+      "subject": "Built for $10M+ EPCs, not rooftop chasers",
+      "email_body": "{{first_name}} — straight up: this is built for EPCs doing $10M+ with crews to deploy, not resi installers chasing rooftops.\n\nIf that's you, here's the proof the engine knows your world. Oregon, NYSERDA, and PA dropped NEVI awards in April — most contractors read it in the trade press two weeks late. We pull those, plus REIT 10-Q sustainability capex and NABCEP/EVITP hiring signals, every Monday — the same feed that catches the July-4 cohort and the private EV site-host wave behind it.\n\nThe owners who own a market see this first. Want a sample week of {{city}} signals?\n\n— Ethan, ContractMotion"
+    },
+    {
+      "seq_number": 4,
+      "seq_delay_details": {
+        "delay_in_days": 15
+      },
+      "subject": "Closing your file, {{first_name}}",
+      "email_body": "{{first_name}} — sent a few notes about the July-4 window and the {{city}} owners committing capex before it's public. No reply, so I'll close your file.\n\nOne thing before I do: we only get paid when you win work off the pipeline we build. No retainer treadmill. If Q3 looks thinner than you'd like — or the EV site-host money picks up — that offer's on the table. The door's open.\n\n— Ethan, ContractMotion"
+    }
+  ],
+  "scorecard": {
+    "touch_1": {
+      "clarity": 9,
+      "specificity": 9,
+      "voice": 9,
+      "desire": 9,
+      "proof": 8,
+      "urgency": 10,
+      "flow": 9,
+      "total": 63,
+      "money_voice_fit": "Strong. Leads with the owner's status ('a name owners call') and the money/share-loss gap ('owners who moved early take your market share') BEFORE the OBBBA mechanism. July-4 cliff is proof beneath the loss-aversion hook, not the lead. CTA is a deliverable, not a meeting."
+    },
+    "touch_2": {
+      "clarity": 9,
+      "specificity": 8,
+      "voice": 10,
+      "desire": 9,
+      "proof": 7,
+      "urgency": 7,
+      "flow": 9,
+      "total": 59,
+      "money_voice_fit": "Strong. Identity/greed hook ('you didn't build {{company}} to fight six EPCs to the bottom') is pure Jeremy Haynes register. 'Earlier, not better bidders' is the money frame. ESG-is-dead reframe kept as differentiator. No saturated 'win more bids' phrasing — reframed as being in the room first."
+    },
+    "touch_3": {
+      "clarity": 9,
+      "specificity": 9,
+      "voice": 9,
+      "desire": 8,
+      "proof": 8,
+      "urgency": 7,
+      "flow": 8,
+      "total": 58,
+      "money_voice_fit": "Strong. Opens with explicit down-market disqualification ('$10M+ with crews to deploy, not resi installers chasing rooftops') per rubric point 3 — repels the small shop, flatters the leader. Real NEVI/REIT/NABCEP signal data carries the proof. 'Owners who own a market see this first' = status close."
+    },
+    "touch_4": {
+      "clarity": 10,
+      "specificity": 8,
+      "voice": 9,
+      "desire": 7,
+      "proof": 7,
+      "urgency": 7,
+      "flow": 9,
+      "total": 57,
+      "money_voice_fit": "Strong for a break-up. Lands the money-framed guarantee at the close per rubric point 5 ('we only get paid when you win work off the pipeline we build — no retainer treadmill'). Walk-away keeps status ('close your file') without desperation. Desire intentionally lower — correct for T4."
+    },
+    "aggregate_notes": "All four touches now clear the 56/70 target (63/59/58/57, avg 59.25). Money-voice reposition lifted Voice and Desire axes across the board vs the prior consultative draft (T1 went 61->63). Every touch leads with money/status/identity; OBBBA July-4 cliff, NEVI April awards, and REIT capex retained strictly as PROOF beneath the hook, never as the lead."
+  },
+  "notes": "MONEY-VOICE REWRITE (Jeremy Haynes / Megladon register per money-voice-reposition/brief.md). Applied all 7 rubric points: (1) lead with owner's money + market-share gap, not OBBBA mechanism — '$15M shop, owners who moved early take your share'; (2) speak to the already-winning owner ('a name owners call', 'owners who own a market'), never 'let us help you grow'; (3) explicit down-market disqualification in T3 ('$10M+ with crews, not resi installers chasing rooftops'); (4) identity/ambition hook in T2 ('you didn't build {{company}} to fight six EPCs to the bottom'); (5) money-framed pay-on-results guarantee at the close in T4 ('we only get paid when you win work — no retainer treadmill'); (6) operator peer voice, contractions, punch-then-breathe; (7) avoided saturated claims — no 'more leads', 'AI-powered', 'we book meetings', 'win more bids', 'find your next project'. KEPT all hard rules: zero fabricated proof (invented metrics '4 C&I energy clients' and '11 RFP invites' stay out), real public signals only (OBBBA July-4 2026, NEVI OR/NYSERDA/PA April 2026, REIT 10-Q capex, NABCEP/EVITP hiring). Variables: {{first_name}}, {{company}}, {{city}}. 4 touches Day 0/4/9/15, snake_case delay_in_days. Sign-off 'Ethan, ContractMotion' every touch. CONFIRM BEFORE SEND: the '$15M shop' figure in T1 subject/body is illustrative, not lead-specific — either populate a real {{revenue}} var or keep as a representative band. Pay-on-results guarantee in T4 is a structural commercial offer (commission on won work) — confirm the model is real before shipping, since it reads as a binding promise."
+}
