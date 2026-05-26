@@ -135,7 +135,9 @@ def _resolve_campaign_id(sector: str, override: str = None) -> str:
     for key, cid in SECTOR_CAMPAIGN_MAP.items():
         if sector_lower in key.lower() or key.lower() in sector_lower:
             return cid
-    return SMARTLEAD_CAMPAIGN_ID  # fallback to default
+    # Default: Power & Grid, so an unmapped sector never silently orphans
+    # (SMARTLEAD_CAMPAIGN_ID env override wins if set).
+    return SMARTLEAD_CAMPAIGN_ID or SECTOR_CAMPAIGN_MAP["Power & Grid Infrastructure"]
 
 
 def enroll_airtable_contacts(

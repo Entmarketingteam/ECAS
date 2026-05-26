@@ -19,6 +19,7 @@ SECTOR_TO_CAMPAIGN = {
     'Water & Wastewater': 3040600,
     'Industrial & Manufacturing Facilities': 3040601,
     'Defense': 3095136,
+    'General EPC': 3399657,
 }
 
 def fetch_all(table_id):

@@ -44,6 +44,10 @@ SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     # Drone/DFR vertical — B2G track targeting drone vendor BD/sales teams
     # Campaign created 2026-03-30 — 6 sequences live
     "Drone & Public Safety Technology":      "3103531",
+    # Broad commercial + federal GCs from USASpending that don't fit a sector.
+    # Campaign created 2026-05-26 (DRAFTED) — 4 sequences, horizontal "win your
+    # next contract" copy. See create_commercial_epc_campaign.py.
+    "General EPC":                           "3399657",
 }
 FINDYMAIL_API_KEY = os.environ.get("FINDYMAIL_API_KEY", "")
 

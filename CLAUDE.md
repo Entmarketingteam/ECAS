@@ -62,6 +62,7 @@ Brand: **ContractMotion.com**
 | Industrial & Manufacturing Facilities | `3040601` | LIVE |
 | Defense & Federal Infrastructure | `3095136` | LIVE |
 | Drone & Public Safety Tech | `3103531` | LIVE (2026-03-30) |
+| General EPC / Commercial Construction | `3399657` | DRAFTED (2026-05-26) — 4 seqs, needs inboxes+schedule+activate |
 
 **Sector → campaign mapping lives in:** `config.py` lines 35–47 and `enroll_contacts_to_campaigns.py` lines 16–22
 
