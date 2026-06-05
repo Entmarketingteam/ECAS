@@ -37,6 +37,7 @@ from contractor.pipeline.signal_scorer import Signal, score_lead, filter_actiona
 from contractor.pipeline.health_monitor import (
     run_health_check, alert_pipeline_error, alert_hot_lead
 )
+from enrichment.millionverifier import verify_email
 
 logger = logging.getLogger(__name__)
 
@@ -258,22 +259,12 @@ def enrich_email_findymail(
         if not email:
             return None
 
-        # Verify
-        verify_resp = requests.post(
-            f"{FINDYMAIL_BASE}/verify",
-            headers={
-                "Authorization": f"Bearer {FINDYMAIL_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={"email": email},
-            timeout=30,
-        )
-        verify_resp.raise_for_status()
-        verify_data = verify_resp.json()
+        # Verify — MillionVerifier first, Findymail fallback (shared verifier)
+        is_valid, quality = verify_email(email)
 
         return {
             "email": email,
-            "verified": verify_data.get("status") in ("valid", "accept_all"),
+            "verified": is_valid,  # risky/catch-all gated by REJECT_RISKY in verify_email
         }
     except Exception as e:
         logger.debug("Findymail enrichment failed for %s %s @ %s: %s",

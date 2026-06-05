@@ -1,7 +1,7 @@
 """
 enrichment/millionverifier.py
-Email validation — Findymail first (key already in Doppler), MillionVerifier fallback.
-Returns (is_valid: bool, quality: str) where quality is 'good', 'risky', or 'bad'.
+Email validation — MillionVerifier first (primary verifier, all CM/ECAS industries),
+Findymail fallback. Returns (is_valid: bool, quality: str) — 'good', 'risky', or 'bad'.
 """
 
 import logging
@@ -67,10 +67,10 @@ def _verify_millionverifier(email: str) -> tuple[bool, str] | None:
 
 def verify_email(email: str) -> tuple[bool, str]:
     """
-    Validate an email. Tries Findymail first (already in Doppler), then MillionVerifier.
+    Validate an email. MillionVerifier first (primary), Findymail fallback.
     Returns (is_valid, quality) — quality is 'good', 'risky', or 'bad'.
     """
-    result = _verify_findymail(email) or _verify_millionverifier(email)
+    result = _verify_millionverifier(email) or _verify_findymail(email)
     if result:
         return result
     logger.debug(f"[EmailVerify] No validator key set — passing {email} as risky")
