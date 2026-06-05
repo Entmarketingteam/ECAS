@@ -148,33 +148,15 @@ def _findymail_email(first_name: str, last_name: str, domain: str) -> str | None
 
 def _findymail_verify(email: str) -> bool:
     """
-    Verify an email address via Findymail before storing.
-    Returns True if the email is valid/deliverable, False otherwise.
-    Blocks invalid, catch-all, and disposable addresses from entering Airtable.
+    Verify an email address before storing — MillionVerifier first, Findymail
+    fallback (shared verify_email). Strict gate: only 'good' quality passes.
+    Blocks invalid, catch-all/risky, and disposable addresses from entering Airtable.
     """
-    if not FINDYMAIL_API_KEY or not email:
-        # No Findymail key — fall back to MillionVerifier
-        is_valid, _ = _mv_verify(email)
-        return is_valid
-    try:
-        resp = requests.post(
-            f"{FINDYMAIL_BASE}/verify",
-            headers={"Authorization": f"Bearer {FINDYMAIL_API_KEY}", "Content-Type": "application/json"},
-            json={"email": email},
-            timeout=15,
-        )
-        if resp.status_code == 200:
-            data = resp.json()
-            status = data.get("status", "unknown").lower()
-            # Accept: valid. Reject: invalid, disposable, spamtrap, catch_all risky.
-            is_valid = status == "valid"
-            logger.debug(f"[Findymail] Verify {email} → {status} ({'pass' if is_valid else 'REJECT'})")
-            return is_valid
-    except requests.RequestException as e:
-        logger.debug(f"[Findymail] Verify error for {email}: {e}")
-    # Findymail network error — fall back to MillionVerifier
-    is_valid, _ = _mv_verify(email)
-    return is_valid
+    if not email:
+        return False
+    is_valid, quality = _mv_verify(email)
+    logger.debug(f"[EmailVerify] {email} → {quality} ({'pass' if is_valid and quality == 'good' else 'REJECT'})")
+    return is_valid and quality == "good"
 
 
 def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[dict]:
@@ -287,7 +269,7 @@ def find_contacts_apollo(company_name: str, titles: list[str] = None) -> list[di
             "company": company_name,
             "linkedin_url": person.get("linkedin_url", ""),
             "phone": person.get("sanitized_phone", ""),
-            "email_verified": True,  # passed Findymail verification
+            "email_verified": True,  # passed MV-first verification (strict: good only)
             "source": source,
         })
 
