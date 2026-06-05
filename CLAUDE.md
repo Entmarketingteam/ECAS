@@ -75,6 +75,8 @@ Brand: **ContractMotion.com**
 - Leads endpoint: `GET /campaigns/{id}/leads?api_key=KEY` — NO `limit`/`offset` params → 400 error
 - Warmup enable: `POST /email-accounts/{id}/warmup`
 - Base URL: `https://server.smartlead.ai/api/v1`
+- **`email_body` is HTML, not plaintext** — raw `\n\n` renders as wall-of-text in editor + sent mail. ALWAYS wrap paragraphs in `<p>` before upload (`_format_body()` in `tools/build_test_campaign.py` / `create_commercial_epc_campaign.py`; shared helper `cold-outreach-foundations/tools/smartlead/smartlead_format.py`). All 10 existing campaigns retro-fixed 2026-06-05.
+- Cloudflare 403 (code 1010) on default python UA — always send browser User-Agent
 
 ## Sending Domains & Inbox Warmup (2026-04-29)
 | Domain | Inboxes | Status |
@@ -204,7 +206,7 @@ Files that call Anthropic API:
 - `kMssKmg50794zXl8` — ECAS 07 Contact Enricher (every 5min poll)
 - `contract-motion-signal-audit` — **NEW** Site Webhook Handler (`n8n-webhook-handler.json`)
 - `contract-motion-ferc-sniper` — **NEW** FERC/PJM Project Sniper (`n8n-ferc-sniper.json`)
-- n8n creds: Airtable `dAoeOLbTnBUK1gTy`, Anthropic `MwxIqQP3l6cUcwcZ`, Slack `EMdoV2Sq9neZV1Tn`
+- n8n creds (post 2026-06-05 mass-rebind — see `~/Desktop/home-base/n8n-rebind-2026-06-05.md`): Airtable `EMzTcYvbo7iir2sW`, Anthropic `stfzpIO9unbjEPYe`, Slack (slackApi) `YmT114v2N8C94I2u`, Slack OAuth `EMdoV2Sq9neZV1Tn`. DEAD, never bind: `dAoeOLbTnBUK1gTy`, `MwxIqQP3l6cUcwcZ`, `2E1Kaef0kM72GIFq`, `DP7sljrHXdHy5nG7`
 
 ## Niche Intelligence Lab (intelligence/niches/)
 Recent 17-part deep-dives and ColdIQ mapping completed for:

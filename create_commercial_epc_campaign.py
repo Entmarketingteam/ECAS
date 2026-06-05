@@ -20,6 +20,7 @@ After running, copy the printed campaign ID into:
 """
 import os
 import json
+import re
 import requests
 import warnings
 
@@ -138,11 +139,21 @@ def create_campaign():
     return campaign_id
 
 
+def _format_body(text):
+    """Smartlead email_body is HTML — raw \\n\\n collapses to wall-of-text.
+    Wrap plaintext paragraphs in <p>; idempotent if already HTML."""
+    if re.search(r"<(p|br|div)\b", text, re.IGNORECASE):
+        return text
+    paras = [p.strip() for p in text.split("\n\n") if p.strip()]
+    return "".join("<p>" + p.replace("\n", "<br>") + "</p>" for p in paras)
+
+
 def upload_sequences(campaign_id):
     """Upload the sequence to the campaign."""
     url = f"{BASE_URL}/campaigns/{campaign_id}/sequences?api_key={API_KEY}"
+    seqs = [{**s, "email_body": _format_body(s["email_body"])} for s in EPC_SEQUENCES]
     resp = requests.post(
-        url, headers=HEADERS, json={"sequences": EPC_SEQUENCES}, timeout=30
+        url, headers=HEADERS, json={"sequences": seqs}, timeout=30
     )
     resp.raise_for_status()
     print(f"Sequences uploaded: {json.dumps(resp.json(), indent=2)}")

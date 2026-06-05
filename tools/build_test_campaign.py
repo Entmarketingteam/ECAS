@@ -18,6 +18,7 @@ Usage:
 import argparse
 import json
 import os
+import re
 import sys
 
 import requests
@@ -62,13 +63,23 @@ def _pool_inbox_ids(pool: str) -> list[int]:
     return ids
 
 
+def _format_body(text: str) -> str:
+    """Smartlead email_body is HTML — raw \\n\\n collapses to wall-of-text.
+    Wrap plaintext paragraphs in <p>; idempotent if already HTML.
+    (See cold-outreach-foundations/tools/smartlead/smartlead_format.py)"""
+    if re.search(r"<(p|br|div)\b", text, re.IGNORECASE):
+        return text
+    paras = [p.strip() for p in text.split("\n\n") if p.strip()]
+    return "".join("<p>" + p.replace("\n", "<br>") + "</p>" for p in paras)
+
+
 def build(json_path: str, name: str, pool: str) -> int:
     spec = json.load(open(json_path))
     # Whitelist only the keys the sequences endpoint accepts — QA agents sometimes
     # add A/B fields (subject_b, scorecards) that 400 the upload.
     seqs = [{"seq_number": s["seq_number"],
              "seq_delay_details": {"delay_in_days": s["seq_delay_details"]["delay_in_days"]},
-             "subject": s["subject"], "email_body": s["email_body"]}
+             "subject": s["subject"], "email_body": _format_body(s["email_body"])}
             for s in spec["sequences"]]
 
     # 1. create (DRAFTED — create accepts only `name`)
