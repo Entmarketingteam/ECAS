@@ -49,6 +49,22 @@ SECTOR_CAMPAIGN_MAP: dict[str, str] = {
     # next contract" copy. See create_commercial_epc_campaign.py.
     "General EPC":                           "3399657",
 }
+
+# ─── New API Keys & Webhooks (Added for Hybrid Sourcing & Verification Cascade) ────
+SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY", "")
+MILLIONVERIFIER_API_KEY = os.environ.get("MILLIONVERIFIER_API_KEY", "")
+N8N_ROUTER_WEBHOOK_URL = os.environ.get("N8N_ROUTER_WEBHOOK_URL", "")
+DISCORD_ALERTS_WEBHOOK_URL = os.environ.get("DISCORD_ALERTS_WEBHOOK_URL", "")
+
+# Local SQLite temporary retry queue path
+SQLITE_QUEUE_PATH = BASE_DIR / "database" / "retry_queue.db"
+
+# New sectors mapping to Smartlead campaign IDs
+SECTOR_CAMPAIGN_MAP.update({
+    "Custom Builders": "3114500",       # New dedicated Custom Builders Campaign ID
+    "Document Destruction": "3114501",  # New dedicated Document Destruction Campaign ID
+})
+
 FINDYMAIL_API_KEY = os.environ.get("FINDYMAIL_API_KEY", "")
 
 # Google Maps / RapidAPI

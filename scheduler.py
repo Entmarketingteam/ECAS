@@ -1074,6 +1074,35 @@ def _check_phase_transitions(sector_scores: list[dict]) -> None:
         _update_stored_phase(sector, new_phase, new_score)
 
 
+# ── Custom Builders & Document Destruction Pipeline Jobs (Option C) ───────────
+
+def job_permit_poller():
+    logger.info("=== JOB: Permit Poller (Custom Builders) ===")
+    try:
+        from signals.permit_poller import poll_and_enrich_permits
+        poll_and_enrich_permits()
+    except Exception as e:
+        logger.error(f"Permit poller job failed: {e}", exc_info=True)
+
+
+def job_builder_association_scraper():
+    logger.info("=== JOB: Builder Association Scraper ===")
+    try:
+        from signals.builder_association_scraper import scrape_and_enrich_association_builders
+        scrape_and_enrich_association_builders()
+    except Exception as e:
+        logger.error(f"Builder association scraper job failed: {e}", exc_info=True)
+
+
+def job_shredding_association_scraper():
+    logger.info("=== JOB: Shredding Association Scraper ===")
+    try:
+        from signals.shredding_association_scraper import scrape_shredding_members
+        scrape_shredding_members()
+    except Exception as e:
+        logger.error(f"Shredding association scraper job failed: {e}", exc_info=True)
+
+
 # ── Slack helper ───────────────────────────────────────────────────────────────
 
 def _send_slack(text: str) -> None:
@@ -1153,6 +1182,32 @@ def create_scheduler() -> BackgroundScheduler:
     # available as a standalone manual trigger (not scheduled separately).
     # Budget window monitor: every hour so Day 1 alert fires within 60 min.
     scheduler.add_job(job_budget_window_monitor, IntervalTrigger(hours=1), id="budget_window_monitor")
+
+    # ── Industry Factory: Guardrail cron jobs (added 2026-04-16) ─────────────
+    def job_campaign_guard():
+        try:
+            from ops.campaign_guard import check_and_pause_underperformers
+            check_and_pause_underperformers()
+        except Exception as e:
+            logger.error("[Scheduler] campaign_guard failed: %s", e)
+
+    def job_oauth_refresh():
+        try:
+            from ops.oauth_refresh import refresh_google_oauth_tokens
+            refresh_google_oauth_tokens()
+        except Exception as e:
+            logger.error("[Scheduler] oauth_refresh failed: %s", e)
+
+    def job_signal_ttl():
+        try:
+            from enrichment.signal_ttl import sweep_stale_projects
+            sweep_stale_projects(ttl_days=90)
+        except Exception as e:
+            logger.error("[Scheduler] signal_ttl failed: %s", e)
+
+    scheduler.add_job(job_campaign_guard, CronTrigger(hour=6, minute=30), id="campaign_guard")
+    scheduler.add_job(job_oauth_refresh, CronTrigger(hour=5, minute=30), id="oauth_refresh")
+    scheduler.add_job(job_signal_ttl, CronTrigger(day_of_week="mon", hour=4, minute=0), id="signal_ttl")
 
     # ── New signal sources (added 2026-03-30) ─────────────────────────────────
     # SAM.gov + Federal Register: every 12h (staggered)
@@ -1282,6 +1337,29 @@ def create_scheduler() -> BackgroundScheduler:
         replace_existing=True,
     )
 
+    # ── Custom Builders & Document Destruction Pipeline (Option C) ───────────
+    scheduler.add_job(
+        job_permit_poller,
+        IntervalTrigger(hours=12, start_date="2000-01-01 02:30:00"),
+        id="permit_poller",
+        name="Plano/Collin County Permit Poller (Custom Builders)",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        job_builder_association_scraper,
+        CronTrigger(day_of_week="sun", hour=4, minute=0),
+        id="builder_association",
+        name="Dallas Builders Assoc Scraper",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        job_shredding_association_scraper,
+        CronTrigger(day_of_week="sun", hour=4, minute=30),
+        id="shredding_association",
+        name="i-SIGMA Shredding Member Directory Scraper",
+        replace_existing=True,
+    )
+
     return scheduler
 
 
@@ -1336,6 +1414,9 @@ def run_job_now(job_id: str) -> dict:
         "epa_compliance": job_epa_compliance,
         "doe_grants": job_doe_grants,
         "congress": job_congress_appropriations,
+        "permit_poller": job_permit_poller,
+        "builder_association": job_builder_association_scraper,
+        "shredding_association": job_shredding_association_scraper,
     }
 
     fn = job_map.get(job_id)

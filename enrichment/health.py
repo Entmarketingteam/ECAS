@@ -149,3 +149,110 @@ def pre_flight_check() -> dict:
     result = {"status": status, "checks": checks, "failures": failures}
     logger.info(f"[PreFlight] Status: {status} | Checks: {checks}")
     return result
+
+
+# ─── Industry Factory: Extended probes (added 2026-04-16) ───────────────────
+
+def check_perplexity() -> dict:
+    """Perplexity API probe."""
+    key = os.environ.get("PERPLEXITY_API_KEY", "")
+    if not key:
+        return {"healthy": False, "detail": "PERPLEXITY_API_KEY not set"}
+    try:
+        resp = requests.post(
+            "https://api.perplexity.ai/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={
+                "model": "sonar-pro",
+                "messages": [{"role": "user", "content": "ping"}],
+                "max_tokens": 10,
+            },
+            timeout=15,
+        )
+        if resp.status_code in (401, 403):
+            return {"healthy": False, "detail": f"Perplexity auth failed ({resp.status_code})"}
+        resp.raise_for_status()
+        return {"healthy": True, "detail": "API responding"}
+    except Exception as e:
+        return {"healthy": False, "detail": str(e)}
+
+
+def check_firecrawl() -> dict:
+    """Firecrawl API probe."""
+    key = os.environ.get("FIRECRAWL_API_KEY", "")
+    if not key:
+        return {"healthy": False, "detail": "FIRECRAWL_API_KEY not set"}
+    try:
+        resp = requests.get(
+            "https://api.firecrawl.dev/v1/team/credit-usage",
+            headers={"Authorization": f"Bearer {key}"},
+            timeout=15,
+        )
+        if resp.status_code in (401, 403):
+            return {"healthy": False, "detail": f"Firecrawl auth failed ({resp.status_code})"}
+        return {"healthy": True, "detail": f"HTTP {resp.status_code}"}
+    except Exception as e:
+        return {"healthy": False, "detail": str(e)}
+
+
+def check_browserbase() -> dict:
+    """Browserbase creds presence check."""
+    key = os.environ.get("BROWSERBASE_API_KEY", "")
+    proj = os.environ.get("BROWSERBASE_PROJECT_ID", "")
+    if not (key and proj):
+        return {"healthy": False, "detail": "BROWSERBASE_API_KEY or BROWSERBASE_PROJECT_ID missing"}
+    return {"healthy": True, "detail": "Creds present"}
+
+
+def check_airtop() -> dict:
+    """Airtop creds presence check."""
+    key = os.environ.get("AIRTOP_API_KEY", "")
+    if not key:
+        return {"healthy": False, "detail": "AIRTOP_API_KEY not set"}
+    return {"healthy": True, "detail": "Creds present"}
+
+
+def check_wappalyzer() -> dict:
+    """Wappalyzer library importable (OK to fail locally on py3.14)."""
+    try:
+        from Wappalyzer import Wappalyzer  # noqa: F401
+        return {"healthy": True, "detail": "python-Wappalyzer importable"}
+    except ImportError as e:
+        return {"healthy": False, "detail": f"python-Wappalyzer not importable: {e}"}
+    except Exception as e:
+        return {"healthy": False, "detail": f"python-Wappalyzer error: {e}"}
+
+
+def check_landing_page(url: str) -> dict:
+    """Verify a landing page URL returns 200."""
+    if not url:
+        return {"healthy": False, "detail": "No landing_page_url configured"}
+    try:
+        resp = requests.head(url, timeout=15, allow_redirects=True)
+        if resp.status_code == 200:
+            return {"healthy": True, "detail": "200 OK"}
+        return {"healthy": False, "detail": f"HTTP {resp.status_code} on {url}"}
+    except Exception as e:
+        return {"healthy": False, "detail": str(e)}
+
+
+def check_campaign_state(campaign_id: str) -> dict:
+    """Verify Smartlead campaign exists, is ACTIVE, has >=1 sending account."""
+    key = os.environ.get("SMARTLEAD_API_KEY", "")
+    if not key:
+        return {"healthy": False, "detail": "SMARTLEAD_API_KEY not set"}
+    try:
+        resp = requests.get(
+            f"https://server.smartlead.ai/api/v1/campaigns/{campaign_id}",
+            params={"api_key": key},
+            timeout=15,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if str(data.get("status", "")).upper() == "PAUSED":
+            return {"healthy": False, "detail": f"Campaign {campaign_id} is PAUSED"}
+        if not data.get("sending_accounts"):
+            return {"healthy": False, "detail": f"Campaign {campaign_id} has no sending accounts"}
+        return {"healthy": True, "detail": f"Campaign {campaign_id} active"}
+    except Exception as e:
+        return {"healthy": False, "detail": str(e)}

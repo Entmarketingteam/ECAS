@@ -1,0 +1,32 @@
+slug: water
+display_name: "Water & Wastewater Infrastructure"
+track: contract_motion
+campaign_id: "3040600"
+revenue_range_m: [20, 300]
+naics: ["221310", "221320", "237110", "237120", "562212"]
+titles:
+  - VP Operations
+  - VP Business Development
+  - Director of Operations
+  - President
+  - CEO
+  - Owner
+  - COO
+states: [VA, TX, NC, GA, FL, MD, PA, CA, NY]
+apollo_keywords:
+  - water treatment contractor
+  - wastewater contractor
+  - municipal utility contractor
+  - water infrastructure contractor
+  - civil contractor water
+  - water epc
+  - environmental contractor
+  - water system contractor
+directory_seeds: []
+directory_auto_discovery: true
+scoring_mode: positive
+min_heat: 50.0
+signal_ttl_days: 90
+budget_cap_per_run: 25
+landing_page_url: https://contractmotion-site-production.up.railway.app/water
+sender_pool: contractmotion
