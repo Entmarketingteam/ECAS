@@ -66,10 +66,9 @@ def sync_dead_letter_queue_to_airtable(lead_data: dict, error_msg: str, airtable
             "last_name": lead_data.get("last_name"),
             "email": lead_data.get("email"),
             "company_name": lead_data.get("company_name"),
-            "title": lead_data.get("title"),
+            "title": lead_data.get("title") or f"[DLQ Error: {error_msg}]",
             "linkedin_url": lead_data.get("linkedin_url"),
-            "outreach_status": "needs_manual_review",
-            "error_log": error_msg
+            "outreach_status": "pending_review"
         }
     }
     req = urllib.request.Request(
