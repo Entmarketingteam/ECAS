@@ -1387,29 +1387,16 @@ def create_scheduler() -> BackgroundScheduler:
         replace_existing=True,
     )
 
-    # ── New vertical signal scrapers (weekly, staggered, volume-capped) ──────
-    # TTB Tuesday — TTB overwrites its permit list every Monday.
-    scheduler.add_job(
-        job_ttb_alcohol_scraper,
-        CronTrigger(day_of_week="tue", hour=12, minute=0),
-        id="ttb_alcohol",
-        name="TTB Newly Issued Alcohol Permits",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        job_hipaa_breach_scraper,
-        CronTrigger(day_of_week="wed", hour=12, minute=0),
-        id="hipaa_breach",
-        name="HHS OCR HIPAA Breach Portal (freshest 50/run)",
-        replace_existing=True,
-    )
-    scheduler.add_job(
-        job_fmcsa_fleet_scraper,
-        CronTrigger(day_of_week="thu", hour=12, minute=0),
-        id="fmcsa_fleet",
-        name="FMCSA Census ICP Carrier Discovery (50/run)",
-        replace_existing=True,
-    )
+    # ── New vertical signal scrapers (TTB / HIPAA / FMCSA) ───────────────────
+    # Data extraction is fixed + tested, but these 3 verticals have NO Smartlead
+    # campaign and NO sector->campaign routing yet, so auto-enrolling would drop
+    # leads or mis-route them into an EPC campaign. Kept OFF cron until correct
+    # routing + a human oversight gate are built; still triggerable on demand via
+    # POST /admin/run/{ttb_alcohol,hipaa_breach,fmcsa_fleet}. See
+    # docs/three-vertical-scrapers-rollout-plan.md.
+    #   scheduler.add_job(job_ttb_alcohol_scraper, CronTrigger(day_of_week="tue", hour=12, minute=0), id="ttb_alcohol", name="TTB Newly Issued Alcohol Permits", replace_existing=True)
+    #   scheduler.add_job(job_hipaa_breach_scraper, CronTrigger(day_of_week="wed", hour=12, minute=0), id="hipaa_breach", name="HHS OCR HIPAA Breach Portal", replace_existing=True)
+    #   scheduler.add_job(job_fmcsa_fleet_scraper, CronTrigger(day_of_week="thu", hour=12, minute=0), id="fmcsa_fleet", name="FMCSA Census ICP Carrier Discovery", replace_existing=True)
 
     return scheduler
 
