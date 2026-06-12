@@ -1,4 +1,48 @@
-from signals.hipaa_breach_scraper import parse_breach_csv, extract_export_form, select_recent_breaches
+from unittest.mock import patch
+from signals.hipaa_breach_scraper import (
+    parse_breach_csv, extract_export_form, select_recent_breaches, run_hipaa_outbound_pipeline
+)
+
+
+@patch("signals.hipaa_breach_scraper.SeenTracker")
+@patch("signals.hipaa_breach_scraper.route_lead_to_n8n")
+@patch("signals.hipaa_breach_scraper.verify_email_cascade")
+@patch("signals.hipaa_breach_scraper.find_contacts_for_domain")
+@patch("signals.hipaa_breach_scraper.resolve_domain")
+@patch("signals.hipaa_breach_scraper.fetch_active_hipaa_breaches")
+def test_pipeline_routes_verified_lead_with_sector(
+    mock_fetch, mock_resolve, mock_find, mock_verify, mock_route, mock_seen
+):
+    mock_fetch.return_value = [{
+        "company_name": "Acme Health", "state": "TN", "breach_type": "Hacking/IT Incident",
+        "individuals_affected": "1807", "breach_date": "05/22/2026",
+    }]
+    mock_seen.return_value.is_seen.return_value = False
+    mock_resolve.return_value = "acmehealth.com"
+    mock_find.return_value = [{"email": "cco@acmehealth.com", "first_name": "A", "last_name": "B", "title": "CCO"}]
+    mock_verify.return_value = ("verified_clean", "million_verifier")
+
+    run_hipaa_outbound_pipeline()
+
+    mock_route.assert_called_once()
+    lead = mock_route.call_args[0][0]
+    assert lead["sector"] == "Document Destruction & HIPAA Compliance"
+    assert lead["custom_fields"]["affected_individuals"] == "1807"
+
+
+@patch("signals.hipaa_breach_scraper.SeenTracker")
+@patch("signals.hipaa_breach_scraper.route_lead_to_n8n")
+@patch("signals.hipaa_breach_scraper.resolve_domain")
+@patch("signals.hipaa_breach_scraper.fetch_active_hipaa_breaches")
+def test_pipeline_filters_under_500_affected(mock_fetch, mock_resolve, mock_route, mock_seen):
+    mock_fetch.return_value = [{
+        "company_name": "Tiny Clinic", "state": "TN", "breach_type": "x",
+        "individuals_affected": "12", "breach_date": "05/22/2026",
+    }]
+    mock_seen.return_value.is_seen.return_value = False
+    run_hipaa_outbound_pipeline()
+    mock_resolve.assert_not_called()  # filtered before domain resolution
+    mock_route.assert_not_called()
 
 
 def test_select_recent_returns_freshest_first_capped():
