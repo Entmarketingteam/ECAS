@@ -1103,6 +1103,33 @@ def job_shredding_association_scraper():
         logger.error(f"Shredding association scraper job failed: {e}", exc_info=True)
 
 
+def job_ttb_alcohol_scraper():
+    logger.info("=== JOB: TTB Alcohol Permit Scraper ===")
+    try:
+        from signals.ttb_alcohol_scraper import run_ttb_outbound_pipeline
+        run_ttb_outbound_pipeline()
+    except Exception as e:
+        logger.error(f"TTB alcohol scraper job failed: {e}", exc_info=True)
+
+
+def job_hipaa_breach_scraper():
+    logger.info("=== JOB: HIPAA Breach Scraper ===")
+    try:
+        from signals.hipaa_breach_scraper import run_hipaa_outbound_pipeline
+        run_hipaa_outbound_pipeline()
+    except Exception as e:
+        logger.error(f"HIPAA breach scraper job failed: {e}", exc_info=True)
+
+
+def job_fmcsa_fleet_scraper():
+    logger.info("=== JOB: FMCSA Fleet Scraper ===")
+    try:
+        from signals.fmcsa_fleet_scraper import run_fmcsa_discovery_pipeline
+        run_fmcsa_discovery_pipeline(max_records=50)
+    except Exception as e:
+        logger.error(f"FMCSA fleet scraper job failed: {e}", exc_info=True)
+
+
 # ── Slack helper ───────────────────────────────────────────────────────────────
 
 def _send_slack(text: str) -> None:
@@ -1360,6 +1387,30 @@ def create_scheduler() -> BackgroundScheduler:
         replace_existing=True,
     )
 
+    # ── New vertical signal scrapers (weekly, staggered, volume-capped) ──────
+    # TTB Tuesday — TTB overwrites its permit list every Monday.
+    scheduler.add_job(
+        job_ttb_alcohol_scraper,
+        CronTrigger(day_of_week="tue", hour=12, minute=0),
+        id="ttb_alcohol",
+        name="TTB Newly Issued Alcohol Permits",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        job_hipaa_breach_scraper,
+        CronTrigger(day_of_week="wed", hour=12, minute=0),
+        id="hipaa_breach",
+        name="HHS OCR HIPAA Breach Portal (freshest 50/run)",
+        replace_existing=True,
+    )
+    scheduler.add_job(
+        job_fmcsa_fleet_scraper,
+        CronTrigger(day_of_week="thu", hour=12, minute=0),
+        id="fmcsa_fleet",
+        name="FMCSA Census ICP Carrier Discovery (50/run)",
+        replace_existing=True,
+    )
+
     return scheduler
 
 
@@ -1417,6 +1468,9 @@ def run_job_now(job_id: str) -> dict:
         "permit_poller": job_permit_poller,
         "builder_association": job_builder_association_scraper,
         "shredding_association": job_shredding_association_scraper,
+        "ttb_alcohol": job_ttb_alcohol_scraper,
+        "hipaa_breach": job_hipaa_breach_scraper,
+        "fmcsa_fleet": job_fmcsa_fleet_scraper,
     }
 
     fn = job_map.get(job_id)
