@@ -3,7 +3,12 @@ import urllib.request
 from tools.domain_resolver import resolve_domain
 from tools.contact_finder import find_contacts_for_domain
 from tools.verify_cascade import verify_email_cascade
-from tools.n8n_router import route_lead_to_n8n, send_discord_alert, sync_dead_letter_queue_to_airtable
+from tools.n8n_router import (
+    route_lead_to_n8n,
+    send_discord_alert,
+    sync_dead_letter_queue_to_airtable,
+    sync_pending_review_to_airtable,
+)
 from config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
 
 def parse_shredding_association(html: str) -> list[str]:
@@ -43,8 +48,13 @@ def scrape_shredding_members():
                     c["sector"] = "Document Destruction"
                     
                     if status in ["verified_clean", "catch_all_verified"]:
-                        print(f"  [Success] routing {email} ({status}) to Smartlead")
-                        route_lead_to_n8n(c)
+                        print(f"  [Review] queueing {email} ({status}) for manual approval")
+                        sync_pending_review_to_airtable(
+                            c,
+                            "Verified Document Destruction lead queued for manual approval before Smartlead enrollment",
+                            AIRTABLE_API_KEY,
+                            AIRTABLE_BASE_ID,
+                        )
                     else:
                         sync_dead_letter_queue_to_airtable(c, f"Email verification returned: {status}", AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
                         

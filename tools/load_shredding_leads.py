@@ -2,7 +2,11 @@ import json
 from tools.domain_resolver import resolve_domain
 from tools.contact_finder import find_contacts_for_domain
 from tools.verify_cascade import verify_email_cascade
-from tools.n8n_router import route_lead_to_n8n, sync_dead_letter_queue_to_airtable
+from tools.n8n_router import (
+    route_lead_to_n8n,
+    sync_dead_letter_queue_to_airtable,
+    sync_pending_review_to_airtable,
+)
 from config import AIRTABLE_API_KEY, AIRTABLE_BASE_ID
 
 def load_commercial_shredding_leads(raw_lists: list[dict]):
@@ -31,8 +35,13 @@ def load_commercial_shredding_leads(raw_lists: list[dict]):
             c["sector"] = "Document Destruction"
             
             if status in ["verified_clean", "catch_all_verified"]:
-                print(f"  [Success] routing {email} ({status}) to Smartlead")
-                route_lead_to_n8n(c)
+                print(f"  [Review] queueing {email} ({status}) for manual approval")
+                sync_pending_review_to_airtable(
+                    c,
+                    "Verified Document Destruction end-market lead queued for manual approval before Smartlead enrollment",
+                    AIRTABLE_API_KEY,
+                    AIRTABLE_BASE_ID,
+                )
             else:
                 sync_dead_letter_queue_to_airtable(c, f"Email verification returned: {status}", AIRTABLE_API_KEY, AIRTABLE_BASE_ID)
 

@@ -54,23 +54,32 @@ def send_discord_alert(message: str, webhook_url: str = DISCORD_ALERTS_WEBHOOK_U
         print(f"[Error] Failed to send webhook alert: {e}")
         return False
 
-def sync_dead_letter_queue_to_airtable(lead_data: dict, error_msg: str, airtable_key: str, base_id: str) -> bool:
-    """Log processing/verification failures into Airtable DLQ (Manual Mode)."""
-    # PATCH lead to outreach_status="needs_manual_review" in Airtable contacts
-    # The DLQ sync can be implemented in n8n or direct. For maximum isolation, n8n handles routing,
-    # but we provide this fallback client block if n8n is unreachable.
-    url = f"https://api.airtable.com/v0/{base_id}/tblPBvTBuhwlS8AnS"
-    payload = {
-        "fields": {
-            "first_name": lead_data.get("first_name"),
-            "last_name": lead_data.get("last_name"),
-            "email": lead_data.get("email"),
-            "company_name": lead_data.get("company_name"),
-            "title": lead_data.get("title") or f"[DLQ Error: {error_msg}]",
-            "linkedin_url": lead_data.get("linkedin_url"),
-            "outreach_status": "pending_review"
-        }
+def build_pending_review_fields(lead_data: dict, reason: str) -> dict:
+    """Build Airtable contact fields for manual review without Smartlead enrollment."""
+    notes = [
+        f"Review reason: {reason}",
+        f"Sector: {lead_data.get('sector') or 'Unknown'}",
+    ]
+    if lead_data.get("verification_status"):
+        notes.append(f"Verification: {lead_data.get('verification_status')} via {lead_data.get('source') or 'unknown'}")
+    if lead_data.get("domain"):
+        notes.append(f"Domain: {lead_data.get('domain')}")
+
+    return {
+        "first_name": lead_data.get("first_name"),
+        "last_name": lead_data.get("last_name"),
+        "email": lead_data.get("email"),
+        "company_name": lead_data.get("company_name"),
+        "title": lead_data.get("title"),
+        "linkedin_url": lead_data.get("linkedin_url"),
+        "outreach_status": "pending_review",
+        "analyst_notes": "\n".join(notes),
     }
+
+
+def _post_contact_to_airtable(fields: dict, airtable_key: str, base_id: str) -> bool:
+    url = f"https://api.airtable.com/v0/{base_id}/tblPBvTBuhwlS8AnS"
+    payload = {"fields": {k: v for k, v in fields.items() if v is not None}}
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
@@ -80,9 +89,25 @@ def sync_dead_letter_queue_to_airtable(lead_data: dict, error_msg: str, airtable
             "Content-Type": "application/json"
         }
     )
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        return resp.getcode() == 200
+
+
+def sync_pending_review_to_airtable(lead_data: dict, reason: str, airtable_key: str, base_id: str) -> bool:
+    """Queue a verified lead for human approval before any Smartlead enrollment."""
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.getcode() == 200
+        return _post_contact_to_airtable(build_pending_review_fields(lead_data, reason), airtable_key, base_id)
+    except Exception as e:
+        print(f"[Error] Failed to queue pending-review record in Airtable: {e}")
+        return False
+
+
+def sync_dead_letter_queue_to_airtable(lead_data: dict, error_msg: str, airtable_key: str, base_id: str) -> bool:
+    """Log processing/verification failures into Airtable DLQ (Manual Mode)."""
+    fields = build_pending_review_fields(lead_data, f"DLQ Error: {error_msg}")
+    fields["title"] = lead_data.get("title") or f"[DLQ Error: {error_msg}]"
+    try:
+        return _post_contact_to_airtable(fields, airtable_key, base_id)
     except Exception as e:
         print(f"[Error] Failed to log DLQ record to Airtable: {e}")
         return False

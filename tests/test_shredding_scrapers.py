@@ -15,6 +15,7 @@ def test_parse_shredding_association():
 # Tests for scrape_shredding_members
 
 @patch("signals.shredding_association_scraper.sync_dead_letter_queue_to_airtable")
+@patch("signals.shredding_association_scraper.sync_pending_review_to_airtable")
 @patch("signals.shredding_association_scraper.route_lead_to_n8n")
 @patch("signals.shredding_association_scraper.verify_email_cascade")
 @patch("signals.shredding_association_scraper.find_contacts_for_domain")
@@ -26,6 +27,7 @@ def test_scrape_shredding_members_success(
     mock_find_contacts,
     mock_verify_cascade,
     mock_route_n8n,
+    mock_pending_review,
     mock_sync_dlq
 ):
     # Mock urlopen
@@ -55,9 +57,10 @@ def test_scrape_shredding_members_success(
     mock_find_contacts.assert_called_once_with("metroshredding.com", ["Office Manager", "VP Operations", "HR Director", "Facilities Manager", "General Counsel"])
     mock_verify_cascade.assert_called_once_with("jane@metroshredding.com")
     
-    # Verify routed lead
-    mock_route_n8n.assert_called_once()
-    routed_lead = mock_route_n8n.call_args[0][0]
+    # Verify lead is held for manual review, not routed to n8n/Smartlead
+    mock_route_n8n.assert_not_called()
+    mock_pending_review.assert_called_once()
+    routed_lead = mock_pending_review.call_args[0][0]
     assert routed_lead["email"] == "jane@metroshredding.com"
     assert routed_lead["verification_status"] == "verified_clean"
     assert routed_lead["source"] == "million_verifier"
@@ -148,6 +151,7 @@ def test_scrape_shredding_members_critical_exception(
 # Tests for load_commercial_shredding_leads
 
 @patch("tools.load_shredding_leads.sync_dead_letter_queue_to_airtable")
+@patch("tools.load_shredding_leads.sync_pending_review_to_airtable")
 @patch("tools.load_shredding_leads.route_lead_to_n8n")
 @patch("tools.load_shredding_leads.verify_email_cascade")
 @patch("tools.load_shredding_leads.find_contacts_for_domain")
@@ -157,6 +161,7 @@ def test_load_commercial_shredding_leads_success(
     mock_find_contacts,
     mock_verify_cascade,
     mock_route_n8n,
+    mock_pending_review,
     mock_sync_dlq
 ):
     raw_lists = [{"company_name": "Dallas Premium Legal Partners"}]
@@ -183,9 +188,10 @@ def test_load_commercial_shredding_leads_success(
     mock_find_contacts.assert_called_once_with("dallaslegal.com", ["Office Manager", "Facilities Manager", "HR Director", "General Counsel"])
     mock_verify_cascade.assert_called_once_with("john@dallaslegal.com")
     
-    # Verify routed lead
-    mock_route_n8n.assert_called_once()
-    routed_lead = mock_route_n8n.call_args[0][0]
+    # Verify lead is held for manual review, not routed to n8n/Smartlead
+    mock_route_n8n.assert_not_called()
+    mock_pending_review.assert_called_once()
+    routed_lead = mock_pending_review.call_args[0][0]
     assert routed_lead["email"] == "john@dallaslegal.com"
     assert routed_lead["verification_status"] == "catch_all_verified"
     assert routed_lead["source"] == "findymail"
