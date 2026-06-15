@@ -21,15 +21,14 @@
 
 ---
 
-## Decision 0 — GO/NO-GO per vertical (do this first)
+## Decision 0 — RESOLVED: all 3 GO (2026-06-15, owner)
 
-These 3 read like exploratory niches, not core ContractMotion (EPC contract acquisition). Before building anything, confirm there is a **real offer** for each:
+All three verticals approved to build. **Still required before campaign copy:** the actual offer/positioning per vertical (what we sell + the angle):
+- **HIPAA / Document Destruction** — overlaps existing `Document Destruction` vertical; breach → shredding/compliance offer.
+- **TTB / Craft Spirits & Beverage Logistics** — offer TBD (what we sell a new distillery/wholesaler).
+- **FMCSA / Fleet Logistics & Pest Control** — offer TBD (what we sell a 5-50 truck carrier).
 
-- **HIPAA / Document Destruction** — overlaps the existing `Document Destruction` vertical (shredding scraper). Plausible offer (breach → shredding/compliance). Most likely GO.
-- **TTB / Craft Spirits & Beverage Logistics** — what do we sell a new distillery/wholesaler? Offer unclear. NO-GO unless an offer exists.
-- **FMCSA / Fleet Logistics & Pest Control** — what do we sell a 5-50 truck carrier? Offer unclear. NO-GO unless an offer exists.
-
-**Do not build campaigns for a vertical with no validated offer.** Drop or park those scrapers.
+Offers feed step 1 (copy). Scraper + routing/oversight work below does not need them and can proceed now.
 
 ---
 
@@ -54,14 +53,20 @@ Each gate is a checkpoint — nothing advances without sign-off.
 
 ---
 
-## Decision 1 — inspect the live n8n router (blocking, needs n8n cloud)
+## Decision 1 — RESOLVED: the n8n route is dead (2026-06-15)
 
-`route_lead_to_n8n` posts to `N8N_ROUTER_WEBHOOK_URL` — a workflow on `entagency.app.n8n.cloud` **not in the repo**. Must open it and confirm:
-- Does it auto-enroll into Smartlead, or hold for review?
-- What does it do with an unmapped sector (drop / default / error)?
-- What do the existing niche scrapers' leads (`Document Destruction`, builder) actually do today? (precedent — likely incomplete too)
+`N8N_ROUTER_WEBHOOK_URL` is **unset** in Doppler `ecas/dev` (the only non-personal config; ECAS has no prd config). So `route_lead_to_n8n` hits its `if not webhook_url` bypass branch → returns False → **every verified lead is silently dropped today** — for these 3 scrapers AND the existing shredding/builder niche scrapers. `DISCORD_ALERTS_WEBHOOK_URL` is also unset (error alerts are no-ops too). There is no oversight gate because there is no live route at all.
 
-This determines whether step 4's oversight gate is added in n8n or in code.
+### Recommended architecture — route to an Airtable review gate, not the dead webhook
+
+Replace the dead `route_lead_to_n8n` call (for these verticals) with a write to Airtable `contacts`:
+- `outreach_status = "pending_review"`, plus `sector` and the intended campaign id,
+- human reviews in an Airtable grid view (filter `outreach_status = pending_review`) → flips to `approved`,
+- an **approved-gated** enroll job (filter `outreach_status = approved` AND `email_verified = true`) maps sector→campaign and enrolls into Smartlead.
+
+This removes the dependency on an unconfigured n8n webhook and **is** the oversight gate. Reuses existing `outreach_status` machinery (`enroll_contacts_to_campaigns.py`). Wins the "nothing sends without human OK" requirement by construction.
+
+(Alternative: wire `N8N_ROUTER_WEBHOOK_URL` to a real n8n workflow that does sector→campaign + a hold state. More moving parts, depends on n8n cloud. Not recommended over the Airtable gate.)
 
 ---
 
