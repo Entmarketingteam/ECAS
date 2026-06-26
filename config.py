@@ -62,7 +62,8 @@ SQLITE_QUEUE_PATH = BASE_DIR / "database" / "retry_queue.db"
 # New sectors mapping to Smartlead campaign IDs
 SECTOR_CAMPAIGN_MAP.update({
     "Custom Builders": "3114500",       # New dedicated Custom Builders Campaign ID
-    "Document Destruction": "3114501",  # New dedicated Document Destruction Campaign ID
+    # Document Destruction campaign 3114501 was not found in Smartlead.
+    # Keep this vertical unmapped until a real DRAFTED campaign is created and manually verified.
 })
 
 FINDYMAIL_API_KEY = os.environ.get("FINDYMAIL_API_KEY", "")

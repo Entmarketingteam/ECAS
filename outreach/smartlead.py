@@ -135,9 +135,8 @@ def _resolve_campaign_id(sector: str, override: str = None) -> str:
     for key, cid in SECTOR_CAMPAIGN_MAP.items():
         if sector_lower in key.lower() or key.lower() in sector_lower:
             return cid
-    # Default: Power & Grid, so an unmapped sector never silently orphans
-    # (SMARTLEAD_CAMPAIGN_ID env override wins if set).
-    return SMARTLEAD_CAMPAIGN_ID or SECTOR_CAMPAIGN_MAP["Power & Grid Infrastructure"]
+    # No fallback: unmapped sectors must be explicitly reviewed/mapped before enrollment.
+    return None
 
 
 def enroll_airtable_contacts(
@@ -202,6 +201,10 @@ def enroll_airtable_contacts(
 
         # Route to correct campaign based on sector
         target_campaign = _resolve_campaign_id(sector, override=campaign_id)
+        if not target_campaign:
+            logger.warning(f"[Smartlead] {company} → sector='{sector}' has no mapped campaign — leaving pending_review")
+            skipped += 1
+            continue
         logger.info(f"[Smartlead] {company} → sector='{sector}' → campaign {target_campaign}")
 
         result = enroll_lead(
