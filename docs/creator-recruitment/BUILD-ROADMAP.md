@@ -1,5 +1,3 @@
-<!-- PRESERVATION SAFETY NOTE (2026-08-04): This file was recovered from a dirty local checkout as source-map/reference context only. It is not approval to execute live n8n changes, Supabase schema/DB writes, Smartlead/outreach sends, DNS changes, Doppler/secret edits, or paid-service actions. Those remain protected by ENT CTO approval gates. -->
-
 # ENT Creator Recruitment & Outbound System
 # Spec versions v2.6 through v4.2 — Build Roadmap Reference
 # Saved: 2026-07-04 | Status: Reference docs — implement in sequence

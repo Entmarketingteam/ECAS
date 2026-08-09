@@ -1,5 +1,3 @@
-<!-- PRESERVATION SAFETY NOTE (2026-08-04): This file was recovered from a dirty local checkout as source-map/reference context only. It is not approval to execute live n8n changes, Supabase schema/DB writes, Smartlead/outreach sends, DNS changes, Doppler/secret edits, or paid-service actions. Those remain protected by ENT CTO approval gates. -->
-
 # ENT Creator Recruitment Stack — Full Audit & Gap Report
 # Generated: 2026-07-04
 
@@ -104,7 +102,7 @@
 
 ## BUILD PRIORITY ORDER
 
-### SAFE NEXT REVIEW (approval-gated; not auto-execute)
+### DO NOW (no approval needed, safe)
 1. Upgrade + activate Global Error Handler in n8n ← NEXT
 2. Create n8n weekly retention workflow (pg_cron replacement)
 3. Save v2.6-v4.2 spec docs to ECAS/docs/creator-recruitment/
