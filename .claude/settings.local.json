@@ -17,5 +17,26 @@
       "Skill(keyword-research)",
       "Skill(positioning-angles)"
     ]
-  }
+  },
+  "disabledSkills": [
+    "ltk-data-analyst",
+    "creator-vetting",
+    "content-atomizer",
+    "creative",
+    "brand-voice",
+    "newsletter",
+    "campaign-kit",
+    "client-onboard",
+    "tax-prep",
+    "stock-first-pass",
+    "google-agents-cli-scaffold",
+    "google-agents-cli-eval",
+    "google-agents-cli-deploy",
+    "google-agents-cli-observability",
+    "google-agents-cli-adk-code",
+    "google-agents-cli-publish",
+    "google-agents-cli-workflow",
+    "json-canvas",
+    "keybindings-help"
+  ]
 }
