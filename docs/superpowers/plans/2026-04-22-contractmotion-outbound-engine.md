@@ -47,7 +47,7 @@ doppler secrets set SMARTLEAD_API_KEY="<new-key>" --project example-project --co
 
 Find line 15 which reads something like:
 ```python
-SMARTLEAD_KEY = "17a34ec2-b253-45a8-9f0c-707333b745ad_3eex9gg"
+SMARTLEAD_KEY = "<REDACTED - see Doppler SMARTLEAD_API_KEY>"
 ```
 
 Replace with:

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Push all sequence updates via curl (bypasses Cloudflare bot challenge)
 
-KEY="17a34ec2-b253-45a8-9f0c-707333b745ad_3eex9gg"
+KEY="${SMARTLEAD_API_KEY:?SMARTLEAD_API_KEY not set — run via: doppler run --project ecas --config dev -- ./push_sequences.sh}"
 BASE="https://server.smartlead.ai/api/v1"
 
 push() {
