@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import requests
 
-API_KEY = os.environ.get("SMARTLEAD_API_KEY", "17a34ec2-b253-45a8-9f0c-707333b745ad_3eex9gg")
+API_KEY = os.environ["SMARTLEAD_API_KEY"]
 BASE_URL = "https://server.smartlead.ai/api/v1"
 HEADERS = {
     "Content-Type": "application/json",
